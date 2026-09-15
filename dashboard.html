@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthmate — Dashboard</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+
+<link href="css/style.css" rel="stylesheet">
+
+<style>
+  /* Page-specific layout only */
+  .greeting { margin-bottom: var(--space-5); }
+  .greeting h1 { font-size: 1.6rem; font-weight: 600; }
+  .greeting p { color: var(--color-text-muted); margin-top: 4px; }
+
+  .family-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-3);
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
+      </div>
+      <span class="brand-name">Healthmate</span>
+    </div>
+
+    <ul class="nav-list">
+      <li><a class="nav-item active" href="dashboard.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+        Dashboard
+      </a></li>
+      <li><a class="nav-item" href="medicines.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
+        Medicines
+      </a></li>
+      <li><a class="nav-item" href="routine.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        Daily Routine
+      </a></li>
+      <li><a class="nav-item" href="records.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+        Health Records
+      </a></li>
+      <li><a class="nav-item" href="family.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 19c0-3.3 3-5.5 6.5-5.5s6.5 2.2 6.5 5.5"/><circle cx="18" cy="8.5" r="2.4"/><path d="M15 13.6c2.7.2 5 2.3 5 5.4"/></svg>
+        Family
+      </a></li>
+      <li><a class="nav-item" href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a></li>
+    </ul>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="topbar">
+      <div class="font-heading" style="font-size:1rem;font-weight:600;">Dashboard</div>
+      <div class="topbar-actions" style="position:relative;">
+        <button class="icon-btn" onclick="toggleNotifPanel()" aria-label="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="notif-panel" id="notifPanel">
+          <div class="notif-panel-item"><div class="t">Abbu's blood pressure reading is due</div><div class="s">10 minutes ago</div></div>
+          <div class="notif-panel-item"><div class="t">Ammu marked evening walk complete</div><div class="s">1 hour ago</div></div>
+          <div class="notif-panel-item"><div class="t">Medicine B refill needed in 3 days</div><div class="s">Yesterday</div></div>
+        </div>
+        <div class="avatar">IF</div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <div class="greeting">
+        <h1>Good morning, Ifty</h1>
+        <p>Here's how your family is doing today.</p>
+      </div>
+
+      <!-- ============ MY TODAY (owner's own snapshot) ============ -->
+      <section class="section">
+        <div class="section-head">
+          <h2>Your day</h2>
+          <p>Full medicine schedule and routine checklist arrive in the next phase — this is a quick snapshot for now.</p>
+        </div>
+        <div class="panel progress-ring-wrap">
+          <svg width="86" height="86" viewBox="0 0 86 86">
+            <circle cx="43" cy="43" r="36" fill="none" stroke="var(--color-border)" stroke-width="8"/>
+            <circle cx="43" cy="43" r="36" fill="none" stroke="var(--color-primary)" stroke-width="8"
+              stroke-dasharray="226" stroke-dashoffset="56" stroke-linecap="round" transform="rotate(-90 43 43)"/>
+            <text x="43" y="49" text-anchor="middle" font-family="Poppins" font-size="18" font-weight="600" fill="var(--color-text)">75%</text>
+          </svg>
+          <div style="flex:1;min-width:220px;">
+            <div class="member-stat-row"><span>Medicine</span><b>1/1 completed</b></div>
+            <div class="member-stat-row"><span>Routine</span><b>90%</b></div>
+            <div class="member-stat-row"><span>Next up</span><b>Evening walk, 6:00 PM</b></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ FAMILY OVERVIEW (owner-only) ============ -->
+      <section class="section">
+        <div class="section-head">
+          <h2>Family overview</h2>
+          <p>A quick look at everyone's progress today. Tap a member to open their full profile.</p>
+        </div>
+        <div class="family-overview-grid">
+          <a href="member-profile.html?id=ammu&as=owner" class="hm-card" style="text-decoration:none;color:inherit;display:block;">
+            <div class="member-card-head">
+              <div class="member-avatar">AM</div>
+              <div>
+                <div style="font-weight:600;font-size:0.92rem;color:var(--color-text);">Ammu</div>
+                <div style="font-size:0.78rem;color:var(--color-text-muted);">Next: Medicine at 9:00 PM</div>
+              </div>
+            </div>
+            <div class="member-stat-row"><span>Medicine</span><b>3/4 completed</b></div>
+            <div class="member-stat-row"><span>Routine</span><b>80%</b></div>
+          </a>
+
+          <a href="member-profile.html?id=abbu&as=owner" class="hm-card" style="text-decoration:none;color:inherit;display:block;">
+            <div class="member-card-head">
+              <div class="member-avatar">AB</div>
+              <div>
+                <div style="font-weight:600;font-size:0.92rem;color:var(--color-text);">Abbu</div>
+                <div style="font-size:0.78rem;color:var(--color-text-muted);">Next: Blood pressure check</div>
+              </div>
+            </div>
+            <div class="member-stat-row"><span>Medicine</span><b>2/3 completed</b></div>
+            <div class="member-stat-row"><span>Routine</span><b>60%</b></div>
+          </a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav">
+  <a class="active" href="dashboard.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Dashboard</a>
+  <a href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>Medicines</a>
+  <a href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Routine</a>
+  <a href="family.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 19c0-3.3 3-5.5 6.5-5.5s6.5 2.2 6.5 5.5"/></svg>Family</a>
+  <a href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82"/></svg>Settings</a>
+</nav>
+
+<div class="toast-hm" id="toastHm">
+  <span class="dot-success"></span>
+  <span>Saved</span>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

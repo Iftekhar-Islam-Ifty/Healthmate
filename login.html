@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthmate — Log in</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+
+<link href="css/style.css" rel="stylesheet">
+
+<style>
+  /* Page-specific layout only — components/tokens live in css/style.css */
+  .login-shell {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .login-brand-panel {
+    flex: 1;
+    background: linear-gradient(160deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--space-6);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-brand-panel::after {
+    content: "";
+    position: absolute;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    right: -140px;
+    bottom: -160px;
+  }
+
+  .login-brand-panel .brand { position: relative; z-index: 1; }
+  .login-brand-panel .brand-mark { background: rgba(255, 255, 255, 0.16); }
+  .login-brand-panel .brand-name { color: white; font-size: 1.2rem; }
+
+  .login-brand-message {
+    position: relative;
+    z-index: 1;
+    max-width: 380px;
+  }
+  .login-brand-message h1 {
+    color: white;
+    font-size: 1.7rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .login-brand-message p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.92rem;
+    margin-top: var(--space-2);
+  }
+
+  .login-brand-panel .foot-note {
+    position: relative;
+    z-index: 1;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .login-form-panel {
+    width: 460px;
+    flex-shrink: 0;
+    background: var(--color-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+  }
+
+  .login-form-inner { width: 100%; max-width: 320px; }
+
+  .login-form-inner h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+  .login-form-inner .sub {
+    color: var(--color-text-muted);
+    font-size: 0.88rem;
+    margin: var(--space-1) 0 var(--space-4);
+  }
+
+  .login-form-fields { display: flex; flex-direction: column; gap: var(--space-3); }
+
+  .login-row-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+  }
+  .login-row-between a { color: var(--color-primary); text-decoration: none; font-weight: 500; }
+  .login-row-between a:hover { text-decoration: underline; }
+
+  .mobile-brand {
+    display: none;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+
+  @media (max-width: 900px) {
+    .login-brand-panel { display: none; }
+    .login-form-panel { width: 100%; padding: var(--space-4); }
+    .mobile-brand { display: flex; }
+  }
+</style>
+</head>
+<body>
+
+<div class="login-shell">
+
+  <!-- Left: brand / context panel (hidden on small screens) -->
+  <div class="login-brand-panel">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
+      </div>
+      <span class="brand-name">Healthmate</span>
+    </div>
+
+    <div class="login-brand-message">
+      <h1>One place for your family's everyday health.</h1>
+      <p>Medicines, routines, and health records for everyone in your family — kept simple, kept private.</p>
+    </div>
+
+    <div class="foot-note">A private space for your family only.</div>
+  </div>
+
+  <!-- Right: login form -->
+  <div class="login-form-panel">
+    <div class="login-form-inner">
+
+      <div class="mobile-brand">
+        <div class="brand-mark" style="background:var(--color-primary);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
+        </div>
+        <span class="brand-name">Healthmate</span>
+      </div>
+
+      <h2>Welcome back</h2>
+      <p class="sub">Log in to see today's health for your family.</p>
+
+      <form class="login-form-fields" id="loginForm" novalidate>
+        <div class="field" id="emailField">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+          <span class="field-error">Enter the email you signed up with.</span>
+        </div>
+
+        <div class="field" id="passwordField">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Your password" autocomplete="current-password">
+          <span class="field-error">Enter your password.</span>
+        </div>
+
+        <div class="login-row-between">
+          <label class="checkbox-row">
+            <input type="checkbox" checked>
+            Keep me logged in
+          </label>
+          <a href="#">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-hm btn-primary btn-block">Log in</button>
+      </form>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast (for login feedback) -->
+<div class="toast-hm" id="toastHm">
+  <span class="dot-success"></span>
+  <span>Logged in</span>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+  /*
+    Placeholder auth flow: validates that fields aren't empty
+    and simulates a successful login. Real implementation will
+    replace the inside of this handler with an API call to
+    Laravel, keeping the same form ids and structure.
+  */
+  document.getElementById('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const emailField = document.getElementById('emailField');
+    const passwordField = document.getElementById('passwordField');
+
+    let valid = true;
+    emailField.classList.toggle('has-error', email.value.trim() === '');
+    passwordField.classList.toggle('has-error', password.value.trim() === '');
+    if (email.value.trim() === '' || password.value.trim() === '') valid = false;
+
+    if (!valid) return;
+
+    showToast('Logged in — redirecting…');
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 700);
+  });
+</script>
+
+</body>
+</html>

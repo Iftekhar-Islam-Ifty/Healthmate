@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthmate — Health Records</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+
+<link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
+      </div>
+      <span class="brand-name">Healthmate</span>
+    </div>
+
+    <ul class="nav-list">
+      <li><a class="nav-item" href="dashboard.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+        Dashboard
+      </a></li>
+      <li><a class="nav-item" href="medicines.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
+        Medicines
+      </a></li>
+      <li><a class="nav-item" href="routine.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        Daily Routine
+      </a></li>
+      <li><a class="nav-item active" href="records.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+        Health Records
+      </a></li>
+      <li><a class="nav-item" href="family.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 19c0-3.3 3-5.5 6.5-5.5s6.5 2.2 6.5 5.5"/><circle cx="18" cy="8.5" r="2.4"/><path d="M15 13.6c2.7.2 5 2.3 5 5.4"/></svg>
+        Family
+      </a></li>
+      <li><a class="nav-item" href="#">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a></li>
+    </ul>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="topbar">
+      <div class="font-heading" style="font-size:1rem;font-weight:600;">Health Records</div>
+      <div class="topbar-actions" style="position:relative;">
+        <button class="icon-btn" onclick="toggleNotifPanel()" aria-label="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="notif-panel" id="notifPanel"></div>
+        <div class="avatar">IF</div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <div class="page-header">
+        <div>
+          <h1>Health Records</h1>
+          <p>Track measurements over time and spot trends early.</p>
+        </div>
+        <button class="btn-hm btn-primary" onclick="openAddRecord()">+ Add reading</button>
+      </div>
+
+      <div class="tab-row">
+        <button class="tab-btn active" data-type="weight" onclick="switchType('weight')">Weight</button>
+        <button class="tab-btn" data-type="bp" onclick="switchType('bp')">Blood Pressure</button>
+        <button class="tab-btn" data-type="sugar" onclick="switchType('sugar')">Blood Sugar</button>
+        <button class="tab-btn" data-type="temp" onclick="switchType('temp')">Temperature</button>
+      </div>
+
+      <!-- ============ TREND ============ -->
+      <section class="section">
+        <div class="hm-card">
+          <div class="record-hero" id="recordHero"></div>
+          <div class="chart-wrap">
+            <canvas id="recordChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ HISTORY ============ -->
+      <section class="section">
+        <div class="section-head">
+          <h2>History</h2>
+          <p>Most recent first.</p>
+        </div>
+        <div class="panel" id="historyList" style="padding: 0 var(--space-4);"></div>
+        <div id="historyEmpty" style="display:none;">
+          <div class="empty-state">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+            <h3>No readings yet</h3>
+            <p>Add the first reading to start tracking this measurement.</p>
+            <button class="btn-hm btn-primary" onclick="openAddRecord()">Add a reading</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav">
+  <a href="dashboard.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Dashboard</a>
+  <a href="medicines.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>Medicines</a>
+  <a href="routine.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Routine</a>
+  <a href="family.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 19c0-3.3 3-5.5 6.5-5.5s6.5 2.2 6.5 5.5"/></svg>Family</a>
+  <a href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82"/></svg>Settings</a>
+</nav>
+
+<div class="toast-hm" id="toastHm">
+  <span class="dot-success"></span>
+  <span>Saved</span>
+</div>
+
+<!-- Add reading modal -->
+<div class="modal-hm-backdrop" id="addRecordModal">
+  <div class="modal-hm" style="max-width:420px;">
+    <h3 id="addRecordTitle">Add reading</h3>
+    <form id="addRecordForm">
+      <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+        <div id="dynamicFields"></div>
+        <div class="control-row" style="gap:var(--space-3);">
+          <div class="field" style="flex:1;min-width:140px;">
+            <label for="fDate">Date</label>
+            <input type="date" id="fDate">
+          </div>
+        </div>
+        <div class="field">
+          <label for="fNote">Note (optional)</label>
+          <input type="text" id="fNote" placeholder="e.g. After morning walk">
+        </div>
+      </div>
+      <div class="modal-hm-actions">
+        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('addRecordModal')">Cancel</button>
+        <button type="submit" class="btn-hm btn-primary">Save reading</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-hm-backdrop" id="deleteRecordModal">
+  <div class="modal-hm" style="max-width:360px;">
+    <h3>Remove this reading?</h3>
+    <p style="color:var(--color-text-muted);font-size:0.88rem;">This can't be undone.</p>
+    <div class="modal-hm-actions">
+      <button class="btn-hm btn-ghost" onclick="closeModal('deleteRecordModal')">Cancel</button>
+      <button class="btn-hm btn-primary" style="background:var(--color-error);" onclick="confirmDeleteRecord()">Remove</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="js/app.js"></script>
+<script src="js/records.js"></script>
+</body>
+</html>
