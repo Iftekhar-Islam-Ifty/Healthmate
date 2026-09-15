@@ -1,0 +1,15 @@
+{
+  "name": "healthmate",
+  "version": "1.0.0",
+  "description": "Healthmate — One place for your family's everyday health.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "echo 'Build successful'",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
