@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthmate — Create Account</title>
+<meta name="description" content="Your personal health management space — track medicines, daily routines, and health records in one place.">
+<meta property="og:title" content="Healthmate — Create Account">
+<meta property="og:description" content="Your personal health management space — track medicines, daily routines, and health records in one place.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+<link href="css/style.css" rel="stylesheet">
+
+<style>
+  .register-shell {
+    display: flex;
+    min-height: 100vh;
+    background: var(--color-bg);
+  }
+
+  .register-brand-panel {
+    flex: 1.1;
+    background: linear-gradient(155deg, #0D6E6E 0%, #084848 50%, #053333 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--space-6);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .register-brand-panel::before {
+    content: "";
+    position: absolute;
+    width: 480px;
+    height: 480px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(23, 162, 148, 0.28) 0%, rgba(13, 110, 110, 0) 70%);
+    right: -100px;
+    top: -80px;
+    pointer-events: none;
+  }
+
+  .register-brand-panel::after {
+    content: "";
+    position: absolute;
+    width: 520px;
+    height: 520px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(224, 122, 95, 0.18) 0%, rgba(224, 122, 95, 0) 70%);
+    left: -140px;
+    bottom: -160px;
+    pointer-events: none;
+  }
+
+  .register-brand-panel .brand { position: relative; z-index: 1; }
+  .register-brand-panel .brand-mark {
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+  .register-brand-panel .brand-name {
+    color: white;
+    font-size: 1.28rem;
+    font-weight: 800;
+  }
+
+  .register-brand-message {
+    position: relative;
+    z-index: 1;
+    max-width: 440px;
+  }
+  .register-brand-message h1 {
+    color: #FFFFFF;
+    font-size: 2.1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+  }
+  .register-brand-message p {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.98rem;
+    line-height: 1.6;
+    margin-top: var(--space-3);
+  }
+
+  .feature-pills {
+    margin-top: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .feature-pill {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .feature-pill svg {
+    color: #8CE0D8;
+    flex-shrink: 0;
+  }
+  .feature-pill span {
+    font-size: 0.86rem;
+    color: #FFFFFF;
+    font-weight: 500;
+  }
+
+  .register-brand-panel .foot-note {
+    position: relative;
+    z-index: 1;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.65);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .register-form-panel {
+    width: 540px;
+    max-width: 100%;
+    flex-shrink: 0;
+    background: var(--color-surface);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--space-5) var(--space-6);
+    overflow-y: auto;
+    border-left: 1px solid var(--color-border);
+  }
+
+  .register-form-inner {
+    width: 100%;
+    max-width: 390px;
+    margin: 0 auto;
+  }
+
+  .register-form-inner h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+  }
+
+  .register-form-inner .sub {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    margin: 6px 0 var(--space-4);
+  }
+
+  .mobile-brand {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: var(--space-4);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+  }
+
+  .password-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .password-input-wrap input {
+    padding-right: 42px !important;
+  }
+
+  .pw-toggle-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    transition: color var(--transition-fast);
+  }
+
+  .pw-toggle-btn:hover {
+    color: var(--color-text);
+  }
+
+  @media (max-width: 960px) {
+    .register-brand-panel { display: none; }
+    .register-form-panel {
+      width: 100%;
+      padding: var(--space-5) var(--space-4);
+      border-left: none;
+    }
+    .mobile-brand { display: flex; }
+  }
+</style>
+</head>
+<body>
+
+<div class="register-shell" id="registerContainer">
+
+  <!-- Left: Brand / Context Panel -->
+  <div class="register-brand-panel" id="brandSidePanel">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
+      </div>
+      <span class="brand-name">Healthmate</span>
+    </div>
+
+    <div class="register-brand-message">
+      <h1>Your personal health space, simplified.</h1>
+      <p>Take control of your daily medications, healthy routines, and vital records with a private, structured personal dashboard.</p>
+
+      <div class="feature-pills">
+        <div class="feature-pill">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
+          <span>Medication schedules & refill inventory alerts</span>
+        </div>
+        <div class="feature-pill">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          <span>Daily water, sleep, and physical activity checklist</span>
+        </div>
+        <div class="feature-pill">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+          <span>Blood pressure, blood glucose & weight tracking</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot-note">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>Your health data stays private and ready whenever you need it.</span>
+    </div>
+  </div>
+
+  <!-- Right: Clean Single-User Registration Form -->
+  <div class="register-form-panel" id="formSidePanel">
+    <div class="register-form-inner">
+
+      <div class="mobile-brand">
+        <div class="brand-mark" style="background:var(--color-primary);color:white;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
+        </div>
+        <span class="brand-name">Healthmate</span>
+      </div>
+
+      <h2>Create your account</h2>
+      <p class="sub">Set up your personal Healthmate dashboard.</p>
+
+      <form id="registerForm" style="display:flex;flex-direction:column;gap:var(--space-3);" novalidate>
+        
+        <div class="field" id="nameField">
+          <label for="regName">Full name</label>
+          <input type="text" id="regName" placeholder="e.g. Ifty Ahmed" required autofocus>
+          <span class="field-error">Please enter your name.</span>
+        </div>
+
+        <div class="field" id="emailField">
+          <label for="regEmail">Email address</label>
+          <input type="email" id="regEmail" placeholder="you@example.com" required>
+          <span class="field-error">Enter a valid email address.</span>
+        </div>
+
+        <div class="field" id="passwordField">
+          <label for="regPassword">Password</label>
+          <div class="password-input-wrap">
+            <input type="password" id="regPassword" placeholder="At least 6 characters" required>
+            <button type="button" class="pw-toggle-btn" id="toggleRegPwBtn" aria-label="Toggle password visibility">
+              <svg id="regPwEyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <span class="field-error">Password must be at least 6 characters.</span>
+        </div>
+
+        <div class="field" id="confirmPasswordField">
+          <label for="regConfirmPassword">Confirm password</label>
+          <input type="password" id="regConfirmPassword" placeholder="Re-enter your password" required>
+          <span class="field-error" id="confirmErrorText">Passwords must match.</span>
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="regAge">Age <span style="font-weight:normal;color:var(--color-text-muted);">(optional)</span></label>
+            <input type="number" id="regAge" placeholder="e.g. 29" min="1" max="120">
+          </div>
+          <div class="field">
+            <label for="regBlood">Blood group</label>
+            <select id="regBlood">
+              <option value="B+" selected>B+ (Positive)</option>
+              <option value="A+">A+ (Positive)</option>
+              <option value="O+">O+ (Positive)</option>
+              <option value="AB+">AB+ (Positive)</option>
+              <option value="O-">O- (Negative)</option>
+              <option value="A-">A- (Negative)</option>
+              <option value="B-">B- (Negative)</option>
+              <option value="AB-">AB- (Negative)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="regEmergency">Emergency contact <span style="font-weight:normal;color:var(--color-text-muted);">(optional)</span></label>
+          <input type="tel" id="regEmergency" placeholder="+8801XXXXXXXXX">
+        </div>
+
+        <button type="submit" class="btn-hm btn-primary btn-block" id="regSubmitBtn" style="margin-top:var(--space-2);padding:12px 18px;font-size:0.95rem;">
+          Create Account
+        </button>
+
+      </form>
+
+      <p style="margin-top:var(--space-4);text-align:center;font-size:0.86rem;color:var(--color-text-muted);">
+        Already have an account? <a href="index.html" style="color:var(--color-primary);font-weight:600;text-decoration:none;">Log in here</a>
+      </p>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast-hm" id="toastHm">
+  <span class="dot-success"></span>
+  <span id="toastMsg">Account created</span>
+</div>
+
+<script src="js/store.js"></script>
+<script src="js/app.js"></script>
+<script>
+  // Password Visibility Toggle
+  const toggleRegPwBtn = document.getElementById('toggleRegPwBtn');
+  const regPassword = document.getElementById('regPassword');
+  const regPwEyeIcon = document.getElementById('regPwEyeIcon');
+
+  if (toggleRegPwBtn && regPassword) {
+    toggleRegPwBtn.addEventListener('click', function () {
+      const isPassword = regPassword.type === 'password';
+      regPassword.type = isPassword ? 'text' : 'password';
+      regPwEyeIcon.innerHTML = isPassword
+        ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+        : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+    });
+  }
+
+  // Registration form submission
+  document.getElementById('registerForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const nameInput = document.getElementById('regName');
+    const emailInput = document.getElementById('regEmail');
+    const passInput = document.getElementById('regPassword');
+    const confirmInput = document.getElementById('regConfirmPassword');
+    const ageInput = document.getElementById('regAge');
+    const bloodInput = document.getElementById('regBlood');
+    const emergencyInput = document.getElementById('regEmergency');
+
+    const nameField = document.getElementById('nameField');
+    const emailField = document.getElementById('emailField');
+    const passField = document.getElementById('passwordField');
+    const confirmField = document.getElementById('confirmPasswordField');
+    const confirmErrorText = document.getElementById('confirmErrorText');
+
+    let valid = true;
+
+    // Validate Name
+    const name = nameInput.value.trim();
+    if (!name) {
+      nameField.classList.add('has-error');
+      valid = false;
+    } else {
+      nameField.classList.remove('has-error');
+    }
+
+    // Validate Email
+    const email = emailInput.value.trim();
+    if (!email || !email.includes('@')) {
+      emailField.classList.add('has-error');
+      valid = false;
+    } else {
+      emailField.classList.remove('has-error');
+    }
+
+    // Validate Password
+    const password = passInput.value;
+    if (!password || password.length < 6) {
+      passField.classList.add('has-error');
+      valid = false;
+    } else {
+      passField.classList.remove('has-error');
+    }
+
+    // Validate Confirm Password
+    const confirmPass = confirmInput.value;
+    if (!confirmPass) {
+      confirmErrorText.textContent = 'Please confirm your password.';
+      confirmField.classList.add('has-error');
+      valid = false;
+    } else if (confirmPass !== password) {
+      confirmErrorText.textContent = 'Passwords do not match.';
+      confirmField.classList.add('has-error');
+      valid = false;
+    } else {
+      confirmField.classList.remove('has-error');
+    }
+
+    if (!valid) return;
+
+    if (window.HMStore && typeof HMStore.registerAccount === 'function') {
+      HMStore.registerAccount({
+        name,
+        email,
+        password,
+        age: ageInput.value ? Number(ageInput.value) : 29,
+        blood: bloodInput.value || 'B+',
+        emergency: emergencyInput.value.trim() || '+8801700000000'
+      });
+    }
+
+    showToast('Account created! Welcome to Healthmate…');
+    setTimeout(() => {
+      window.location.href = 'dashboard.html';
+    }, 600);
+  });
+</script>
+
+</body>
+</html>
+

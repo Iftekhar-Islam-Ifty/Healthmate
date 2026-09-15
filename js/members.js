@@ -12,7 +12,7 @@
    Nothing that calls canView() or getMember() needs to change.
 ========================================================= */
 
-let members = [
+let members = window.HMStore ? HMStore.getMembers() : [
   {
     id: 'owner', name: 'Ifty', initials: 'IF', role: 'Owner',
     age: 29, blood: 'B+', emergency: '+8801XXXXXXXXX',
@@ -35,12 +35,20 @@ let members = [
   }
 ];
 
+function persistMembers() {
+  if (window.HMStore) HMStore.saveMembers(members);
+}
+
 // Master ON/OFF toggle per pair, as planned for the first version.
 // Key shape: "<viewer>_can_view_<target>".
-let permissions = {
+let permissions = window.HMStore ? HMStore.getPermissions() : {
   ammu_can_view_abbu: true,
   abbu_can_view_ammu: false
 };
+
+function persistPermissions() {
+  if (window.HMStore) HMStore.savePermissions(permissions);
+}
 
 function getMember(id) {
   return members.find(m => m.id === id);
@@ -58,4 +66,5 @@ function canView(viewerId, targetId) {
 
 function setPermission(viewerId, targetId, value) {
   permissions[`${viewerId}_can_view_${targetId}`] = value;
+  persistPermissions();
 }

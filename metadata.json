@@ -1,6 +1,6 @@
 {
   "name": "Healthmate",
-  "description": "One place for your family's everyday health — medicines, routines, and records.",
+  "description": "Your personal health management space — track medicines, daily routines, and health records in one place.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

@@ -1,9 +1,7 @@
 /* =========================================================
    HEALTHMATE — HEALTH RECORDS PAGE LOGIC
-   Mock data for the frontend prototype. When Laravel exists:
-     - `records` object       -> GET /api/health-records?type=
-     - saveEntry()/deleteEntry() -> POST/DELETE /api/health-records
-   Render + chart functions can keep reading from the same shape.
+   Vitals tracking (Weight, BP, Sugar, Temp) isolated
+   strictly to the active profile.
 ========================================================= */
 
 const RECORD_TYPES = {
@@ -13,35 +11,64 @@ const RECORD_TYPES = {
   temp: { label: 'Temperature', unit: '°F', fields: ['value'] }
 };
 
-let records = {
-  weight: [
-    { id: 1, date: '2026-09-08', value: 71.5, note: '' },
-    { id: 2, date: '2026-09-10', value: 71.2, note: '' },
-    { id: 3, date: '2026-09-12', value: 70.8, note: '' },
-    { id: 4, date: '2026-09-14', value: 70.6, note: 'After morning walk' }
-  ],
-  bp: [
-    { id: 1, date: '2026-09-08', systolic: 132, diastolic: 86, note: '' },
-    { id: 2, date: '2026-09-10', systolic: 128, diastolic: 84, note: '' },
-    { id: 3, date: '2026-09-12', systolic: 126, diastolic: 82, note: '' },
-    { id: 4, date: '2026-09-14', systolic: 124, diastolic: 80, note: 'Feeling well' }
-  ],
-  sugar: [
-    { id: 1, date: '2026-09-09', value: 138, context: 'Fasting', note: '' },
-    { id: 2, date: '2026-09-11', value: 145, context: 'After meal', note: '' },
-    { id: 3, date: '2026-09-13', value: 130, context: 'Fasting', note: '' }
-  ],
-  temp: []
+let records = window.HMStore ? HMStore.getRecords() : {
+  weight: [], bp: [], sugar: [], temp: []
 };
 
-let nextRecordId = { weight: 5, bp: 5, sugar: 4, temp: 1 };
+// Ensure all entries have memberId (default to owner or sample member)
+let hasRecordMigration = false;
+Object.keys(records).forEach(type => {
+  if (Array.isArray(records[type])) {
+    records[type].forEach(item => {
+      if (!item.memberId || item.memberId === 'ammu' || item.memberId === 'abbu') {
+        item.memberId = 'owner';
+        hasRecordMigration = true;
+      }
+    });
+  }
+});
+if (hasRecordMigration && window.HMStore) {
+  HMStore.saveRecords(records);
+}
+
+function persistRecords() {
+  if (window.HMStore) HMStore.saveRecords(records);
+}
+
+let nextRecordId = {
+  weight: (records.weight?.length || 0) + 10,
+  bp: (records.bp?.length || 0) + 10,
+  sugar: (records.sugar?.length || 0) + 10,
+  temp: (records.temp?.length || 0) + 10
+};
+
 let currentType = 'weight';
 let chartInstance = null;
 let pendingDeleteRecord = null;
 
+function getMemberRecords(type) {
+  const currentProfileId = window.HMStore ? HMStore.getActiveProfileId() : 'owner';
+  const list = records[type] || [];
+  return list.filter(e => (e.memberId || 'owner') === currentProfileId);
+}
+
+function initPageHeader() {
+  const activeProfile = window.HMStore ? HMStore.getActiveProfile() : null;
+  const titleEl = document.getElementById('recordsPageTitle') || document.querySelector('h1');
+  const subEl = document.getElementById('recordsPageSub');
+
+  if (activeProfile && !activeProfile.isOwner) {
+    if (titleEl) titleEl.textContent = `${activeProfile.name}'s Health Records`;
+    if (subEl) subEl.textContent = `Measurements, historical readings, and trend charts for ${activeProfile.name}.`;
+  } else {
+    if (titleEl) titleEl.textContent = "Health Records";
+    if (subEl) subEl.textContent = "Track measurements over time and spot trends early.";
+  }
+}
+
 function switchType(type) {
   currentType = type;
-  document.querySelectorAll('.tab-btn').forEach(btn => {
+  document.querySelectorAll('.tab-row .tab-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.type === type);
   });
   renderRecordFields();
@@ -58,12 +85,12 @@ function renderRecordFields() {
     wrap.innerHTML = `
       <div class="control-row" style="gap:var(--space-3);">
         <div class="field" style="flex:1;min-width:120px;">
-          <label for="fSystolic">Systolic</label>
-          <input type="text" id="fSystolic" placeholder="e.g. 124">
+          <label for="fSystolic">Systolic (mmHg)</label>
+          <input type="number" id="fSystolic" placeholder="e.g. 120" required>
         </div>
         <div class="field" style="flex:1;min-width:120px;">
-          <label for="fDiastolic">Diastolic</label>
-          <input type="text" id="fDiastolic" placeholder="e.g. 80">
+          <label for="fDiastolic">Diastolic (mmHg)</label>
+          <input type="number" id="fDiastolic" placeholder="e.g. 80" required>
         </div>
       </div>`;
   } else if (currentType === 'sugar') {
@@ -71,7 +98,7 @@ function renderRecordFields() {
       <div class="control-row" style="gap:var(--space-3);">
         <div class="field" style="flex:1;min-width:120px;">
           <label for="fValue">Value (mg/dL)</label>
-          <input type="text" id="fValue" placeholder="e.g. 130">
+          <input type="number" step="0.1" id="fValue" placeholder="e.g. 110" required>
         </div>
         <div class="field" style="flex:1;min-width:140px;">
           <label for="fContext">Context</label>
@@ -86,14 +113,9 @@ function renderRecordFields() {
     wrap.innerHTML = `
       <div class="field">
         <label for="fValue">Value (${meta.unit})</label>
-        <input type="text" id="fValue" placeholder="e.g. ${currentType === 'weight' ? '70.5' : '98.6'}">
+        <input type="number" step="0.1" id="fValue" placeholder="e.g. ${currentType === 'weight' ? '70.5' : '98.6'}" required>
       </div>`;
   }
-}
-
-function latestEntry() {
-  const list = records[currentType];
-  return list.length ? list[list.length - 1] : null;
 }
 
 function entryPrimaryValue(entry) {
@@ -104,11 +126,11 @@ function entryPrimaryValue(entry) {
 function renderHero() {
   const meta = RECORD_TYPES[currentType];
   const el = document.getElementById('recordHero');
-  const list = records[currentType];
-  const latest = latestEntry();
+  const list = getMemberRecords(currentType);
+  const latest = list.length ? list[list.length - 1] : null;
 
   if (!latest) {
-    el.innerHTML = `<span style="color:var(--color-text-muted);font-size:0.9rem;">No readings yet</span>`;
+    el.innerHTML = `<span style="color:var(--color-text-muted);font-size:0.9rem;">No ${meta.label.toLowerCase()} readings yet for this profile.</span>`;
     return;
   }
 
@@ -133,19 +155,27 @@ function renderHero() {
 }
 
 function renderChart() {
-  const ctx = document.getElementById('recordChart').getContext('2d');
-  const list = records[currentType];
+  const canvas = document.getElementById('recordChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const list = getMemberRecords(currentType);
   const meta = RECORD_TYPES[currentType];
 
   if (chartInstance) chartInstance.destroy();
 
+  if (list.length === 0) {
+    chartInstance = null;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
+
   const datasets = currentType === 'bp'
     ? [
-        { label: 'Systolic', data: list.map(e => e.systolic), borderColor: '#2F6F5E', backgroundColor: '#2F6F5E', tension: 0.35, pointRadius: 3 },
-        { label: 'Diastolic', data: list.map(e => e.diastolic), borderColor: '#E8A33D', backgroundColor: '#E8A33D', tension: 0.35, pointRadius: 3 }
+        { label: 'Systolic', data: list.map(e => e.systolic), borderColor: '#2F6F5E', backgroundColor: '#2F6F5E', tension: 0.35, pointRadius: 4 },
+        { label: 'Diastolic', data: list.map(e => e.diastolic), borderColor: '#E8A33D', backgroundColor: '#E8A33D', tension: 0.35, pointRadius: 4 }
       ]
     : [
-        { label: meta.label, data: list.map(e => e.value), borderColor: '#2F6F5E', backgroundColor: 'rgba(47,111,94,0.08)', fill: true, tension: 0.35, pointRadius: 3 }
+        { label: meta.label, data: list.map(e => e.value), borderColor: '#2F6F5E', backgroundColor: 'rgba(47,111,94,0.08)', fill: true, tension: 0.35, pointRadius: 4 }
       ];
 
   chartInstance = new Chart(ctx, {
@@ -154,10 +184,15 @@ function renderChart() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: currentType === 'bp', labels: { boxWidth: 10, font: { family: 'Inter', size: 11 } } } },
+      plugins: {
+        legend: {
+          display: currentType === 'bp',
+          labels: { boxWidth: 10, font: { family: 'Plus Jakarta Sans, sans-serif', size: 11 } }
+        }
+      },
       scales: {
-        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 }, color: '#6B7570' } },
-        y: { grid: { color: '#E3E7E4' }, ticks: { font: { family: 'Inter', size: 11 }, color: '#6B7570' } }
+        x: { grid: { display: false }, ticks: { font: { family: 'Plus Jakarta Sans, sans-serif', size: 11 }, color: '#6B7570' } },
+        y: { grid: { color: '#E3E7E4' }, ticks: { font: { family: 'Plus Jakarta Sans, sans-serif', size: 11 }, color: '#6B7570' } }
       }
     }
   });
@@ -166,7 +201,7 @@ function renderChart() {
 function renderHistory() {
   const el = document.getElementById('historyList');
   const emptyEl = document.getElementById('historyEmpty');
-  const list = records[currentType];
+  const list = getMemberRecords(currentType);
 
   if (list.length === 0) {
     el.innerHTML = '';
@@ -193,9 +228,12 @@ function renderHistory() {
 }
 
 function openAddRecord() {
-  document.getElementById('addRecordTitle').textContent = `Add ${RECORD_TYPES[currentType].label.toLowerCase()} reading`;
+  const activeProfile = window.HMStore ? HMStore.getActiveProfile() : null;
+  const who = activeProfile && !activeProfile.isOwner ? ` (${activeProfile.name})` : '';
+  document.getElementById('addRecordTitle').textContent = `Add ${RECORD_TYPES[currentType].label.toLowerCase()} reading${who}`;
   document.getElementById('addRecordForm').reset();
   document.getElementById('fDate').value = new Date().toISOString().slice(0, 10);
+
   openModal('addRecordModal');
 }
 
@@ -205,8 +243,9 @@ function askDeleteRecord(id) {
 }
 
 function confirmDeleteRecord() {
-  records[currentType] = records[currentType].filter(e => e.id !== pendingDeleteRecord);
+  records[currentType] = (records[currentType] || []).filter(e => e.id !== pendingDeleteRecord);
   pendingDeleteRecord = null;
+  persistRecords();
   closeModal('deleteRecordModal');
   renderHero();
   renderChart();
@@ -218,7 +257,9 @@ document.getElementById('addRecordForm').addEventListener('submit', function (e)
   e.preventDefault();
   const date = document.getElementById('fDate').value || new Date().toISOString().slice(0, 10);
   const note = document.getElementById('fNote').value.trim();
-  let entry = { id: nextRecordId[currentType]++, date, note };
+  const currentProfileId = window.HMStore ? HMStore.getActiveProfileId() : 'owner';
+
+  let entry = { id: nextRecordId[currentType]++, memberId: currentProfileId, date, note };
 
   if (currentType === 'bp') {
     const systolic = Number(document.getElementById('fSystolic').value);
@@ -237,14 +278,18 @@ document.getElementById('addRecordForm').addEventListener('submit', function (e)
     entry.value = value;
   }
 
+  if (!records[currentType]) records[currentType] = [];
   records[currentType].push(entry);
   records[currentType].sort((a, b) => a.date.localeCompare(b.date));
+  persistRecords();
 
   closeModal('addRecordModal');
   renderHero();
   renderChart();
   renderHistory();
-  showToast('Reading added');
+  showToast('Reading saved');
 });
 
+// Initialization
+initPageHeader();
 switchType('weight');

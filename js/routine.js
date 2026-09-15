@@ -1,24 +1,41 @@
 /* =========================================================
    HEALTHMATE — DAILY ROUTINE PAGE LOGIC
-   Mock data for the frontend prototype. When Laravel exists:
-     - `routines` array         -> GET /api/routines
-     - saveRoutineToState()     -> POST/PUT /api/routines
-     - removeRoutineFromState() -> DELETE /api/routines/{id}
-     - toggleToday()            -> POST /api/routines/{id}/log
-   Render functions and DOM ids can stay the same.
+   Daily habit tracking isolated strictly to the active profile.
 ========================================================= */
 
 const WEEK_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 const TODAY_INDEX = 4; // Friday — demo "today" marker
 
-let routines = [
-  { id: 1, name: 'Drink water', category: 'Water', frequency: 'Daily', target: '8 glasses', reminder: true, week: [true, true, true, true, false, false, false] },
-  { id: 2, name: 'Evening walk', category: 'Walking', frequency: 'Daily', target: '30 minutes', reminder: true, week: [true, true, false, true, false, false, false] },
-  { id: 3, name: 'Sleep by 11 PM', category: 'Sleep', frequency: 'Daily', target: '', reminder: false, week: [true, false, true, true, false, false, false] },
-];
-
-let nextRoutineId = 4;
+let routines = window.HMStore ? HMStore.getRoutines() : [];
 let pendingDeleteRoutineId = null;
+
+function persistRoutines() {
+  if (window.HMStore) {
+    HMStore.saveRoutines(routines);
+    syncMemberRoutinePct();
+  }
+}
+
+// Keep members' routinePct in sync with their active routines
+function syncMemberRoutinePct() {
+  if (!window.HMStore) return;
+  const members = HMStore.getMembers();
+  let changed = false;
+
+  members.forEach(m => {
+    const memRoutines = routines.filter(r => (r.memberId || 'owner') === m.id);
+    if (memRoutines.length > 0) {
+      const doneCount = memRoutines.filter(r => r.week && r.week[TODAY_INDEX]).length;
+      const pct = Math.round((doneCount / memRoutines.length) * 100);
+      if (m.routinePct !== pct) {
+        m.routinePct = pct;
+        changed = true;
+      }
+    }
+  });
+
+  if (changed) HMStore.saveMembers(members);
+}
 
 const categoryIcons = {
   Water: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg>`,
@@ -28,12 +45,32 @@ const categoryIcons = {
   Custom: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`,
 };
 
+function getFilteredRoutines() {
+  const currentProfileId = window.HMStore ? HMStore.getActiveProfileId() : 'owner';
+  return routines.filter(r => (r.memberId || 'owner') === currentProfileId);
+}
+
+function initPageHeader() {
+  const activeProfile = window.HMStore ? HMStore.getActiveProfile() : null;
+  const titleEl = document.getElementById('routinePageTitle') || document.querySelector('h1');
+  const subEl = document.getElementById('routinePageSub');
+
+  if (activeProfile && !activeProfile.isOwner) {
+    if (titleEl) titleEl.textContent = `${activeProfile.name}'s Routine`;
+    if (subEl) subEl.textContent = `Daily health habits and weekly consistency for ${activeProfile.name}.`;
+  } else {
+    if (titleEl) titleEl.textContent = "Daily Routine";
+    if (subEl) subEl.textContent = "Your recurring health tasks for today, and how the week is going.";
+  }
+}
+
 function renderToday() {
   const el = document.getElementById('todayList');
   const emptyEl = document.getElementById('routineEmpty');
   const weeklySection = document.getElementById('weeklySection');
+  const list = getFilteredRoutines();
 
-  if (routines.length === 0) {
+  if (list.length === 0) {
     el.innerHTML = '';
     el.style.display = 'none';
     emptyEl.style.display = 'block';
@@ -44,8 +81,9 @@ function renderToday() {
   emptyEl.style.display = 'none';
   weeklySection.style.display = 'block';
 
-  el.innerHTML = routines.map(r => {
-    const done = r.week[TODAY_INDEX];
+  el.innerHTML = list.map(r => {
+    const done = r.week ? r.week[TODAY_INDEX] : false;
+
     return `
       <div class="list-row">
         <button class="task-check ${done ? 'done' : ''}" onclick="toggleToday(${r.id})" aria-label="Mark ${r.name} done">
@@ -53,7 +91,9 @@ function renderToday() {
         </button>
         <div class="list-row-icon">${categoryIcons[r.category] || categoryIcons.Custom}</div>
         <div class="list-row-main">
-          <div class="name">${r.name}</div>
+          <div class="name">
+            <span style="${done ? 'text-decoration:line-through;color:var(--color-text-muted);' : ''}">${r.name}</span>
+          </div>
           <div class="meta">${r.target ? r.target + ' &middot; ' : ''}${r.frequency}</div>
         </div>
         <div class="list-row-side">
@@ -70,18 +110,25 @@ function renderToday() {
 
 function renderWeekly() {
   const el = document.getElementById('weeklyList');
-  if (routines.length === 0) { el.innerHTML = ''; return; }
+  const list = getFilteredRoutines();
 
-  el.innerHTML = routines.map(r => {
-    const doneCount = r.week.filter(Boolean).length;
-    const dots = r.week.map((done, i) => `
+  if (list.length === 0) { el.innerHTML = ''; return; }
+
+  el.innerHTML = list.map(r => {
+    const week = r.week || [false, false, false, false, false, false, false];
+    const doneCount = week.filter(Boolean).length;
+
+    const dots = week.map((done, i) => `
       <div class="d ${done ? 'done' : ''} ${i === TODAY_INDEX ? 'today' : ''}">${WEEK_LABELS[i]}</div>
     `).join('');
+
     return `
       <div class="list-row">
         <div class="list-row-main">
-          <div class="name">${r.name}</div>
-          <div class="meta">${doneCount}/7 days this week</div>
+          <div class="name">
+            <span>${r.name}</span>
+          </div>
+          <div class="meta">${doneCount} of 7 days completed this week</div>
         </div>
         <div class="week-dots">${dots}</div>
       </div>`;
@@ -91,17 +138,22 @@ function renderWeekly() {
 function toggleToday(id) {
   const r = routines.find(x => x.id === id);
   if (!r) return;
+  if (!r.week) r.week = [false, false, false, false, false, false, false];
   r.week[TODAY_INDEX] = !r.week[TODAY_INDEX];
+  persistRoutines();
   renderToday();
   renderWeekly();
-  if (r.week[TODAY_INDEX]) showToast(`${r.name} marked done for today`);
+  showToast(`${r.name} marked ${r.week[TODAY_INDEX] ? 'completed' : 'pending'}`);
 }
 
 function openAddRoutine() {
-  document.getElementById('routineModalTitle').textContent = 'Add a routine';
+  const activeProfile = window.HMStore ? HMStore.getActiveProfile() : null;
+  const who = activeProfile && !activeProfile.isOwner ? ` (${activeProfile.name})` : '';
+  document.getElementById('routineModalTitle').textContent = `Add a routine${who}`;
   document.getElementById('routineForm').reset();
   document.getElementById('rtId').value = '';
   document.getElementById('rtReminder').checked = true;
+
   openModal('routineModal');
 }
 
@@ -113,8 +165,9 @@ function openEditRoutine(id) {
   document.getElementById('rtName').value = r.name;
   document.getElementById('rtCategory').value = r.category;
   document.getElementById('rtFrequency').value = r.frequency;
-  document.getElementById('rtTarget').value = r.target;
-  document.getElementById('rtReminder').checked = r.reminder;
+  document.getElementById('rtTarget').value = r.target || '';
+  document.getElementById('rtReminder').checked = !!r.reminder;
+
   openModal('routineModal');
 }
 
@@ -126,6 +179,7 @@ function askDeleteRoutine(id) {
 function confirmDeleteRoutine() {
   routines = routines.filter(r => r.id !== pendingDeleteRoutineId);
   pendingDeleteRoutineId = null;
+  persistRoutines();
   closeModal('deleteRoutineModal');
   renderToday();
   renderWeekly();
@@ -136,8 +190,11 @@ document.getElementById('routineForm').addEventListener('submit', function (e) {
   e.preventDefault();
 
   const idVal = document.getElementById('rtId').value;
+  const currentProfileId = window.HMStore ? HMStore.getActiveProfileId() : 'owner';
+
   const data = {
     name: document.getElementById('rtName').value.trim(),
+    memberId: currentProfileId,
     category: document.getElementById('rtCategory').value,
     frequency: document.getElementById('rtFrequency').value,
     target: document.getElementById('rtTarget').value.trim(),
@@ -149,9 +206,16 @@ document.getElementById('routineForm').addEventListener('submit', function (e) {
   if (idVal) {
     const r = routines.find(x => x.id === Number(idVal));
     if (r) Object.assign(r, data);
+    persistRoutines();
     showToast('Routine updated');
   } else {
-    routines.push({ id: nextRoutineId++, week: [false, false, false, false, false, false, false], ...data });
+    const nextId = routines.length > 0 ? Math.max(...routines.map(x => x.id)) + 1 : 1;
+    routines.push({
+      id: nextId,
+      week: [false, false, false, false, false, false, false],
+      ...data
+    });
+    persistRoutines();
     showToast('Routine added');
   }
 
@@ -160,5 +224,7 @@ document.getElementById('routineForm').addEventListener('submit', function (e) {
   renderWeekly();
 });
 
+// Initialization
+initPageHeader();
 renderToday();
 renderWeekly();

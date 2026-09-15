@@ -1,7 +1,7 @@
 {
   "name": "healthmate",
   "version": "1.0.0",
-  "description": "Healthmate — One place for your family's everyday health.",
+  "description": "Healthmate — Personal health management and daily wellness tracker.",
   "type": "module",
   "main": "server.js",
   "scripts": {

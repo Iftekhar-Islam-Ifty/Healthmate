@@ -3,24 +3,711 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Healthmate — Dashboard</title>
+<title>Healthmate — Personal Dashboard</title>
+<meta name="description" content="Your personal health management space — track medicines, daily routines, and health records in one place.">
+<meta property="og:title" content="Healthmate — Personal Dashboard">
+<meta property="og:description" content="Your personal health management space — track medicines, daily routines, and health records in one place.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
 <link href="css/style.css" rel="stylesheet">
 
 <style>
-  /* Page-specific layout only */
-  .greeting { margin-bottom: var(--space-5); }
-  .greeting h1 { font-size: 1.6rem; font-weight: 600; }
-  .greeting p { color: var(--color-text-muted); margin-top: 4px; }
-
-  .family-overview-grid {
+  .dash-grid-2 {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    align-items: stretch;
+  }
+
+  /* Themed Quick Actions — distinct personality derived from brand palette */
+  .quick-actions-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+
+  .quick-action-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 14px 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--color-text);
+    transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+  }
+
+  .quick-action-card.qa-theme-meds {
+    background: linear-gradient(145deg, #FFFFFF 0%, #F0F9F8 100%);
+    border-color: rgba(13, 110, 110, 0.22);
+  }
+  .quick-action-card.qa-theme-meds:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-primary);
+    box-shadow: 0 8px 20px -4px rgba(13, 110, 110, 0.16);
+  }
+
+  .quick-action-card.qa-theme-routine {
+    background: linear-gradient(145deg, #FFFFFF 0%, #F0F5F7 100%);
+    border-color: rgba(51, 92, 103, 0.22);
+  }
+  .quick-action-card.qa-theme-routine:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-secondary);
+    box-shadow: 0 8px 20px -4px rgba(51, 92, 103, 0.16);
+  }
+
+  .quick-action-card.qa-theme-vitals {
+    background: linear-gradient(145deg, #FFFFFF 0%, #FCF3EE 100%);
+    border-color: rgba(224, 122, 95, 0.24);
+  }
+  .quick-action-card.qa-theme-vitals:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-accent);
+    box-shadow: 0 8px 20px -4px rgba(224, 122, 95, 0.16);
+  }
+
+  .qa-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  }
+
+  /* =========================================================
+     TODAY'S HEALTH STATUS — Deep Juniper Featured Hero Card
+     No cramped text, no awkward bottom void, proportional & elegant
+  ========================================================= */
+  .today-hero-card {
+    background: linear-gradient(145deg, #0D6E6E 0%, #084848 55%, #053333 100%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    color: #FFFFFF;
+    box-shadow: 0 12px 28px -6px rgba(13, 110, 110, 0.24);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .today-hero-card::before {
+    content: "";
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(45, 212, 191, 0.18) 0%, rgba(13, 110, 110, 0) 70%);
+    top: -80px;
+    right: -70px;
+    pointer-events: none;
+  }
+
+  .today-hero-card::after {
+    content: "";
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(224, 122, 95, 0.12) 0%, rgba(224, 122, 95, 0) 70%);
+    bottom: -80px;
+    left: -60px;
+    pointer-events: none;
+  }
+
+  .hero-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+    gap: 12px;
+  }
+
+  .hero-card-header h2 {
+    color: #FFFFFF;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+
+  .hero-card-header p {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.82rem;
+    margin: 3px 0 0 0;
+  }
+
+  .hero-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #FFFFFF;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .status-pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2DD4BF;
+    box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.35);
+    animation: statusPulse 2s infinite;
+  }
+
+  @keyframes statusPulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(45, 212, 191, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(45, 212, 191, 0); }
+  }
+
+  .hero-metrics-body {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-ring-container {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-stat-tiles {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .hero-tile {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 6px;
+    transition: background var(--transition-fast);
+  }
+
+  .hero-tile:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .hero-tile-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .hero-tile-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .hero-tile-label {
+    font-size: 0.74rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .hero-tile-val {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .hero-mini-bar {
+    height: 4px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.18);
+    overflow: hidden;
+    margin-top: 2px;
+  }
+
+  .hero-mini-bar-fill {
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background: #2DD4BF;
+    transition: width 0.4s ease;
+  }
+
+  .hero-nextup-banner {
+    background: rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-nextup-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .hero-nextup-badge {
+    background: rgba(45, 212, 191, 0.2);
+    color: #5EEAD4;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .hero-nextup-details {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .hero-nextup-tag {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #8CE0D8;
+  }
+
+  .hero-nextup-title {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #FFFFFF;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .hero-nextup-action {
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    color: #FFFFFF;
+    font-size: 0.76rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+  }
+
+  .hero-nextup-action:hover {
+    background: #FFFFFF;
+    color: var(--color-primary-dark);
+  }
+
+  /* =========================================================
+     MY HEALTH VITALS — Accented Metric Cards
+  ========================================================= */
+  .vitals-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+
+  .vital-metric-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    position: relative;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  }
+  .vital-metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .vital-metric-card.vm-bp {
+    border-top: 3px solid var(--color-primary);
+    background: linear-gradient(180deg, rgba(13, 110, 110, 0.03) 0%, #FFFFFF 100%);
+  }
+  .vital-metric-card.vm-sugar {
+    border-top: 3px solid var(--color-warning);
+    background: linear-gradient(180deg, rgba(245, 158, 11, 0.03) 0%, #FFFFFF 100%);
+  }
+  .vital-metric-card.vm-weight {
+    border-top: 3px solid var(--color-accent);
+    background: linear-gradient(180deg, rgba(224, 122, 95, 0.03) 0%, #FFFFFF 100%);
+  }
+  .vital-metric-card.vm-blood {
+    border-top: 3px solid var(--color-secondary);
+    background: linear-gradient(180deg, rgba(51, 92, 103, 0.03) 0%, #FFFFFF 100%);
+  }
+
+  .vital-metric-card .vm-label {
+    font-size: 0.74rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  .vital-metric-card .vm-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 4px 0 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .vital-metric-card .vm-sub {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+  }
+
+  .today-med-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    gap: var(--space-3);
+    transition: background 0.12s ease;
+  }
+  .today-med-row:last-child {
+    border-bottom: none;
+  }
+  .today-med-row.is-taken {
+    background: rgba(16, 185, 129, 0.04);
+  }
+
+  .today-routine-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    gap: var(--space-3);
+  }
+  .today-routine-row:last-child {
+    border-bottom: none;
+  }
+
+  .routine-checkbox {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    background: var(--color-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    color: transparent;
+    transition: all 0.15s ease;
+  }
+  .routine-checkbox.done {
+    background: var(--color-success);
+    border-color: var(--color-success);
+    color: white;
+  }
+
+  /* Segmented Today's Switcher */
+  .today-tab-switcher-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-bottom: 8px;
+  }
+  .segmented-control {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(15, 23, 42, 0.05);
+    padding: 3px;
+    border-radius: var(--radius-pill);
+    gap: 2px;
+  }
+  .segmented-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 13px;
+    border-radius: var(--radius-pill);
+    border: none;
+    background: transparent;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+  .segmented-pill:hover {
+    color: var(--color-text);
+  }
+  .segmented-pill.active {
+    background: #FFFFFF;
+    color: var(--color-primary-dark);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  }
+  .segmented-pill .pill-count {
+    font-size: 0.72rem;
+    padding: 1px 7px;
+    border-radius: var(--radius-pill);
+    background: rgba(15, 23, 42, 0.07);
+    color: inherit;
+    font-variant-numeric: tabular-nums;
+  }
+  .segmented-pill.active .pill-count {
+    background: var(--color-primary-soft);
+    color: var(--color-primary-dark);
+  }
+  .today-tab-viewall {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: var(--radius-pill);
+    transition: background var(--transition-fast);
+  }
+  .today-tab-viewall:hover {
+    background: var(--color-primary-soft);
+  }
+
+  .qa-title {
+    font-weight: 600;
+    font-size: 0.88rem;
+  }
+  .qa-sub {
+    font-size: 0.72rem;
+    margin-top: 1px;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 960px) {
+    .dash-grid-2 {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .hero-stat-tiles {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .dash-grid-2 {
+      gap: 10px;
+    }
+
+    /* Quick Actions: compact 3-column bar */
+    .quick-actions-row {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .quick-action-card {
+      padding: 8px 4px;
+      flex-direction: column;
+      text-align: center;
+      gap: 4px;
+      border-radius: 10px;
+    }
+    .qa-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+    .qa-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+    .qa-title {
+      font-size: 0.74rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .qa-sub {
+      display: none;
+    }
+
+    /* Greeting compact header */
+    .greeting {
+      margin-bottom: 10px;
+    }
+    .greeting h1 {
+      font-size: 1.15rem;
+    }
+    .greeting p {
+      font-size: 0.76rem;
+      margin-top: 1px;
+    }
+    #todayDateBadge {
+      font-size: 0.72rem;
+      padding: 3px 7px;
+    }
+
+    /* Today's Hero Card compact */
+    .today-hero-card {
+      padding: 12px 14px;
+      border-radius: 12px;
+      gap: 8px;
+    }
+    .hero-card-header h2 {
+      font-size: 1rem;
+    }
+    .hero-card-header p {
+      font-size: 0.72rem;
+    }
+    .hero-status-badge {
+      font-size: 0.68rem;
+      padding: 2px 7px;
+    }
+    .hero-metrics-body {
+      flex-direction: row !important;
+      align-items: center;
+      gap: 10px;
+    }
+    .hero-ring-container svg {
+      width: 66px;
+      height: 66px;
+    }
+    .hero-stat-tiles {
+      gap: 6px;
+      grid-template-columns: 1fr 1fr;
+    }
+    .hero-tile {
+      padding: 6px 8px;
+      gap: 2px;
+      border-radius: 8px;
+    }
+    .hero-tile-label {
+      font-size: 0.66rem;
+    }
+    .hero-tile-val {
+      font-size: 0.76rem;
+    }
+    .hero-nextup-banner {
+      padding: 6px 8px;
+      gap: 6px;
+      border-radius: 8px;
+    }
+    .hero-nextup-badge {
+      width: 20px;
+      height: 20px;
+    }
+    .hero-nextup-tag {
+      font-size: 0.62rem;
+    }
+    .hero-nextup-title {
+      font-size: 0.74rem;
+    }
+    .hero-nextup-action {
+      padding: 2px 7px;
+      font-size: 0.68rem;
+    }
+
+    /* Vitals Card compact */
+    .vitals-summary-grid {
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .vital-metric-card {
+      padding: 7px 8px;
+      border-radius: 8px;
+    }
+    .vital-metric-card .vm-label {
+      font-size: 0.64rem;
+    }
+    .vital-metric-card .vm-value {
+      font-size: 1.05rem;
+      margin: 1px 0;
+    }
+    .vital-metric-card .vm-sub {
+      font-size: 0.66rem;
+    }
+
+    /* Today's rows compact */
+    .today-med-row, .today-routine-row {
+      padding: 8px 10px;
+      gap: 8px;
+    }
+    .today-med-row .btn-hm {
+      font-size: 0.74rem !important;
+      padding: 4px 10px !important;
+    }
+    .routine-checkbox {
+      width: 22px;
+      height: 22px;
+    }
+    .segmented-pill {
+      padding: 4px 9px;
+      font-size: 0.75rem;
+      gap: 4px;
+    }
+    .segmented-pill svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-metrics-body {
+      flex-direction: row !important;
+      align-items: center;
+    }
+    .hero-ring-container {
+      margin: 0;
+      flex-shrink: 0;
+    }
+    .hero-stat-tiles {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 </head>
@@ -54,12 +741,12 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
         Health Records
       </a></li>
-      <li><a class="nav-item" href="family.html">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 19c0-3.3 3-5.5 6.5-5.5s6.5 2.2 6.5 5.5"/><circle cx="18" cy="8.5" r="2.4"/><path d="M15 13.6c2.7.2 5 2.3 5 5.4"/></svg>
-        Family
+      <li><a class="nav-item" href="report.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Doctor Report
       </a></li>
-      <li><a class="nav-item" href="#">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <li><a class="nav-item" href="settings.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Settings
       </a></li>
     </ul>
@@ -68,79 +755,242 @@
   <!-- ============ MAIN ============ -->
   <div class="main">
     <header class="topbar">
-      <div class="font-heading" style="font-size:1rem;font-weight:600;">Dashboard</div>
+      <div class="font-heading" style="font-size:1rem;font-weight:600;">Personal Dashboard</div>
       <div class="topbar-actions" style="position:relative;">
+        <button class="icon-btn" onclick="openEmergencyModal()" title="Emergency Medical ID" aria-label="Emergency Medical ID" style="color:var(--color-error);background:#FEF2F2;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+        </button>
         <button class="icon-btn" onclick="toggleNotifPanel()" aria-label="Notifications">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <span class="notif-dot"></span>
         </button>
-        <div class="notif-panel" id="notifPanel">
-          <div class="notif-panel-item"><div class="t">Abbu's blood pressure reading is due</div><div class="s">10 minutes ago</div></div>
-          <div class="notif-panel-item"><div class="t">Ammu marked evening walk complete</div><div class="s">1 hour ago</div></div>
-          <div class="notif-panel-item"><div class="t">Medicine B refill needed in 3 days</div><div class="s">Yesterday</div></div>
-        </div>
-        <div class="avatar">IF</div>
+        <div class="notif-panel" id="notifPanel"></div>
+        <a href="settings.html" class="avatar" id="topbarAvatar" title="Personal Settings" style="text-decoration:none;">IA</a>
       </div>
     </header>
 
     <main class="content">
 
-      <div class="greeting">
-        <h1>Good morning, Ifty</h1>
-        <p>Here's how your family is doing today.</p>
+      <!-- Greeting & Actions -->
+      <div class="greeting" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:var(--space-2);">
+        <div>
+          <h1 id="greetingName">Good morning, Ifty</h1>
+          <p id="greetingSub">Here is your personal health overview for today.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <button type="button" onclick="openEmergencyModal()" class="btn-hm btn-ghost" style="color:var(--color-error);border-color:#FCA5A5;background:#FEF2F2;font-size:0.8rem;padding:6px 12px;font-weight:600;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Emergency ID
+          </button>
+          <a href="report.html" class="btn-hm btn-ghost" style="font-size:0.8rem;padding:6px 12px;text-decoration:none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Doctor's Report
+          </a>
+          <div id="todayDateBadge" style="font-size:0.82rem;font-weight:500;color:var(--color-primary);background:var(--color-primary-tint);padding:6px 12px;border-radius:var(--radius-pill);">
+            Today
+          </div>
+        </div>
       </div>
 
-      <!-- ============ MY TODAY (owner's own snapshot) ============ -->
-      <section class="section">
-        <div class="section-head">
-          <h2>Your day</h2>
-          <p>Full medicine schedule and routine checklist arrive in the next phase — this is a quick snapshot for now.</p>
-        </div>
-        <div class="panel progress-ring-wrap">
-          <svg width="86" height="86" viewBox="0 0 86 86">
-            <circle cx="43" cy="43" r="36" fill="none" stroke="var(--color-border)" stroke-width="8"/>
-            <circle cx="43" cy="43" r="36" fill="none" stroke="var(--color-primary)" stroke-width="8"
-              stroke-dasharray="226" stroke-dashoffset="56" stroke-linecap="round" transform="rotate(-90 43 43)"/>
-            <text x="43" y="49" text-anchor="middle" font-family="Poppins" font-size="18" font-weight="600" fill="var(--color-text)">75%</text>
-          </svg>
-          <div style="flex:1;min-width:220px;">
-            <div class="member-stat-row"><span>Medicine</span><b>1/1 completed</b></div>
-            <div class="member-stat-row"><span>Routine</span><b>90%</b></div>
-            <div class="member-stat-row"><span>Next up</span><b>Evening walk, 6:00 PM</b></div>
+      <!-- Low Stock Refill Alert Banner (Shown dynamically when needed) -->
+      <div id="dashRefillAlert" class="panel" style="display:none;background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.3);padding:var(--space-3) var(--space-4);margin-bottom:var(--space-4);">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
+          <div style="display:flex;align-items:center;gap:var(--space-2);">
+            <span style="font-size:1.1rem;">⚠️</span>
+            <div>
+              <b style="font-size:0.9rem;color:var(--color-text);">Medicine Supply Attention Needed</b>
+              <div id="dashRefillAlertText" style="font-size:0.8rem;color:var(--color-text-muted);">One or more medicines have reached their low stock alert threshold.</div>
+            </div>
           </div>
+          <div style="display:flex;gap:var(--space-2);">
+            <a href="medicines.html" class="btn-hm btn-primary" style="font-size:0.8rem;padding:6px 12px;background:var(--color-warning,#D97706);border-color:var(--color-warning,#D97706);text-decoration:none;">
+              Manage Supplies →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ QUICK ACTIONS ============ -->
+      <div class="quick-actions-row">
+        <a href="medicines.html" class="quick-action-card qa-theme-meds">
+          <div class="qa-icon" style="background:var(--color-primary);color:#FFFFFF;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/><line x1="12" y1="12" x2="12" y2="15"/></svg>
+          </div>
+          <div class="qa-text">
+            <div class="qa-title" style="color:var(--color-primary-dark);">Add Medicine</div>
+            <div class="qa-sub" style="color:var(--color-text-muted);">Log prescription</div>
+          </div>
+        </a>
+
+        <a href="routine.html" class="quick-action-card qa-theme-routine">
+          <div class="qa-icon" style="background:var(--color-secondary);color:#FFFFFF;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <div class="qa-text">
+            <div class="qa-title" style="color:var(--color-secondary);">Log Routine</div>
+            <div class="qa-sub" style="color:var(--color-text-muted);">Track habits</div>
+          </div>
+        </a>
+
+        <div class="quick-action-card qa-theme-vitals" onclick="openQuickVitalsModal()">
+          <div class="qa-icon" style="background:var(--color-accent);color:#FFFFFF;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+          </div>
+          <div class="qa-text">
+            <div class="qa-title" style="color:#BF5338;">Log Vitals</div>
+            <div class="qa-sub" style="color:var(--color-text-muted);">Record vitals</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ TODAY'S OVERVIEW & VITALS ============ -->
+      <section class="section">
+        <div class="dash-grid-2">
+          
+          <!-- Card 1: Today's Health Status (Hero Featured Card in Deep Juniper) -->
+          <div class="today-hero-card">
+            <div class="hero-card-header">
+              <div>
+                <h2>Today's Health Status</h2>
+                <p>Daily medicines and routine progress</p>
+              </div>
+              <div class="hero-status-badge" id="dashStatusBadge">
+                <span class="status-pulse-dot"></span>
+                <span id="dashStatusBadgeText">On Track</span>
+              </div>
+            </div>
+
+            <div class="hero-metrics-body">
+              <div class="hero-ring-container">
+                <svg width="86" height="86" viewBox="0 0 86 86">
+                  <defs>
+                    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#2DD4BF" />
+                      <stop offset="100%" stop-color="#14B8A6" />
+                    </linearGradient>
+                  </defs>
+                  <circle cx="43" cy="43" r="36" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="8"/>
+                  <circle id="ownerRingCircle" cx="43" cy="43" r="36" fill="none" stroke="url(#ringGrad)" stroke-width="8"
+                    stroke-dasharray="226" stroke-dashoffset="56" stroke-linecap="round" transform="rotate(-90 43 43)"/>
+                  <text id="ownerRingText" x="43" y="48" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">80%</text>
+                  <text x="43" y="60" text-anchor="middle" font-family="'Inter', sans-serif" font-size="7.5" font-weight="600" fill="rgba(255,255,255,0.72)" letter-spacing="0.5">COMPLETED</text>
+                </svg>
+              </div>
+
+              <div class="hero-stat-tiles">
+                <!-- Tile 1: Medicines -->
+                <div class="hero-tile">
+                  <div class="hero-tile-top">
+                    <div class="hero-tile-icon" style="background:rgba(45,212,191,0.22);color:#5EEAD4;">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
+                    </div>
+                    <span class="hero-tile-label">Medicines</span>
+                  </div>
+                  <div class="hero-tile-val" id="dashMedStat">2/3 completed</div>
+                  <div class="hero-mini-bar">
+                    <div class="hero-mini-bar-fill" id="dashMedBar" style="width:66%;"></div>
+                  </div>
+                </div>
+
+                <!-- Tile 2: Routines -->
+                <div class="hero-tile">
+                  <div class="hero-tile-top">
+                    <div class="hero-tile-icon" style="background:rgba(224,122,95,0.25);color:#F6A893;">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>
+                    </div>
+                    <span class="hero-tile-label">Routines</span>
+                  </div>
+                  <div class="hero-tile-val" id="dashRoutineStat">75% done</div>
+                  <div class="hero-mini-bar">
+                    <div class="hero-mini-bar-fill" id="dashRoutineBar" style="width:75%;background:#E07A5F;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Next Up Banner -->
+            <div class="hero-nextup-banner">
+              <div class="hero-nextup-info">
+                <div class="hero-nextup-badge">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div class="hero-nextup-details">
+                  <span class="hero-nextup-tag">NEXT UP</span>
+                  <span class="hero-nextup-title" id="dashNextUp">Omega-3 at 9:00 PM</span>
+                </div>
+              </div>
+              <a href="medicines.html" class="hero-nextup-action">
+                View Schedule →
+              </a>
+            </div>
+          </div>
+
+          <!-- Card 2: My Health Vitals (Latest readings with clean color-coded accents) -->
+          <div class="hm-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div class="section-head" style="margin-bottom:0;">
+                <h2 style="font-size:1.05rem;">My Health Vitals</h2>
+                <p style="font-size:0.8rem;">Recent physiological indicators.</p>
+              </div>
+              <a href="records.html" class="btn-hm btn-ghost" style="font-size:0.78rem;padding:4px 8px;text-decoration:none;">
+                History →
+              </a>
+            </div>
+
+            <div class="vitals-summary-grid">
+              <div class="vital-metric-card vm-bp">
+                <div class="vm-label">Blood Pressure</div>
+                <div class="vm-value" id="vitalBpVal">118/78</div>
+                <div class="vm-sub" id="vitalBpSub">mmHg · Normal range</div>
+              </div>
+              <div class="vital-metric-card vm-sugar">
+                <div class="vm-label">Blood Sugar</div>
+                <div class="vm-value" id="vitalSugarVal">92</div>
+                <div class="vm-sub" id="vitalSugarSub">mg/dL · Fasting</div>
+              </div>
+              <div class="vital-metric-card vm-weight">
+                <div class="vm-label">Body Weight</div>
+                <div class="vm-value" id="vitalWeightVal">70.5</div>
+                <div class="vm-sub" id="vitalWeightSub">kg · Latest check</div>
+              </div>
+              <div class="vital-metric-card vm-blood">
+                <div class="vm-label">Blood Group</div>
+                <div class="vm-value" id="vitalBloodVal">B+</div>
+                <div class="vm-sub" id="vitalBloodSub">Rh positive</div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
-      <!-- ============ FAMILY OVERVIEW (owner-only) ============ -->
+      <!-- ============ TODAY'S SCHEDULE & HABITS (Compact Segmented Widget) ============ -->
       <section class="section">
-        <div class="section-head">
-          <h2>Family overview</h2>
-          <p>A quick look at everyone's progress today. Tap a member to open their full profile.</p>
+        <div class="today-tab-switcher-wrap">
+          <div class="segmented-control" role="tablist" aria-label="Today items toggle">
+            <button type="button" class="segmented-pill active" id="tabBtnMeds" onclick="switchTodayTab('meds')" role="tab" aria-selected="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
+              <span>Medicines</span>
+              <span class="pill-count" id="medsPillCount">0</span>
+            </button>
+            <button type="button" class="segmented-pill" id="tabBtnRoutines" onclick="switchTodayTab('routines')" role="tab" aria-selected="false">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+              <span>Habits</span>
+              <span class="pill-count" id="routinesPillCount">0</span>
+            </button>
+          </div>
+          <a id="todayTabLink" href="medicines.html" class="today-tab-viewall">
+            All Medicines →
+          </a>
         </div>
-        <div class="family-overview-grid">
-          <a href="member-profile.html?id=ammu&as=owner" class="hm-card" style="text-decoration:none;color:inherit;display:block;">
-            <div class="member-card-head">
-              <div class="member-avatar">AM</div>
-              <div>
-                <div style="font-weight:600;font-size:0.92rem;color:var(--color-text);">Ammu</div>
-                <div style="font-size:0.78rem;color:var(--color-text-muted);">Next: Medicine at 9:00 PM</div>
-              </div>
-            </div>
-            <div class="member-stat-row"><span>Medicine</span><b>3/4 completed</b></div>
-            <div class="member-stat-row"><span>Routine</span><b>80%</b></div>
-          </a>
 
-          <a href="member-profile.html?id=abbu&as=owner" class="hm-card" style="text-decoration:none;color:inherit;display:block;">
-            <div class="member-card-head">
-              <div class="member-avatar">AB</div>
-              <div>
-                <div style="font-weight:600;font-size:0.92rem;color:var(--color-text);">Abbu</div>
-                <div style="font-size:0.78rem;color:var(--color-text-muted);">Next: Blood pressure check</div>
-              </div>
-            </div>
-            <div class="member-stat-row"><span>Medicine</span><b>2/3 completed</b></div>
-            <div class="member-stat-row"><span>Routine</span><b>60%</b></div>
-          </a>
+        <div class="panel today-items-panel" style="padding:0;overflow:hidden;">
+          <div id="todayMedsView">
+            <div id="dashboardMedsList"></div>
+          </div>
+          <div id="todayRoutinesView" style="display:none;">
+            <div id="dashboardRoutinesList"></div>
+          </div>
         </div>
       </section>
 
@@ -151,17 +1001,534 @@
 <!-- Bottom nav (mobile) -->
 <nav class="bottom-nav">
   <a class="active" href="dashboard.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Dashboard</a>
-  <a href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>Medicines</a>
-  <a href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Routine</a>
-  <a href="family.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 19c0-3.3 3-5.5 6.5-5.5s6.5 2.2 6.5 5.5"/></svg>Family</a>
-  <a href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82"/></svg>Settings</a>
+  <a href="medicines.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>Medicines</a>
+  <a href="routine.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Routine</a>
+  <a href="records.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>Records</a>
+  <a href="settings.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82"/></svg>Settings</a>
 </nav>
+
+<!-- Quick Vitals Modal -->
+<div class="modal-hm-backdrop" id="quickVitalsModal">
+  <div class="modal-hm" style="max-width:420px;">
+    <h3>Log Health Vitals</h3>
+    <form id="quickVitalsForm">
+      <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+        <div class="field">
+          <label for="vitalTypeSelect">Measurement Type</label>
+          <select id="vitalTypeSelect" onchange="onVitalTypeChange(this.value)">
+            <option value="bp">Blood Pressure (mmHg)</option>
+            <option value="sugar">Blood Sugar (mg/dL)</option>
+            <option value="weight">Body Weight (kg)</option>
+            <option value="temp">Body Temperature (°F)</option>
+          </select>
+        </div>
+
+        <div id="dynamicVitalFields">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="field">
+          <label for="vitalDateInput">Date</label>
+          <input type="date" id="vitalDateInput" required>
+        </div>
+
+        <div class="field">
+          <label for="vitalNoteInput">Note (optional)</label>
+          <input type="text" id="vitalNoteInput" placeholder="e.g. Before breakfast, rested">
+        </div>
+      </div>
+      <div class="modal-hm-actions">
+        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('quickVitalsModal')">Cancel</button>
+        <button type="submit" class="btn-hm btn-primary">Save Reading</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <div class="toast-hm" id="toastHm">
   <span class="dot-success"></span>
   <span>Saved</span>
 </div>
 
+<script src="js/store.js"></script>
 <script src="js/app.js"></script>
+<script>
+  const TODAY_WEEK_INDEX = 4; // Friday in current week reference
+
+  function renderDashboard() {
+    if (!window.HMStore) return;
+
+    const user = HMStore.getUser();
+    const initials = user.initials || (user.name ? user.name.slice(0, 2).toUpperCase() : 'IA');
+
+    // Update greeting and avatar
+    const nameEl = document.getElementById('greetingName');
+    if (nameEl) nameEl.textContent = `Good morning, ${user.name || 'there'}`;
+
+    const avatarEl = document.getElementById('topbarAvatar');
+    if (avatarEl) avatarEl.textContent = initials;
+
+    // Set today date badge
+    const todayBadge = document.getElementById('todayDateBadge');
+    if (todayBadge) {
+      const now = new Date();
+      const options = { weekday: 'short', day: 'numeric', month: 'short' };
+      todayBadge.textContent = now.toLocaleDateString('en-US', options);
+    }
+
+    // Dynamic stats and progress ring
+    const stats = HMStore.getOwnerTodayStats();
+    const medStatEl = document.getElementById('dashMedStat');
+    if (medStatEl) medStatEl.textContent = `${stats.doneMeds}/${stats.totalMeds} completed`;
+    
+    const routineStatEl = document.getElementById('dashRoutineStat');
+    if (routineStatEl) routineStatEl.textContent = `${stats.routinePct}% done`;
+    
+    const nextUpEl = document.getElementById('dashNextUp');
+    if (nextUpEl) nextUpEl.textContent = stats.nextUpText;
+    
+    const ringTextEl = document.getElementById('ownerRingText');
+    if (ringTextEl) ringTextEl.textContent = `${stats.overallPct}%`;
+
+    const medBarEl = document.getElementById('dashMedBar');
+    if (medBarEl) {
+      const medPct = stats.totalMeds > 0 ? Math.round((stats.doneMeds / stats.totalMeds) * 100) : 100;
+      medBarEl.style.width = `${medPct}%`;
+    }
+
+    const routineBarEl = document.getElementById('dashRoutineBar');
+    if (routineBarEl) {
+      routineBarEl.style.width = `${stats.routinePct}%`;
+    }
+
+    const badgeTextEl = document.getElementById('dashStatusBadgeText');
+    if (badgeTextEl) {
+      if (stats.overallPct >= 100) {
+        badgeTextEl.textContent = 'All Completed 🎉';
+      } else if (stats.overallPct >= 50) {
+        badgeTextEl.textContent = 'On Track';
+      } else {
+        badgeTextEl.textContent = 'In Progress';
+      }
+    }
+
+    const ringCircle = document.getElementById('ownerRingCircle');
+    if (ringCircle) {
+      const offset = Math.round(226 - (226 * stats.overallPct / 100));
+      ringCircle.setAttribute('stroke-dashoffset', offset);
+    }
+
+    // Refill Alert Banner
+    const refillAlerts = HMStore.getRefillAlerts ? HMStore.getRefillAlerts() : [];
+    const refillBanner = document.getElementById('dashRefillAlert');
+    const refillText = document.getElementById('dashRefillAlertText');
+    if (refillBanner) {
+      if (refillAlerts.length > 0) {
+        refillBanner.style.display = 'block';
+        if (refillText) {
+          const names = refillAlerts.map(m => `${m.name} (${m.stock} ${m.unit || 'left'})`).join(', ');
+          refillText.textContent = `Low supply detected: ${names}. Refill recommended.`;
+        }
+      } else {
+        refillBanner.style.display = 'none';
+      }
+    }
+
+    // Update Today's Switcher Counts
+    const meds = HMStore.getMedicines();
+    const routines = HMStore.getRoutines();
+    const medsPill = document.getElementById('medsPillCount');
+    if (medsPill) medsPill.textContent = meds.length;
+    const routinesPill = document.getElementById('routinesPillCount');
+    if (routinesPill) routinesPill.textContent = routines.length;
+
+    // Render Vitals from records
+    renderVitalsCard(user);
+
+    // Render Today's Medicines list
+    renderDashboardMeds();
+
+    // Render Today's Routines list
+    renderDashboardRoutines();
+  }
+
+  let currentTodayTab = 'meds';
+  function switchTodayTab(tab) {
+    currentTodayTab = tab;
+    const medsView = document.getElementById('todayMedsView');
+    const routinesView = document.getElementById('todayRoutinesView');
+    const tabBtnMeds = document.getElementById('tabBtnMeds');
+    const tabBtnRoutines = document.getElementById('tabBtnRoutines');
+    const tabLink = document.getElementById('todayTabLink');
+
+    if (tab === 'meds') {
+      if (medsView) medsView.style.display = 'block';
+      if (routinesView) routinesView.style.display = 'none';
+      if (tabBtnMeds) {
+        tabBtnMeds.classList.add('active');
+        tabBtnMeds.setAttribute('aria-selected', 'true');
+      }
+      if (tabBtnRoutines) {
+        tabBtnRoutines.classList.remove('active');
+        tabBtnRoutines.setAttribute('aria-selected', 'false');
+      }
+      if (tabLink) {
+        tabLink.href = 'medicines.html';
+        tabLink.textContent = 'All Medicines →';
+      }
+    } else {
+      if (medsView) medsView.style.display = 'none';
+      if (routinesView) routinesView.style.display = 'block';
+      if (tabBtnMeds) {
+        tabBtnMeds.classList.remove('active');
+        tabBtnMeds.setAttribute('aria-selected', 'false');
+      }
+      if (tabBtnRoutines) {
+        tabBtnRoutines.classList.add('active');
+        tabBtnRoutines.setAttribute('aria-selected', 'true');
+      }
+      if (tabLink) {
+        tabLink.href = 'routine.html';
+        tabLink.textContent = 'All Routines →';
+      }
+    }
+  }
+
+  function renderVitalsCard(user) {
+    const records = HMStore.getRecords();
+
+    // BP
+    const bpList = records.bp || [];
+    if (bpList.length > 0) {
+      const latest = bpList[bpList.length - 1];
+      document.getElementById('vitalBpVal').textContent = `${latest.systolic}/${latest.diastolic}`;
+      document.getElementById('vitalBpSub').textContent = `mmHg · ${latest.systolic < 120 && latest.diastolic < 80 ? 'Optimal' : 'Normal range'}`;
+    }
+
+    // Sugar
+    const sugarList = records.sugar || [];
+    if (sugarList.length > 0) {
+      const latest = sugarList[sugarList.length - 1];
+      document.getElementById('vitalSugarVal').textContent = latest.value;
+      document.getElementById('vitalSugarSub').textContent = `mg/dL · ${latest.context || 'Fasting'}`;
+    }
+
+    // Weight
+    const weightList = records.weight || [];
+    if (weightList.length > 0) {
+      const latest = weightList[weightList.length - 1];
+      document.getElementById('vitalWeightVal').textContent = latest.value;
+      document.getElementById('vitalWeightSub').textContent = `kg · ${latest.date || 'Recent'}`;
+    }
+
+    // Blood
+    document.getElementById('vitalBloodVal').textContent = user.blood || 'B+';
+    document.getElementById('vitalBloodSub').textContent = 'Blood type recorded';
+  }
+
+  function renderDashboardMeds() {
+    const container = document.getElementById('dashboardMedsList');
+    if (!container) return;
+
+    const meds = HMStore.getMedicines();
+    if (meds.length === 0) {
+      container.innerHTML = `
+        <div style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font-size:0.88rem;">
+          No medicines scheduled for today. <a href="medicines.html" style="color:var(--color-primary);font-weight:500;">+ Add a medicine</a>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = meds.map(m => {
+      const isTaken = m.status === 'taken';
+      const isLow = typeof m.stock === 'number' && m.stock <= (m.refillThreshold || 5);
+
+      return `
+        <div class="today-med-row ${isTaken ? 'is-taken' : ''}">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:${isTaken ? 'var(--color-success)' : 'var(--color-primary-tint)'};color:${isTaken ? '#FFFFFF' : 'var(--color-primary)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              ${isTaken 
+                ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+                : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>'
+              }
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:0.92rem;color:var(--color-text);">${m.name}</div>
+              <div style="font-size:0.78rem;color:var(--color-text-muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px;">
+                <span>${m.time}</span>
+                <span>•</span>
+                <span>${m.dosage}</span>
+                <span>•</span>
+                <span>${m.meal || 'As directed'}</span>
+                ${isLow ? `<span class="badge-hm badge-warning" style="font-size:0.7rem;padding:2px 6px;">${m.stock} left</span>` : ''}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            ${isTaken 
+              ? `<button type="button" class="btn-hm btn-ghost" onclick="toggleMedStatus(${m.id})" style="font-size:0.8rem;color:var(--color-success);font-weight:600;border:1px solid rgba(16,185,129,0.3);background:rgba(16,185,129,0.06);">
+                   ✓ Taken
+                 </button>`
+              : `<button type="button" class="btn-hm btn-primary" onclick="toggleMedStatus(${m.id})" style="font-size:0.8rem;padding:6px 12px;">
+                   Mark Taken
+                 </button>`
+            }
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function toggleMedStatus(medId) {
+    const meds = HMStore.getMedicines();
+    const med = meds.find(m => m.id === medId);
+    if (!med) return;
+
+    if (med.status === 'taken') {
+      med.status = 'upcoming';
+      if (typeof med.stock === 'number') med.stock += 1;
+      showToast(`${med.name} marked pending`);
+    } else {
+      med.status = 'taken';
+      if (typeof med.stock === 'number') med.stock = Math.max(0, med.stock - 1);
+      showToast(`${med.name} recorded as taken`);
+    }
+
+    HMStore.saveMedicines(meds);
+    renderDashboard();
+  }
+
+  function renderDashboardRoutines() {
+    const container = document.getElementById('dashboardRoutinesList');
+    if (!container) return;
+
+    const routines = HMStore.getRoutines();
+    if (routines.length === 0) {
+      container.innerHTML = `
+        <div style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font-size:0.88rem;">
+          No habits configured yet. <a href="routine.html" style="color:var(--color-primary);font-weight:500;">+ Add a routine</a>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = routines.map(r => {
+      const isDone = !!(r.week && r.week[TODAY_WEEK_INDEX]);
+
+      return `
+        <div class="today-routine-row">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="routine-checkbox ${isDone ? 'done' : ''}" onclick="toggleRoutineStatus(${r.id})">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:0.92rem;${isDone ? 'text-decoration:line-through;color:var(--color-text-muted);' : 'color:var(--color-text);'}">${r.name}</div>
+              <div style="font-size:0.78rem;color:var(--color-text-muted);margin-top:2px;">
+                ${r.category || 'Habit'} · Target: ${r.target || 'Daily'}
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size:0.8rem;color:${isDone ? 'var(--color-success)' : 'var(--color-text-muted)'};font-weight:500;">
+            ${isDone ? 'Done today' : 'Pending'}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function toggleRoutineStatus(routineId) {
+    const routines = HMStore.getRoutines();
+    const r = routines.find(item => item.id === routineId);
+    if (!r) return;
+
+    if (!Array.isArray(r.week)) {
+      r.week = [false, false, false, false, false, false, false];
+    }
+
+    r.week[TODAY_WEEK_INDEX] = !r.week[TODAY_WEEK_INDEX];
+    HMStore.saveRoutines(routines);
+    showToast(r.week[TODAY_WEEK_INDEX] ? `Completed: ${r.name}` : `Marked incomplete: ${r.name}`);
+    renderDashboard();
+  }
+
+  // Quick Vitals modal handling
+  function openQuickVitalsModal() {
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('vitalDateInput').value = today;
+    onVitalTypeChange(document.getElementById('vitalTypeSelect').value);
+    openModal('quickVitalsModal');
+  }
+
+  function onVitalTypeChange(type) {
+    const container = document.getElementById('dynamicVitalFields');
+    if (!container) return;
+
+    if (type === 'bp') {
+      container.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);">
+          <div class="field">
+            <label for="fSystolic">Systolic (mmHg)</label>
+            <input type="number" id="fSystolic" placeholder="120" value="120" required>
+          </div>
+          <div class="field">
+            <label for="fDiastolic">Diastolic (mmHg)</label>
+            <input type="number" id="fDiastolic" placeholder="80" value="80" required>
+          </div>
+        </div>
+      `;
+    } else if (type === 'sugar') {
+      container.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);">
+          <div class="field">
+            <label for="fSugarVal">Sugar (mg/dL)</label>
+            <input type="number" id="fSugarVal" placeholder="95" value="95" required>
+          </div>
+          <div class="field">
+            <label for="fSugarCtx">Context</label>
+            <select id="fSugarCtx">
+              <option value="Fasting" selected>Fasting</option>
+              <option value="After meal">After meal</option>
+              <option value="Random">Random</option>
+            </select>
+          </div>
+        </div>
+      `;
+    } else if (type === 'weight') {
+      container.innerHTML = `
+        <div class="field">
+          <label for="fWeightVal">Weight (kg)</label>
+          <input type="number" step="0.1" id="fWeightVal" placeholder="70.5" value="70.5" required>
+        </div>
+      `;
+    } else if (type === 'temp') {
+      container.innerHTML = `
+        <div class="field">
+          <label for="fTempVal">Temperature (°F)</label>
+          <input type="number" step="0.1" id="fTempVal" placeholder="98.6" value="98.6" required>
+        </div>
+      `;
+    }
+  }
+
+  document.getElementById('quickVitalsForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const type = document.getElementById('vitalTypeSelect').value;
+    const date = document.getElementById('vitalDateInput').value;
+    const note = document.getElementById('vitalNoteInput').value.trim();
+
+    const records = HMStore.getRecords();
+    if (!records[type]) records[type] = [];
+
+    const newId = Date.now();
+
+    if (type === 'bp') {
+      const systolic = parseInt(document.getElementById('fSystolic').value, 10);
+      const diastolic = parseInt(document.getElementById('fDiastolic').value, 10);
+      records.bp.push({ id: newId, memberId: 'owner', date, systolic, diastolic, note });
+    } else if (type === 'sugar') {
+      const value = parseInt(document.getElementById('fSugarVal').value, 10);
+      const context = document.getElementById('fSugarCtx').value;
+      records.sugar.push({ id: newId, memberId: 'owner', date, value, context, note });
+    } else if (type === 'weight') {
+      const value = parseFloat(document.getElementById('fWeightVal').value);
+      records.weight.push({ id: newId, memberId: 'owner', date, value, note });
+    } else if (type === 'temp') {
+      const value = parseFloat(document.getElementById('fTempVal').value);
+      records.temp.push({ id: newId, memberId: 'owner', date, value, note });
+    }
+
+    HMStore.saveRecords(records);
+    closeModal('quickVitalsModal');
+    showToast('Vital reading recorded');
+    renderDashboard();
+  });
+
+  function openEmergencyModal() {
+    const data = HMStore.getEmergencyData();
+    document.getElementById('emName').textContent = data.name;
+    document.getElementById('emAge').textContent = `${data.age} years • Personal Account`;
+    document.getElementById('emBlood').textContent = data.blood || 'B+';
+    
+    const phone = data.emergency || '+8801700000000';
+    document.getElementById('emCallBtn').href = `tel:${phone}`;
+    document.getElementById('emCallLabel').textContent = `Call Emergency: ${phone}`;
+    
+    document.getElementById('emAllergies').textContent = (data.allergies && data.allergies.length) ? data.allergies.join(', ') : 'None reported';
+    document.getElementById('emConditions').textContent = (data.conditions && data.conditions.length) ? data.conditions.join(', ') : 'None';
+    
+    const medsContainer = document.getElementById('emMedsList');
+    if (data.activeMeds && data.activeMeds.length > 0) {
+      medsContainer.innerHTML = data.activeMeds.map(m => `
+        <span style="display:inline-block;padding:2px 8px;background:var(--color-primary-tint);color:var(--color-primary-dark);border-radius:12px;font-size:0.75rem;font-weight:500;">
+          ${m.name} (${m.dosage})
+        </span>
+      `).join('');
+    } else {
+      medsContainer.innerHTML = '<span style="color:var(--color-text-muted);font-size:0.75rem;">No active medications</span>';
+    }
+
+    openModal('emergencyIdModal');
+  }
+
+  renderDashboard();
+</script>
+
+<!-- Emergency Medical ID Modal -->
+<div class="modal-hm-backdrop" id="emergencyIdModal">
+  <div class="modal-hm" style="max-width:480px;padding:var(--space-4);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:#FEF2F2;color:var(--color-error);font-weight:bold;">🚑</span>
+        <h3 style="margin:0;font-size:1.1rem;">Emergency Medical ID</h3>
+      </div>
+      <button type="button" class="icon-btn" onclick="closeModal('emergencyIdModal')" aria-label="Close" style="width:28px;height:28px;">✕</button>
+    </div>
+
+    <div class="emergency-card-visual" id="emCardVisual">
+      <div class="emergency-header">
+        <div>
+          <div style="font-size:1.2rem;font-weight:700;" id="emName">Ifty Ahmed</div>
+          <div style="font-size:0.8rem;color:var(--color-text-muted);" id="emAge">29 years • Personal Account</div>
+        </div>
+        <div class="emergency-blood-badge" id="emBloodBadge">
+          <span>BLOOD</span>
+          <b id="emBlood">B+</b>
+        </div>
+      </div>
+
+      <div style="margin: 12px 0;">
+        <a id="emCallBtn" href="tel:+8801700000000" class="emergency-call-btn" style="width:100%;justify-content:center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span id="emCallLabel">Call Emergency: +8801700000000</span>
+        </a>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.8rem;margin-top:10px;">
+        <div style="background:#FFFFFF;border:1px solid #FEE2E2;padding:8px 10px;border-radius:6px;">
+          <div style="font-weight:600;color:#DC2626;font-size:0.72rem;text-transform:uppercase;">Allergies</div>
+          <div id="emAllergies" style="font-weight:500;margin-top:2px;">Dust</div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid var(--color-border);padding:8px 10px;border-radius:6px;">
+          <div style="font-weight:600;color:var(--color-text-secondary);font-size:0.72rem;text-transform:uppercase;">Conditions</div>
+          <div id="emConditions" style="font-weight:500;margin-top:2px;">Mild seasonal allergy</div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;background:#FFFFFF;border:1px solid var(--color-border);padding:8px 10px;border-radius:6px;font-size:0.8rem;">
+        <div style="font-weight:600;color:var(--color-text-secondary);font-size:0.72rem;text-transform:uppercase;">Active Prescriptions</div>
+        <div id="emMedsList" style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:8px;">
+      <a href="report.html" class="btn-hm btn-ghost" style="font-size:0.82rem;padding:6px 12px;text-decoration:none;">Full Doctor's Report →</a>
+      <button type="button" class="btn-hm btn-secondary" onclick="closeModal('emergencyIdModal')">Done</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

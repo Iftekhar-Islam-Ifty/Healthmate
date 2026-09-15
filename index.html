@@ -4,26 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Healthmate — Log in</title>
-<meta name="description" content="One place for your family's everyday health — medicines, routines, and records.">
+<meta name="description" content="Your personal health management space — track medicines, daily routines, and health records in one place.">
 <meta property="og:title" content="Healthmate — Log in">
-<meta property="og:description" content="One place for your family's everyday health — medicines, routines, and records.">
+<meta property="og:description" content="Your personal health management space — track medicines, daily routines, and health records in one place.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
 <link href="css/style.css" rel="stylesheet">
 
 <style>
-  /* Page-specific layout only — components/tokens live in css/style.css */
   .login-shell {
     display: flex;
     min-height: 100vh;
+    background: var(--color-bg);
   }
 
   .login-brand-panel {
-    flex: 1;
-    background: linear-gradient(160deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    flex: 1.1;
+    background: linear-gradient(155deg, #0D6E6E 0%, #084848 50%, #053333 100%);
     color: white;
     display: flex;
     flex-direction: column;
@@ -33,170 +33,363 @@
     overflow: hidden;
   }
 
+  .login-brand-panel::before {
+    content: "";
+    position: absolute;
+    width: 480px;
+    height: 480px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(23, 162, 148, 0.28) 0%, rgba(13, 110, 110, 0) 70%);
+    right: -100px;
+    top: -80px;
+    pointer-events: none;
+  }
+
   .login-brand-panel::after {
     content: "";
     position: absolute;
-    width: 420px;
-    height: 420px;
+    width: 520px;
+    height: 520px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.06);
-    right: -140px;
+    background: radial-gradient(circle, rgba(224, 122, 95, 0.18) 0%, rgba(224, 122, 95, 0) 70%);
+    left: -140px;
     bottom: -160px;
+    pointer-events: none;
   }
 
   .login-brand-panel .brand { position: relative; z-index: 1; }
-  .login-brand-panel .brand-mark { background: rgba(255, 255, 255, 0.16); }
-  .login-brand-panel .brand-name { color: white; font-size: 1.2rem; }
+  .login-brand-panel .brand-mark {
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+  .login-brand-panel .brand-name {
+    color: white;
+    font-size: 1.28rem;
+    font-weight: 800;
+  }
 
   .login-brand-message {
     position: relative;
     z-index: 1;
-    max-width: 380px;
+    max-width: 420px;
   }
   .login-brand-message h1 {
-    color: white;
-    font-size: 1.7rem;
-    font-weight: 600;
-    line-height: 1.35;
+    color: #FFFFFF;
+    font-size: 2.1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
   }
   .login-brand-message p {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.92rem;
-    margin-top: var(--space-2);
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.98rem;
+    line-height: 1.6;
+    margin-top: var(--space-3);
+  }
+
+  .login-highlights {
+    margin-top: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .highlight-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    font-size: 0.86rem;
+    color: #FFFFFF;
+    font-weight: 500;
+  }
+
+  .highlight-item svg {
+    color: #8CE0D8;
+    flex-shrink: 0;
   }
 
   .login-brand-panel .foot-note {
     position: relative;
     z-index: 1;
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.65);
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .login-form-panel {
-    width: 460px;
+    width: 480px;
     flex-shrink: 0;
     background: var(--color-surface);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--space-5);
+    padding: var(--space-6) var(--space-5);
+    border-left: 1px solid var(--color-border);
   }
 
-  .login-form-inner { width: 100%; max-width: 320px; }
+  .login-form-inner {
+    width: 100%;
+    max-width: 340px;
+  }
 
   .login-form-inner h2 {
-    font-size: 1.4rem;
-    font-weight: 600;
-  }
-  .login-form-inner .sub {
-    color: var(--color-text-muted);
-    font-size: 0.88rem;
-    margin: var(--space-1) 0 var(--space-4);
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
   }
 
-  .login-form-fields { display: flex; flex-direction: column; gap: var(--space-3); }
+  .login-form-inner .sub {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    margin: 6px 0 var(--space-4);
+  }
+
+  .login-form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .password-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .password-input-wrap input {
+    padding-right: 42px !important;
+  }
+
+  .pw-toggle-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    transition: color var(--transition-fast);
+  }
+
+  .pw-toggle-btn:hover {
+    color: var(--color-text);
+  }
 
   .login-row-between {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 0.85rem;
+    font-size: 0.84rem;
   }
-  .login-row-between a { color: var(--color-primary); text-decoration: none; font-weight: 500; }
-  .login-row-between a:hover { text-decoration: underline; }
+  .login-row-between a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color var(--transition-fast);
+  }
+  .login-row-between a:hover {
+    color: var(--color-primary-dark);
+  }
+
+  .demo-badge-wrap {
+    margin-top: var(--space-4);
+    padding: 10px 14px;
+    background: var(--color-primary-soft);
+    border: 1px solid rgba(13, 110, 110, 0.15);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8rem;
+  }
+
+  .demo-badge-wrap .demo-info {
+    color: var(--color-text-secondary);
+  }
+
+  .demo-badge-wrap button {
+    background: var(--color-surface);
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    font-weight: 600;
+    font-size: 0.76rem;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .demo-badge-wrap button:hover {
+    background: var(--color-primary);
+    color: white;
+  }
 
   .mobile-brand {
     display: none;
     align-items: center;
-    gap: var(--space-2);
+    gap: 10px;
     margin-bottom: var(--space-4);
   }
 
   @media (max-width: 900px) {
     .login-brand-panel { display: none; }
-    .login-form-panel { width: 100%; padding: var(--space-4); }
+    .login-form-panel {
+      width: 100%;
+      padding: var(--space-5) var(--space-4);
+      border-left: none;
+    }
     .mobile-brand { display: flex; }
   }
 </style>
 </head>
 <body>
 
-<div class="login-shell">
+<div class="login-shell" id="loginContainer">
 
-  <!-- Left: brand / context panel (hidden on small screens) -->
-  <div class="login-brand-panel">
+  <!-- Left: Brand / Context panel (hidden on small screens) -->
+  <div class="login-brand-panel" id="brandSidePanel">
     <div class="brand">
       <div class="brand-mark">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
       </div>
       <span class="brand-name">Healthmate</span>
     </div>
 
     <div class="login-brand-message">
-      <h1>One place for your family's everyday health.</h1>
-      <p>Medicines, routines, and health records for everyone in your family — kept simple, kept private.</p>
+      <h1>Your personal health space, simplified.</h1>
+      <p>Medicines, daily routines, and health records organized in one private, purposeful dashboard.</p>
+
+      <div class="login-highlights">
+        <div class="highlight-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
+          <span>Prescription schedules & refill reminders</span>
+        </div>
+        <div class="highlight-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          <span>Daily water intake, sleep & activity goals</span>
+        </div>
+        <div class="highlight-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+          <span>Blood pressure, sugar & body weight trends</span>
+        </div>
+      </div>
     </div>
 
-    <div class="foot-note">A private space for your family only.</div>
+    <div class="foot-note">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>Private & secure personal health tracking</span>
+    </div>
   </div>
 
-  <!-- Right: login form -->
-  <div class="login-form-panel">
+  <!-- Right: Login Form -->
+  <div class="login-form-panel" id="formSidePanel">
     <div class="login-form-inner">
 
       <div class="mobile-brand">
-        <div class="brand-mark" style="background:var(--color-primary);">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
+        <div class="brand-mark" style="background:var(--color-primary);color:white;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
         </div>
         <span class="brand-name">Healthmate</span>
       </div>
 
       <h2>Welcome back</h2>
-      <p class="sub">Log in to see today's health for your family.</p>
+      <p class="sub">Log in to manage your everyday health.</p>
 
       <form class="login-form-fields" id="loginForm" novalidate>
         <div class="field" id="emailField">
           <label for="email">Email</label>
-          <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
-          <span class="field-error">Enter the email you signed up with.</span>
+          <input type="email" id="email" placeholder="you@example.com" value="ifty@example.com" autocomplete="email" required>
+          <span class="field-error">Please enter your email address.</span>
         </div>
 
         <div class="field" id="passwordField">
           <label for="password">Password</label>
-          <input type="password" id="password" placeholder="Your password" autocomplete="current-password">
-          <span class="field-error">Enter your password.</span>
+          <div class="password-input-wrap">
+            <input type="password" id="password" placeholder="Enter your password" value="password123" autocomplete="current-password" required>
+            <button type="button" class="pw-toggle-btn" id="togglePwBtn" aria-label="Toggle password visibility">
+              <svg id="pwEyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <span class="field-error">Please enter your password.</span>
         </div>
 
         <div class="login-row-between">
-          <label class="checkbox-row">
-            <input type="checkbox" checked>
+          <label class="checkbox-row" id="rememberMeLabel">
+            <input type="checkbox" id="rememberMe" checked>
             Keep me logged in
           </label>
-          <a href="#">Forgot password?</a>
+          <a href="#" id="forgotPasswordLink" onclick="event.preventDefault(); showToast('Password reset link sent to demo email');">Forgot password?</a>
         </div>
 
-        <button type="submit" class="btn-hm btn-primary btn-block">Log in</button>
+        <button type="submit" class="btn-hm btn-primary btn-block" id="loginSubmitBtn" style="padding:12px 18px;font-size:0.95rem;margin-top:4px;">
+          Log in
+        </button>
       </form>
+
+      <!-- Quick Demo Credentials helper -->
+      <div class="demo-badge-wrap" id="demoCredentialsBlock">
+        <div class="demo-info">
+          <b>Demo user:</b> ifty@example.com
+        </div>
+        <button type="button" id="fillDemoBtn" onclick="fillDemoCredentials()">Fill Demo</button>
+      </div>
+
+      <p style="margin-top:var(--space-4);text-align:center;font-size:0.88rem;color:var(--color-text-muted);">
+        New to Healthmate? <a href="register.html" style="color:var(--color-primary);font-weight:600;text-decoration:none;">Create an account</a>
+      </p>
 
     </div>
   </div>
 
 </div>
 
-<!-- Toast (for login feedback) -->
+<!-- Toast Feedback -->
 <div class="toast-hm" id="toastHm">
   <span class="dot-success"></span>
-  <span>Logged in</span>
+  <span id="toastMsg">Logged in</span>
 </div>
 
+<script src="js/store.js"></script>
 <script src="js/app.js"></script>
 <script>
-  /*
-    Placeholder auth flow: validates that fields aren't empty
-    and simulates a successful login. Real implementation will
-    replace the inside of this handler with an API call to
-    Laravel, keeping the same form ids and structure.
-  */
+  // Password Visibility Toggle
+  const togglePwBtn = document.getElementById('togglePwBtn');
+  const passwordInput = document.getElementById('password');
+  const pwEyeIcon = document.getElementById('pwEyeIcon');
+
+  if (togglePwBtn && passwordInput) {
+    togglePwBtn.addEventListener('click', function () {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      pwEyeIcon.innerHTML = isPassword
+        ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+        : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+    });
+  }
+
+  // Quick fill demo helper
+  function fillDemoCredentials() {
+    document.getElementById('email').value = 'ifty@example.com';
+    document.getElementById('password').value = 'password123';
+    showToast('Demo credentials filled');
+  }
+
+  // Form Submit Handler
   document.getElementById('loginForm').addEventListener('submit', function (e) {
     e.preventDefault();
 
@@ -212,10 +405,15 @@
 
     if (!valid) return;
 
-    showToast('Logged in — redirecting…');
-    setTimeout(() => { window.location.href = 'dashboard.html'; }, 700);
+    if (window.HMStore && typeof HMStore.login === 'function') {
+      HMStore.login(email.value, password.value);
+    }
+
+    showToast('Logged in — opening personal dashboard…');
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
   });
 </script>
 
 </body>
 </html>
+
