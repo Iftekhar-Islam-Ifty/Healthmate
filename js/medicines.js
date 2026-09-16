@@ -64,7 +64,7 @@ function renderRefillBanner() {
   }
   if (actionsEl) {
     actionsEl.innerHTML = lowStock.map(m => `
-      <button type="button" class="btn-hm btn-primary" style="font-size:0.8rem;padding:6px 12px;background:var(--color-warning,#D97706);border-color:var(--color-warning,#D97706);" onclick="quickRefill(${m.id})">
+      <button type="button" class="btn-hm btn-primary" style="font-size:0.8rem;padding:6px 12px;background:var(--color-warning,#D97706);border-color:var(--color-warning,#D97706);" onclick="quickRefill('${m.id}')">
         Refill ${m.name.split(' ')[0]} (+30)
       </button>
     `).join('');
@@ -90,7 +90,7 @@ function renderSchedule() {
 
     const actionBtn = m.status === 'taken'
       ? `<span style="font-size:0.8rem;color:var(--color-success);font-weight:500;">✓ Completed</span>`
-      : `<button class="btn-hm btn-secondary" style="padding:6px 14px;font-size:0.8rem;" onclick="markTaken(${m.id})">Mark as taken</button>`;
+      : `<button class="btn-hm btn-secondary" style="padding:6px 14px;font-size:0.8rem;" onclick="markTaken('${m.id}')">Mark as taken</button>`;
 
     return `
       <div class="med-row" style="flex-wrap:wrap;gap:var(--space-2);">
@@ -136,20 +136,20 @@ function renderMedicineList() {
           <div class="meta">${m.dosage || '1 tablet'} &middot; ${m.frequency} &middot; ${m.meal} &middot; ${m.time}</div>
           <div style="margin-top:4px;display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;">
             ${stockInfo}
-            <button type="button" class="btn-hm btn-ghost" style="font-size:0.75rem;padding:2px 8px;border:1px solid var(--color-border);" onclick="quickRefill(${m.id})">
+            <button type="button" class="btn-hm btn-ghost" style="font-size:0.75rem;padding:2px 8px;border:1px solid var(--color-border);" onclick="quickRefill('${m.id}')">
               + Refill stock
             </button>
           </div>
         </div>
         <div class="list-row-side">
           <label class="toggle" title="Reminder">
-            <input type="checkbox" ${m.reminder ? 'checked' : ''} onchange="toggleReminder(${m.id}, this.checked)">
+            <input type="checkbox" ${m.reminder ? 'checked' : ''} onchange="toggleReminder('${m.id}', this.checked)">
             <span class="toggle-track"></span>
           </label>
-          <button class="icon-action" title="Edit" onclick="openEditMedicine(${m.id})">
+          <button class="icon-action" title="Edit" onclick="openEditMedicine('${m.id}')">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
           </button>
-          <button class="icon-action danger" title="Remove" onclick="askDeleteMedicine(${m.id})">
+          <button class="icon-action danger" title="Remove" onclick="askDeleteMedicine('${m.id}')">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
           </button>
         </div>
@@ -158,14 +158,10 @@ function renderMedicineList() {
   }).join('');
 }
 
-function markTaken(id) {
-  const med = medicines.find(m => m.id === id);
+async function markTaken(id) {
+  const med = await HMStore.markMedicineTaken(id);
   if (!med) return;
-  med.status = 'taken';
-  if (typeof med.stock === 'number' && med.stock > 0) {
-    med.stock -= 1;
-  }
-  persistMedicines();
+  medicines = HMStore.getMedicines();
   renderSchedule();
   renderMedicineList();
   renderRefillBanner();
@@ -178,11 +174,10 @@ function markTaken(id) {
   }
 }
 
-function quickRefill(id, amount = 30) {
-  const med = medicines.find(m => m.id === id);
+async function quickRefill(id, amount = 30) {
+  const med = await HMStore.refillStock(id, amount);
   if (!med) return;
-  med.stock = (med.stock || 0) + amount;
-  persistMedicines();
+  medicines = HMStore.getMedicines();
   renderSchedule();
   renderMedicineList();
   renderRefillBanner();
@@ -190,11 +185,13 @@ function quickRefill(id, amount = 30) {
   showToast(`Refilled +${amount} pills for ${med.name} (Total: ${med.stock})`);
 }
 
-function toggleReminder(id, checked) {
-  const med = medicines.find(m => m.id === id);
+async function toggleReminder(id, checked) {
+  medicines = HMStore.getMedicines();
+  const med = medicines.find(m => String(m.id) === String(id));
   if (!med) return;
   med.reminder = checked;
-  persistMedicines();
+  await HMStore.saveMedicine(med);
+  medicines = HMStore.getMedicines();
   showToast(`Reminder ${checked ? 'enabled' : 'disabled'} for ${med.name}`);
 }
 
@@ -212,7 +209,8 @@ function openAddMedicine() {
 }
 
 function openEditMedicine(id) {
-  const med = medicines.find(m => m.id === id);
+  medicines = HMStore.getMedicines();
+  const med = medicines.find(m => String(m.id) === String(id));
   if (!med) return;
   document.getElementById('medicineModalTitle').textContent = 'Edit medicine';
   document.getElementById('medId').value = med.id;
@@ -236,10 +234,12 @@ function askDeleteMedicine(id) {
   openModal('deleteMedModal');
 }
 
-function confirmDeleteMedicine() {
-  medicines = medicines.filter(m => m.id !== pendingDeleteId);
-  pendingDeleteId = null;
-  persistMedicines();
+async function confirmDeleteMedicine() {
+  if (pendingDeleteId) {
+    await HMStore.deleteMedicine(pendingDeleteId);
+    medicines = HMStore.getMedicines();
+    pendingDeleteId = null;
+  }
   closeModal('deleteMedModal');
   renderSchedule();
   renderMedicineList();
@@ -248,7 +248,7 @@ function confirmDeleteMedicine() {
   showToast('Medicine removed');
 }
 
-document.getElementById('medicineForm').addEventListener('submit', function (e) {
+document.getElementById('medicineForm').addEventListener('submit', async function (e) {
   e.preventDefault();
 
   const idVal = document.getElementById('medId').value;
@@ -275,17 +275,17 @@ document.getElementById('medicineForm').addEventListener('submit', function (e) 
   if (!data.name) return;
 
   if (idVal) {
-    const med = medicines.find(m => m.id === Number(idVal));
+    medicines = HMStore.getMedicines();
+    const med = medicines.find(m => String(m.id) === String(idVal));
     if (med) Object.assign(med, data);
-    persistMedicines();
-    showToast('Medicine updated');
+    await HMStore.saveMedicine(med || { id: idVal, ...data });
+    showToast('Medicine updated in cloud');
   } else {
-    const nextMedId = medicines.length > 0 ? Math.max(...medicines.map(m => m.id)) + 1 : 1;
-    medicines.push({ id: nextMedId, status: 'upcoming', ...data });
-    persistMedicines();
-    showToast('Medicine added');
+    await HMStore.saveMedicine({ status: 'upcoming', ...data });
+    showToast('Medicine saved to cloud');
   }
 
+  medicines = HMStore.getMedicines();
   closeModal('medicineModal');
   renderSchedule();
   renderMedicineList();
@@ -298,3 +298,13 @@ initPageHeader();
 renderRefillBanner();
 renderSchedule();
 renderMedicineList();
+
+if (window.HMStore && typeof HMStore.fetchMedicinesAndRoutines === 'function') {
+  HMStore.fetchMedicinesAndRoutines().then(() => {
+    medicines = HMStore.getMedicines();
+    renderRefillBanner();
+    renderSchedule();
+    renderMedicineList();
+    if (window.initAppShell) initAppShell();
+  });
+}

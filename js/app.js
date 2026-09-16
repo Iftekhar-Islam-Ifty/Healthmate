@@ -62,9 +62,9 @@ function toggleProfileMenu() {
   if (menu) menu.classList.toggle('show');
 }
 
-function logoutUser() {
+async function logoutUser() {
   if (window.HMStore && typeof HMStore.logout === 'function') {
-    HMStore.logout();
+    await HMStore.logout();
   }
   showToast('Logged out successfully');
   setTimeout(() => {
@@ -72,8 +72,33 @@ function logoutUser() {
   }, 400);
 }
 
+// Session Guard: Checks Supabase session on protected pages
+async function checkAuthSession() {
+  const path = window.location.pathname.toLowerCase();
+  const isAuthPage = path.endsWith('index.html') || path.endsWith('register.html') || path === '/' || path === '';
+
+  if (window.hmSupabase) {
+    try {
+      const { data: { session } } = await window.hmSupabase.auth.getSession();
+      if (session && session.user) {
+        if (isAuthPage) {
+          window.location.href = 'dashboard.html';
+        }
+      } else {
+        if (!isAuthPage && window.HMStore && !HMStore.isAuthenticated()) {
+          window.location.href = 'index.html';
+        }
+      }
+    } catch (e) {
+      console.warn('[Healthmate] Session check error:', e);
+    }
+  }
+}
+
 // Sync topbar and dynamic notifications for personal user
 function initAppShell() {
+  checkAuthSession();
+
   if (!window.HMStore) return;
 
   const user = HMStore.getUser ? HMStore.getUser() : null;
@@ -113,6 +138,44 @@ function initAppShell() {
       </div>
     `).join('');
   }
+}
+
+// Open Emergency Medical ID modal across all pages
+function openEmergencyModal() {
+  if (!window.HMStore || !HMStore.getEmergencyData) return;
+  const data = HMStore.getEmergencyData();
+  const nameEl = document.getElementById('emName');
+  if (nameEl) nameEl.textContent = data.name;
+  const ageEl = document.getElementById('emAge');
+  if (ageEl) ageEl.textContent = `${data.age} years • Personal Account`;
+  const bloodEl = document.getElementById('emBlood');
+  if (bloodEl) bloodEl.textContent = data.blood || 'B+';
+  
+  const phone = data.emergency || '+8801700000000';
+  const callBtn = document.getElementById('emCallBtn');
+  if (callBtn) callBtn.href = `tel:${phone}`;
+  const callLabel = document.getElementById('emCallLabel');
+  if (callLabel) callLabel.textContent = `Call Emergency: ${phone}`;
+  
+  const allergiesEl = document.getElementById('emAllergies');
+  if (allergiesEl) allergiesEl.textContent = (data.allergies && data.allergies.length) ? data.allergies.join(', ') : 'None reported';
+  const conditionsEl = document.getElementById('emConditions');
+  if (conditionsEl) conditionsEl.textContent = (data.conditions && data.conditions.length) ? data.conditions.join(', ') : 'None';
+  
+  const medsContainer = document.getElementById('emMedsList');
+  if (medsContainer) {
+    if (data.activeMeds && data.activeMeds.length > 0) {
+      medsContainer.innerHTML = data.activeMeds.map(m => `
+        <span style="display:inline-block;padding:2px 8px;background:var(--color-primary-tint);color:var(--color-primary-dark);border-radius:12px;font-size:0.75rem;font-weight:500;">
+          ${m.name} (${m.dosage})
+        </span>
+      `).join('');
+    } else {
+      medsContainer.innerHTML = '<span style="color:var(--color-text-muted);font-size:0.75rem;">No active medications</span>';
+    }
+  }
+
+  openModal('emergencyIdModal');
 }
 
 document.addEventListener('DOMContentLoaded', initAppShell);

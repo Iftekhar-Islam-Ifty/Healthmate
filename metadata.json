@@ -1,6 +1,6 @@
 {
   "name": "Healthmate",
-  "description": "Your personal health management space — track medicines, daily routines, and health records in one place.",
+  "description": "Your personal health management space — track medicines, daily routines, clinical vitals, doctor appointments with pre-visit checklists, and medical vault with prescriptions and lab reports.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

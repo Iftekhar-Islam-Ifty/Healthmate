@@ -25,7 +25,7 @@
   /* Themed Quick Actions — distinct personality derived from brand palette */
   .quick-actions-row {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
     gap: var(--space-3);
     margin-bottom: var(--space-4);
   }
@@ -73,6 +73,16 @@
     transform: translateY(-2px);
     border-color: var(--color-accent);
     box-shadow: 0 8px 20px -4px rgba(224, 122, 95, 0.16);
+  }
+
+  .quick-action-card.qa-theme-vault {
+    background: linear-gradient(145deg, #FFFFFF 0%, #F5F3FF 100%);
+    border-color: rgba(99, 102, 241, 0.24);
+  }
+  .quick-action-card.qa-theme-vault:hover {
+    transform: translateY(-2px);
+    border-color: #6366F1;
+    box-shadow: 0 8px 20px -4px rgba(99, 102, 241, 0.16);
   }
 
   .qa-icon {
@@ -529,6 +539,65 @@
     margin-top: 1px;
   }
 
+  /* Smart Health Insights Styles */
+  .smart-insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .insight-item-card {
+    background: #FAFAF8;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+    transition: all var(--transition-fast);
+  }
+  .insight-item-card:hover {
+    background: #FFFFFF;
+    border-color: rgba(13, 110, 110, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
+  .insight-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .insight-category-tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-text-muted);
+  }
+  .insight-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-top: 2px;
+  }
+  .insight-desc {
+    font-size: 0.78rem;
+    color: var(--color-text-secondary);
+    line-height: 1.45;
+  }
+  .insight-action-link {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .insight-action-link:hover {
+    text-decoration: underline;
+  }
+
   /* Responsive Adjustments */
   @media (max-width: 960px) {
     .dash-grid-2 {
@@ -741,6 +810,14 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
         Health Records
       </a></li>
+      <li><a class="nav-item" href="appointments.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M10 14h4"/><path d="M12 12v4"/></svg>
+        Appointments
+      </a></li>
+      <li><a class="nav-item" href="documents.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Medical Vault
+      </a></li>
       <li><a class="nav-item" href="report.html">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         Doctor Report
@@ -778,10 +855,6 @@
           <p id="greetingSub">Here is your personal health overview for today.</p>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <button type="button" onclick="openEmergencyModal()" class="btn-hm btn-ghost" style="color:var(--color-error);border-color:#FCA5A5;background:#FEF2F2;font-size:0.8rem;padding:6px 12px;font-weight:600;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Emergency ID
-          </button>
           <a href="report.html" class="btn-hm btn-ghost" style="font-size:0.8rem;padding:6px 12px;text-decoration:none;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             Doctor's Report
@@ -805,6 +878,30 @@
           <div style="display:flex;gap:var(--space-2);">
             <a href="medicines.html" class="btn-hm btn-primary" style="font-size:0.8rem;padding:6px 12px;background:var(--color-warning,#D97706);border-color:var(--color-warning,#D97706);text-decoration:none;">
               Manage Supplies →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upcoming Consultation Banner (Shown dynamically when an appointment is scheduled) -->
+      <div id="dashApptAlert" class="panel" style="display:none;background:linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);border:1px solid #A7F3D0;padding:var(--space-3) var(--space-4);margin-bottom:var(--space-4);border-radius:var(--radius-md);">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
+          <div style="display:flex;align-items:center;gap:var(--space-3);">
+            <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:#10B981;color:#FFFFFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M10 14h4"/><path d="M12 12v4"/></svg>
+            </div>
+            <div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <b id="dashApptDoc" style="font-size:0.92rem;color:var(--color-text);">Dr. A. Chowdhury</b>
+                <span id="dashApptBadge" class="appt-countdown-tag soon" style="font-size:0.72rem;padding:2px 8px;">⏳ Soon</span>
+              </div>
+              <div id="dashApptSub" style="font-size:0.8rem;color:#047857;margin-top:2px;">Chamber Details</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--space-2);">
+            <span id="dashApptCheckSummary" style="font-size:0.78rem;color:#065F46;font-weight:600;"></span>
+            <a href="appointments.html" class="btn-hm btn-primary" style="font-size:0.78rem;padding:6px 12px;background:#059669;border-color:#059669;text-decoration:none;">
+              View Checklist →
             </a>
           </div>
         </div>
@@ -841,6 +938,26 @@
             <div class="qa-sub" style="color:var(--color-text-muted);">Record vitals</div>
           </div>
         </div>
+
+        <a href="appointments.html" class="quick-action-card qa-theme-appt">
+          <div class="qa-icon" style="background:#059669;color:#FFFFFF;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M10 14h4"/><path d="M12 12v4"/></svg>
+          </div>
+          <div class="qa-text">
+            <div class="qa-title" style="color:#047857;">Appointments</div>
+            <div class="qa-sub" style="color:var(--color-text-muted);">Doctor visits</div>
+          </div>
+        </a>
+
+        <a href="documents.html" class="quick-action-card qa-theme-vault">
+          <div class="qa-icon" style="background:#6366F1;color:#FFFFFF;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="qa-text">
+            <div class="qa-title" style="color:#4F46E5;">Medical Vault</div>
+            <div class="qa-sub" style="color:var(--color-text-muted);">Lab & Rx files</div>
+          </div>
+        </a>
       </div>
 
       <!-- ============ TODAY'S OVERVIEW & VITALS ============ -->
@@ -964,6 +1081,30 @@
         </div>
       </section>
 
+      <!-- ============ SMART HEALTH INSIGHTS & CLINICAL ANALYSIS ============ -->
+      <section class="section" id="smartInsightsSection">
+        <div class="hm-card" style="padding:var(--space-3) var(--space-4);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);flex-wrap:wrap;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:var(--color-primary-tint);color:var(--color-primary-dark);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              </span>
+              <div>
+                <h2 style="font-size:1rem;margin:0;font-weight:700;">Smart Health Insights</h2>
+                <p style="font-size:0.76rem;color:var(--color-text-muted);margin:0;">Clinical analysis of recent vitals, prescription adherence, and habits.</p>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="badge-hm badge-success" style="font-size:0.72rem;padding:2px 8px;">Active Analysis</span>
+            </div>
+          </div>
+
+          <div class="smart-insights-grid" id="smartInsightsContainer">
+            <!-- Rendered dynamically by renderSmartInsights() -->
+          </div>
+        </div>
+      </section>
+
       <!-- ============ TODAY'S SCHEDULE & HABITS (Compact Segmented Widget) ============ -->
       <section class="section">
         <div class="today-tab-switcher-wrap">
@@ -1003,7 +1144,7 @@
   <a class="active" href="dashboard.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Dashboard</a>
   <a href="medicines.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>Medicines</a>
   <a href="routine.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Routine</a>
-  <a href="records.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>Records</a>
+  <a href="appointments.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Visits</a>
   <a href="settings.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82"/></svg>Settings</a>
 </nav>
 
@@ -1050,6 +1191,8 @@
   <span>Saved</span>
 </div>
 
+<script src="/js/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
 <script src="js/store.js"></script>
 <script src="js/app.js"></script>
 <script>
@@ -1145,6 +1288,12 @@
     // Render Vitals from records
     renderVitalsCard(user);
 
+    // Render Smart Health Insights
+    renderSmartInsights();
+
+    // Render Next Upcoming Doctor Consultation Banner
+    renderDashboardAppointment();
+
     // Render Today's Medicines list
     renderDashboardMeds();
 
@@ -1201,29 +1350,112 @@
     const bpList = records.bp || [];
     if (bpList.length > 0) {
       const latest = bpList[bpList.length - 1];
+      const cls = HMStore.getVitalClassification ? HMStore.getVitalClassification('bp', latest) : null;
       document.getElementById('vitalBpVal').textContent = `${latest.systolic}/${latest.diastolic}`;
-      document.getElementById('vitalBpSub').textContent = `mmHg · ${latest.systolic < 120 && latest.diastolic < 80 ? 'Optimal' : 'Normal range'}`;
+      const badgeHtml = cls ? `<span style="display:inline-block;padding:1px 6px;border-radius:10px;background:${cls.bg};color:${cls.color};font-size:0.7rem;font-weight:600;margin-left:4px;">${cls.status}</span>` : '';
+      document.getElementById('vitalBpSub').innerHTML = `mmHg ${badgeHtml}`;
     }
 
     // Sugar
     const sugarList = records.sugar || [];
     if (sugarList.length > 0) {
       const latest = sugarList[sugarList.length - 1];
+      const cls = HMStore.getVitalClassification ? HMStore.getVitalClassification('sugar', latest) : null;
       document.getElementById('vitalSugarVal').textContent = latest.value;
-      document.getElementById('vitalSugarSub').textContent = `mg/dL · ${latest.context || 'Fasting'}`;
+      const badgeHtml = cls ? `<span style="display:inline-block;padding:1px 6px;border-radius:10px;background:${cls.bg};color:${cls.color};font-size:0.7rem;font-weight:600;margin-left:4px;">${cls.status}</span>` : '';
+      document.getElementById('vitalSugarSub').innerHTML = `mg/dL · ${latest.context || 'Fasting'} ${badgeHtml}`;
     }
 
     // Weight
     const weightList = records.weight || [];
     if (weightList.length > 0) {
       const latest = weightList[weightList.length - 1];
+      const cls = HMStore.getVitalClassification ? HMStore.getVitalClassification('weight', latest) : null;
       document.getElementById('vitalWeightVal').textContent = latest.value;
-      document.getElementById('vitalWeightSub').textContent = `kg · ${latest.date || 'Recent'}`;
+      const badgeHtml = cls ? `<span style="display:inline-block;padding:1px 6px;border-radius:10px;background:${cls.bg};color:${cls.color};font-size:0.7rem;font-weight:600;margin-left:4px;">${cls.status}</span>` : '';
+      document.getElementById('vitalWeightSub').innerHTML = `kg ${badgeHtml}`;
     }
 
     // Blood
     document.getElementById('vitalBloodVal').textContent = user.blood || 'B+';
     document.getElementById('vitalBloodSub').textContent = 'Blood type recorded';
+  }
+
+  function renderSmartInsights() {
+    const container = document.getElementById('smartInsightsContainer');
+    if (!container) return;
+
+    const insights = HMStore.getSmartInsights ? HMStore.getSmartInsights() : [];
+    if (!insights || insights.length === 0) {
+      container.innerHTML = `
+        <div style="padding:var(--space-3);color:var(--color-text-muted);font-size:0.84rem;grid-column:1/-1;">
+          Add your daily vitals and routines to generate smart clinical insights.
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = insights.map(item => `
+      <div class="insight-item-card">
+        <div>
+          <div class="insight-card-top">
+            <span class="insight-category-tag">${item.category}</span>
+            <span style="font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:12px;background:${item.badgeBg};color:${item.badgeColor};">
+              ${item.badgeText}
+            </span>
+          </div>
+          <div class="insight-title">${item.title}</div>
+          <div class="insight-desc">${item.description}</div>
+        </div>
+        <div>
+          <a href="${item.actionUrl}" class="insight-action-link">
+            ${item.actionText} →
+          </a>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderDashboardAppointment() {
+    const alertBox = document.getElementById('dashApptAlert');
+    if (!alertBox || !window.HMStore) return;
+
+    const nextAppt = HMStore.getNextUpcomingAppointment ? HMStore.getNextUpcomingAppointment() : null;
+    if (!nextAppt) {
+      alertBox.style.display = 'none';
+      return;
+    }
+
+    const docEl = document.getElementById('dashApptDoc');
+    const badgeEl = document.getElementById('dashApptBadge');
+    const subEl = document.getElementById('dashApptSub');
+    const checkEl = document.getElementById('dashApptCheckSummary');
+
+    if (docEl) docEl.textContent = `${nextAppt.doctorName} • ${nextAppt.specialty || 'Physician'}`;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(nextAppt.date + 'T00:00:00');
+    const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
+
+    let countText = diffDays < 0 ? `${Math.abs(diffDays)}d ago` : diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : `In ${diffDays} days`;
+
+    if (badgeEl) {
+      badgeEl.textContent = `⏳ ${countText}`;
+      badgeEl.className = `appt-countdown-tag ${diffDays <= 3 ? 'soon' : 'normal'}`;
+    }
+
+    if (subEl) {
+      subEl.textContent = `${nextAppt.date} at ${nextAppt.time || '10:00 AM'} · ${nextAppt.hospital || 'Chamber'}`;
+    }
+
+    if (checkEl && Array.isArray(nextAppt.preVisitChecklist)) {
+      const done = nextAppt.preVisitChecklist.filter(c => c.done).length;
+      const total = nextAppt.preVisitChecklist.length;
+      checkEl.textContent = total > 0 ? `${done}/${total} Checklist Ready` : '';
+    }
+
+    alertBox.style.display = 'block';
   }
 
   function renderDashboardMeds() {
@@ -1268,10 +1500,10 @@
 
           <div>
             ${isTaken 
-              ? `<button type="button" class="btn-hm btn-ghost" onclick="toggleMedStatus(${m.id})" style="font-size:0.8rem;color:var(--color-success);font-weight:600;border:1px solid rgba(16,185,129,0.3);background:rgba(16,185,129,0.06);">
+              ? `<button type="button" class="btn-hm btn-ghost" onclick="toggleMedStatus('${m.id}')" style="font-size:0.8rem;color:var(--color-success);font-weight:600;border:1px solid rgba(16,185,129,0.3);background:rgba(16,185,129,0.06);">
                    ✓ Taken
                  </button>`
-              : `<button type="button" class="btn-hm btn-primary" onclick="toggleMedStatus(${m.id})" style="font-size:0.8rem;padding:6px 12px;">
+              : `<button type="button" class="btn-hm btn-primary" onclick="toggleMedStatus('${m.id}')" style="font-size:0.8rem;padding:6px 12px;">
                    Mark Taken
                  </button>`
             }
@@ -1281,23 +1513,21 @@
     }).join('');
   }
 
-  function toggleMedStatus(medId) {
+  async function toggleMedStatus(medId) {
     const meds = HMStore.getMedicines();
-    const med = meds.find(m => m.id === medId);
+    const med = meds.find(m => String(m.id) === String(medId));
     if (!med) return;
 
     if (med.status === 'taken') {
-      med.status = 'upcoming';
-      if (typeof med.stock === 'number') med.stock += 1;
+      await HMStore.markMedicinePending(med.id);
       showToast(`${med.name} marked pending`);
     } else {
-      med.status = 'taken';
-      if (typeof med.stock === 'number') med.stock = Math.max(0, med.stock - 1);
+      await HMStore.markMedicineTaken(med.id);
       showToast(`${med.name} recorded as taken`);
     }
 
-    HMStore.saveMedicines(meds);
     renderDashboard();
+    if (typeof initAppShell === 'function') initAppShell();
   }
 
   function renderDashboardRoutines() {
@@ -1320,7 +1550,7 @@
       return `
         <div class="today-routine-row">
           <div style="display:flex;align-items:center;gap:12px;">
-            <div class="routine-checkbox ${isDone ? 'done' : ''}" onclick="toggleRoutineStatus(${r.id})">
+            <div class="routine-checkbox ${isDone ? 'done' : ''}" onclick="toggleRoutineStatus('${r.id}')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <div>
@@ -1339,18 +1569,18 @@
     }).join('');
   }
 
-  function toggleRoutineStatus(routineId) {
+  async function toggleRoutineStatus(routineId) {
     const routines = HMStore.getRoutines();
-    const r = routines.find(item => item.id === routineId);
+    const r = routines.find(item => String(item.id) === String(routineId));
     if (!r) return;
 
     if (!Array.isArray(r.week)) {
       r.week = [false, false, false, false, false, false, false];
     }
 
-    r.week[TODAY_WEEK_INDEX] = !r.week[TODAY_WEEK_INDEX];
-    HMStore.saveRoutines(routines);
-    showToast(r.week[TODAY_WEEK_INDEX] ? `Completed: ${r.name}` : `Marked incomplete: ${r.name}`);
+    const nextStatus = !r.week[TODAY_WEEK_INDEX];
+    await HMStore.logRoutineDay(r.id, TODAY_WEEK_INDEX, nextStatus);
+    showToast(nextStatus ? `Completed: ${r.name}` : `Marked incomplete: ${r.name}`);
     renderDashboard();
   }
 
@@ -1413,36 +1643,35 @@
     }
   }
 
-  document.getElementById('quickVitalsForm').addEventListener('submit', function (e) {
+  document.getElementById('quickVitalsForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     const type = document.getElementById('vitalTypeSelect').value;
     const date = document.getElementById('vitalDateInput').value;
     const note = document.getElementById('vitalNoteInput').value.trim();
 
-    const records = HMStore.getRecords();
-    if (!records[type]) records[type] = [];
-
-    const newId = Date.now();
+    const entry = { memberId: 'owner', date, note };
 
     if (type === 'bp') {
       const systolic = parseInt(document.getElementById('fSystolic').value, 10);
       const diastolic = parseInt(document.getElementById('fDiastolic').value, 10);
-      records.bp.push({ id: newId, memberId: 'owner', date, systolic, diastolic, note });
+      entry.systolic = systolic;
+      entry.diastolic = diastolic;
     } else if (type === 'sugar') {
       const value = parseInt(document.getElementById('fSugarVal').value, 10);
       const context = document.getElementById('fSugarCtx').value;
-      records.sugar.push({ id: newId, memberId: 'owner', date, value, context, note });
+      entry.value = value;
+      entry.context = context;
     } else if (type === 'weight') {
       const value = parseFloat(document.getElementById('fWeightVal').value);
-      records.weight.push({ id: newId, memberId: 'owner', date, value, note });
+      entry.value = value;
     } else if (type === 'temp') {
       const value = parseFloat(document.getElementById('fTempVal').value);
-      records.temp.push({ id: newId, memberId: 'owner', date, value, note });
+      entry.value = value;
     }
 
-    HMStore.saveRecords(records);
+    await HMStore.saveHealthRecord(type, entry);
     closeModal('quickVitalsModal');
-    showToast('Vital reading recorded');
+    showToast('Vital reading recorded to cloud');
     renderDashboard();
   });
 
@@ -1474,6 +1703,12 @@
   }
 
   renderDashboard();
+  if (window.HMStore && typeof HMStore.fetchProfileAndSettings === 'function') {
+    HMStore.fetchProfileAndSettings().then(() => {
+      renderDashboard();
+      if (typeof initAppShell === 'function') initAppShell();
+    });
+  }
 </script>
 
 <!-- Emergency Medical ID Modal -->

@@ -1,0 +1,452 @@
+// =========================================================
+// Healthmate — Medical Documents & Prescription Vault Engine
+// =========================================================
+
+let currentDocCategory = 'all';
+let currentSearchQuery = '';
+let stagedFileData = null;
+let stagedFileName = '';
+let stagedFileType = 'pdf';
+let stagedFileSize = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  initDocumentVault();
+});
+
+function initDocumentVault() {
+  const user = HMStore.getUser();
+  if (user) {
+    const avatar = document.querySelector('.avatar');
+    if (avatar) avatar.textContent = user.initials || 'IF';
+  }
+
+  setupVaultListeners();
+  renderDocumentsList();
+
+  if (window.HMStore && typeof HMStore.fetchRecordsAndDocuments === 'function') {
+    HMStore.fetchRecordsAndDocuments().then(() => {
+      renderDocumentsList();
+    });
+  }
+}
+
+function setupVaultListeners() {
+  // Search input
+  const searchInput = document.getElementById('vaultSearchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      currentSearchQuery = e.target.value.trim().toLowerCase();
+      renderDocumentsList();
+    });
+  }
+
+  // Setup drag & drop for upload modal
+  const dropZone = document.getElementById('docDropZone');
+  const fileInput = document.getElementById('docFileInput');
+
+  if (dropZone && fileInput) {
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('drag-active');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('drag-active');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-active');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleFileSelection(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+  }
+}
+
+function handleFileSelection(file) {
+  if (!file) return;
+
+  stagedFileName = file.name;
+  const isImage = file.type.startsWith('image/');
+  stagedFileType = isImage ? 'image' : 'pdf';
+
+  // Format file size
+  const sizeKb = Math.round(file.size / 1024);
+  stagedFileSize = sizeKb > 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
+
+  // Read data URL
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    stagedFileData = e.target.result;
+    showFileStagedPreview();
+  };
+  reader.readAsDataURL(file);
+}
+
+function showFileStagedPreview() {
+  const previewBox = document.getElementById('docFilePreviewBox');
+  const dropPrompt = document.getElementById('docDropPrompt');
+
+  if (previewBox && dropPrompt) {
+    dropPrompt.style.display = 'none';
+    previewBox.style.display = 'flex';
+    document.getElementById('stagedFileName').textContent = stagedFileName;
+    document.getElementById('stagedFileMeta').textContent = `${stagedFileType.toUpperCase()} · ${stagedFileSize}`;
+  }
+
+  // Auto-fill title if empty
+  const titleInput = document.getElementById('docTitle');
+  if (titleInput && !titleInput.value.trim()) {
+    const cleanBaseName = stagedFileName.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
+    titleInput.value = cleanBaseName.charAt(0).toUpperCase() + cleanBaseName.slice(1);
+  }
+}
+
+function removeStagedFile(e) {
+  if (e) e.stopPropagation();
+  stagedFileData = null;
+  stagedFileName = '';
+  stagedFileType = 'pdf';
+  stagedFileSize = '';
+
+  const fileInput = document.getElementById('docFileInput');
+  if (fileInput) fileInput.value = '';
+
+  const previewBox = document.getElementById('docFilePreviewBox');
+  const dropPrompt = document.getElementById('docDropPrompt');
+  if (previewBox && dropPrompt) {
+    previewBox.style.display = 'none';
+    dropPrompt.style.display = 'block';
+  }
+}
+
+function filterDocCategory(category) {
+  currentDocCategory = category;
+
+  // Update category tab UI
+  document.querySelectorAll('.doc-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-cat') === category);
+  });
+
+  renderDocumentsList();
+}
+
+function getCategoryConfig(cat) {
+  const map = {
+    prescription: {
+      label: 'Prescription',
+      bg: '#ECFDF5',
+      color: '#065F46',
+      border: '#A7F3D0',
+      icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>'
+    },
+    lab: {
+      label: 'Lab Test',
+      bg: '#EFF6FF',
+      color: '#1E40AF',
+      border: '#BFDBFE',
+      icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2v7.31"/><path d="M14 9.3V2"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/></svg>'
+    },
+    radiology: {
+      label: 'Radiology / Imaging',
+      bg: '#FAF5FF',
+      color: '#6B21A8',
+      border: '#E9D5FF',
+      icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>'
+    },
+    other: {
+      label: 'Checkup / Other',
+      bg: '#F8FAFC',
+      color: '#334155',
+      border: '#E2E8F0',
+      icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+    }
+  };
+  return map[cat] || map.other;
+}
+
+function renderDocumentsList() {
+  const container = document.getElementById('vaultDocsGrid');
+  const countBadge = document.getElementById('vaultDocCount');
+  if (!container) return;
+
+  let docs = HMStore.getDocuments ? HMStore.getDocuments() : [];
+
+  // Filter by category
+  if (currentDocCategory !== 'all') {
+    docs = docs.filter(d => (d.category || 'other') === currentDocCategory);
+  }
+
+  // Filter by search query
+  if (currentSearchQuery) {
+    docs = docs.filter(d => {
+      const matchTitle = (d.title || '').toLowerCase().includes(currentSearchQuery);
+      const matchDoc = (d.doctor || '').toLowerCase().includes(currentSearchQuery);
+      const matchFacility = (d.facility || '').toLowerCase().includes(currentSearchQuery);
+      const matchNotes = (d.notes || '').toLowerCase().includes(currentSearchQuery);
+      const matchTags = Array.isArray(d.tags) && d.tags.some(t => t.toLowerCase().includes(currentSearchQuery));
+      return matchTitle || matchDoc || matchFacility || matchNotes || matchTags;
+    });
+  }
+
+  if (countBadge) {
+    countBadge.textContent = `${docs.length} ${docs.length === 1 ? 'document' : 'documents'}`;
+  }
+
+  if (docs.length === 0) {
+    container.innerHTML = `
+      <div class="empty-vault-state">
+        <div class="empty-icon-circle">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <h3>No documents found</h3>
+        <p>${currentSearchQuery ? 'No documents match your search keyword. Try another term.' : 'Your medical vault is empty in this category. Upload prescriptions, blood reports, or checkup records.'}</p>
+        <button class="btn-hm btn-primary" onclick="openUploadDocModal()" style="margin-top:12px;">+ Upload First Document</button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = docs.map(doc => {
+    const catCfg = getCategoryConfig(doc.category);
+    const isImage = doc.fileType === 'image' && doc.fileData;
+
+    return `
+      <div class="vault-card" id="doc-card-${doc.id}">
+        <div class="vault-card-thumb" onclick="previewDocument(${doc.id})">
+          ${isImage ? `
+            <img src="${doc.fileData}" alt="${doc.title}" class="vault-thumb-img">
+          ` : `
+            <div class="vault-thumb-placeholder">
+              <span class="vault-thumb-ext">${(doc.fileType || 'pdf').toUpperCase()}</span>
+              <span class="vault-thumb-icon">${catCfg.icon}</span>
+            </div>
+          `}
+          <span class="vault-badge-cat" style="background:${catCfg.bg};color:${catCfg.color};border-color:${catCfg.border};">
+            ${catCfg.icon} ${catCfg.label}
+          </span>
+        </div>
+
+        <div class="vault-card-body">
+          <div class="vault-doc-date">${doc.date}</div>
+          <h3 class="vault-doc-title" onclick="previewDocument(${doc.id})" title="${doc.title}">${doc.title}</h3>
+          
+          <div class="vault-meta-row">
+            ${doc.doctor ? `<span class="vault-meta-item"><b>Dr:</b> ${doc.doctor}</span>` : ''}
+            ${doc.facility ? `<span class="vault-meta-item"><b>Clinic:</b> ${doc.facility}</span>` : ''}
+          </div>
+
+          ${doc.notes ? `<p class="vault-doc-notes">${doc.notes}</p>` : ''}
+
+          <div class="vault-card-footer">
+            <span class="vault-filesize">${doc.fileSize || 'Standard file'}</span>
+            <div class="vault-card-actions">
+              <button class="btn-hm btn-ghost btn-sm" onclick="previewDocument('${doc.id}')" title="Preview Document">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                View
+              </button>
+              <button class="btn-hm btn-secondary btn-sm" onclick="downloadDocument('${doc.id}')" title="Download">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+              <button class="btn-hm btn-ghost btn-sm icon-delete" onclick="askDeleteDoc('${doc.id}')" title="Delete">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openUploadDocModal() {
+  const form = document.getElementById('uploadDocForm');
+  if (form) form.reset();
+
+  removeStagedFile();
+  document.getElementById('docDate').value = new Date().toISOString().slice(0, 10);
+  openModal('uploadDocModal');
+}
+
+async function handleSaveDocument(e) {
+  e.preventDefault();
+
+  const title = document.getElementById('docTitle').value.trim();
+  if (!title) {
+    alert('Please enter a document title');
+    return;
+  }
+
+  const category = document.getElementById('docCategory').value || 'other';
+  const categoryName = document.getElementById('docCategory').options[document.getElementById('docCategory').selectedIndex].text;
+  const date = document.getElementById('docDate').value || new Date().toISOString().slice(0, 10);
+  const doctor = document.getElementById('docDoctor').value.trim();
+  const facility = document.getElementById('docFacility').value.trim();
+  const notes = document.getElementById('docNotes').value.trim();
+
+  const doc = {
+    title,
+    category,
+    categoryName,
+    date,
+    doctor,
+    facility,
+    notes,
+    fileType: stagedFileType || 'pdf',
+    fileName: stagedFileName || `${title.replace(/\s+/g, '_')}.pdf`,
+    fileSize: stagedFileSize || '1.0 MB',
+    fileData: stagedFileData || ''
+  };
+
+  await HMStore.addDocument(doc);
+  closeModal('uploadDocModal');
+  renderDocumentsList();
+  if (typeof showToast === 'function') {
+    showToast('Document saved to vault');
+  }
+}
+
+function previewDocument(id) {
+  const docs = HMStore.getDocuments();
+  const doc = docs.find(d => String(d.id) === String(id));
+  if (!doc) return;
+
+  const modal = document.getElementById('viewDocModal');
+  const catCfg = getCategoryConfig(doc.category);
+
+  document.getElementById('viewDocTitle').textContent = doc.title;
+  document.getElementById('viewDocMeta').innerHTML = `
+    <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;background:${catCfg.bg};color:${catCfg.color};font-size:0.75rem;font-weight:700;">
+      ${catCfg.icon} ${catCfg.label}
+    </span>
+    <span style="font-size:0.78rem;color:var(--color-text-muted);">Recorded: ${doc.date}</span>
+  `;
+
+  document.getElementById('viewDocDoctor').textContent = doc.doctor || 'Not specified';
+  document.getElementById('viewDocFacility').textContent = doc.facility || 'Not specified';
+  document.getElementById('viewDocNotes').textContent = doc.notes || 'No notes added.';
+
+  const previewStage = document.getElementById('viewDocStage');
+  if (doc.fileData && doc.fileType === 'image') {
+    previewStage.innerHTML = `
+      <div style="max-height:420px;overflow:auto;text-align:center;background:#0F172A;border-radius:6px;padding:12px;">
+        <img src="${doc.fileData}" alt="${doc.title}" style="max-width:100%;max-height:380px;object-fit:contain;border-radius:4px;">
+      </div>
+    `;
+  } else {
+    // Clinical sheet preview
+    previewStage.innerHTML = `
+      <div style="background:#FFFFFF;border:1px solid var(--color-border);border-radius:8px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="display:flex;justify-content:space-between;border-bottom:2px solid var(--color-primary);padding-bottom:12px;margin-bottom:14px;">
+          <div>
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.1rem;color:var(--color-primary-dark);">${doc.facility || 'Clinical Healthcare Facility'}</div>
+            <div style="font-size:0.78rem;color:var(--color-text-muted);">${doc.doctor ? 'Attending: ' + doc.doctor : 'Healthmate Vault Archive'}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.75rem;color:var(--color-text-muted);">${doc.date}</div>
+            <div style="font-size:0.78rem;font-weight:600;color:var(--color-primary);">${(doc.fileType || 'PDF').toUpperCase()} DOCUMENT</div>
+          </div>
+        </div>
+        <div style="font-size:0.92rem;font-weight:700;color:var(--color-text);margin-bottom:8px;">${doc.title}</div>
+        <div style="font-size:0.84rem;color:var(--color-text-secondary);line-height:1.5;background:#F8FAFC;padding:12px;border-radius:6px;border:1px solid #E2E8F0;">
+          <b>Clinical Summary / Findings:</b><br>
+          ${doc.notes || 'Full archival record stored in patient personal health space.'}
+        </div>
+        <div style="margin-top:14px;display:flex;justify-content:space-between;font-size:0.75rem;color:var(--color-text-muted);">
+          <span>File: <b>${doc.fileName || 'document.pdf'}</b> (${doc.fileSize || '1.0 MB'})</span>
+          <span>Verified Patient: <b>Ifty (IA)</b></span>
+        </div>
+      </div>
+    `;
+  }
+
+  // Setup download button
+  const dlBtn = document.getElementById('viewDocDownloadBtn');
+  if (dlBtn) {
+    dlBtn.onclick = () => downloadDocument(doc.id);
+  }
+
+  openModal('viewDocModal');
+}
+
+function downloadDocument(id) {
+  const docs = HMStore.getDocuments();
+  const doc = docs.find(d => String(d.id) === String(id));
+  if (!doc) return;
+
+  if (doc.fileData) {
+    const a = document.createElement('a');
+    a.href = doc.fileData;
+    a.download = doc.fileName || `${doc.title.replace(/\s+/g, '_')}.${doc.fileType === 'image' ? 'jpg' : 'pdf'}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    return;
+  }
+
+  // If no file data (pre-seeded sample), create a nice standalone HTML report
+  const cleanTitle = doc.title.replace(/\s+/g, '_');
+  const content = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>${doc.title} — Healthmate Vault</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 32px; color: #1E293B; }
+  .card { max-width: 680px; margin: 0 auto; border: 1px solid #CBD5E1; border-radius: 8px; padding: 28px; }
+  .header { border-bottom: 2px solid #0D6E6E; padding-bottom: 12px; margin-bottom: 20px; }
+  h1 { font-size: 20px; margin: 0 0 6px 0; color: #0D6E6E; }
+  .meta { font-size: 13px; color: #64748B; margin-bottom: 14px; }
+  .box { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 14px; font-size: 14px; line-height: 1.6; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>${doc.title}</h1>
+      <div class="meta">Facility: ${doc.facility || 'Clinical Diagnostic'} · Doctor: ${doc.doctor || 'Attending Physician'} · Date: ${doc.date}</div>
+    </div>
+    <div class="box">
+      <b>Summary & Findings:</b><br>
+      ${doc.notes || 'Clinical record preserved in Healthmate personal space.'}
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const blob = new Blob([content], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Healthmate_${cleanTitle}_${doc.date}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function askDeleteDoc(id) {
+  const docs = HMStore.getDocuments();
+  const doc = docs.find(d => String(d.id) === String(id));
+  if (!doc) return;
+
+  if (confirm(`Are you sure you want to delete "${doc.title}" from your medical vault?`)) {
+    await HMStore.deleteDocument(id);
+    renderDocumentsList();
+    if (typeof showToast === 'function') {
+      showToast('Document deleted from vault');
+    }
+  }
+}

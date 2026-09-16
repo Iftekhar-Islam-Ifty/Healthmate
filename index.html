@@ -364,6 +364,8 @@
   <span id="toastMsg">Logged in</span>
 </div>
 
+<script src="/js/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
 <script src="js/store.js"></script>
 <script src="js/app.js"></script>
 <script>
@@ -390,13 +392,14 @@
   }
 
   // Form Submit Handler
-  document.getElementById('loginForm').addEventListener('submit', function (e) {
+  document.getElementById('loginForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const email = document.getElementById('email');
     const password = document.getElementById('password');
     const emailField = document.getElementById('emailField');
     const passwordField = document.getElementById('passwordField');
+    const submitBtn = document.getElementById('loginSubmitBtn');
 
     let valid = true;
     emailField.classList.toggle('has-error', email.value.trim() === '');
@@ -405,12 +408,23 @@
 
     if (!valid) return;
 
-    if (window.HMStore && typeof HMStore.login === 'function') {
-      HMStore.login(email.value, password.value);
-    }
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Logging in…';
 
-    showToast('Logged in — opening personal dashboard…');
-    setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
+    try {
+      if (window.HMStore && typeof HMStore.login === 'function') {
+        await HMStore.login(email.value, password.value);
+      }
+      showToast('Logged in — opening personal dashboard…');
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
+    } catch (err) {
+      console.error('Login error:', err);
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+      const errMsg = err.message || 'Login failed. Please check your credentials.';
+      showToast(errMsg);
+    }
   });
 </script>
 

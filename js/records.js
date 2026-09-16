@@ -20,7 +20,7 @@ let hasRecordMigration = false;
 Object.keys(records).forEach(type => {
   if (Array.isArray(records[type])) {
     records[type].forEach(item => {
-      if (!item.memberId || item.memberId === 'ammu' || item.memberId === 'abbu') {
+      if (!item.memberId || item.memberId !== 'owner') {
         item.memberId = 'owner';
         hasRecordMigration = true;
       }
@@ -146,11 +146,28 @@ function renderHero() {
     }
   }
 
+  const cls = window.HMStore && HMStore.getVitalClassification ? HMStore.getVitalClassification(currentType, latest) : null;
+  const badgeHtml = cls ? `
+    <span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:12px;background:${cls.bg};color:${cls.color};font-size:0.8rem;font-weight:700;border:1px solid ${cls.border};">
+      ${cls.fullStatus || cls.status}
+    </span>
+  ` : '';
+
+  const tipHtml = cls ? `
+    <div style="width:100%;margin-top:8px;padding:8px 12px;border-radius:6px;background:${cls.bg};border-left:3px solid ${cls.color};font-size:0.82rem;color:${cls.color};line-height:1.4;">
+      <b>Clinical Guidance:</b> ${cls.tip}
+    </div>
+  ` : '';
+
   el.innerHTML = `
-    <span class="value">${entryPrimaryValue(latest)}</span>
-    <span class="unit">${meta.unit}</span>
-    ${trendHtml}
-    <span style="width:100%;font-size:0.78rem;color:var(--color-text-muted);margin-top:2px;">Last recorded ${latest.date}</span>
+    <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;">
+      <span class="value">${entryPrimaryValue(latest)}</span>
+      <span class="unit">${meta.unit}</span>
+      ${badgeHtml}
+      ${trendHtml}
+    </div>
+    ${tipHtml}
+    <span style="width:100%;font-size:0.78rem;color:var(--color-text-muted);margin-top:4px;">Last recorded ${latest.date}${latest.context ? ' (' + latest.context + ')' : ''}</span>
   `;
 }
 
@@ -212,19 +229,67 @@ function renderHistory() {
   el.style.display = 'block';
   emptyEl.style.display = 'none';
 
-  el.innerHTML = [...list].reverse().map(e => `
-    <div class="list-row">
-      <div class="list-row-main">
-        <div class="name">${entryPrimaryValue(e)} ${RECORD_TYPES[currentType].unit}</div>
-        <div class="meta">${e.date}${e.context ? ' · ' + e.context : ''}${e.note ? ' · ' + e.note : ''}</div>
+  el.innerHTML = [...list].reverse().map(e => {
+    const cls = window.HMStore && HMStore.getVitalClassification ? HMStore.getVitalClassification(currentType, e) : null;
+    const badge = cls ? `
+      <span style="display:inline-block;padding:2px 8px;border-radius:10px;background:${cls.bg};color:${cls.color};font-size:0.72rem;font-weight:600;margin-left:6px;border:1px solid ${cls.border};">
+        ${cls.status}
+      </span>
+    ` : '';
+
+    return `
+      <div class="list-row">
+        <div class="list-row-main">
+          <div class="name" style="display:flex;align-items:center;flex-wrap:wrap;">
+            <span>${entryPrimaryValue(e)} ${RECORD_TYPES[currentType].unit}</span>
+            ${badge}
+          </div>
+          <div class="meta">${e.date}${e.context ? ' · ' + e.context : ''}${e.note ? ' · ' + e.note : ''}</div>
+        </div>
+        <div class="list-row-side">
+          <button class="icon-action danger" title="Remove" onclick="askDeleteRecord('${e.id}')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="list-row-side">
-        <button class="icon-action danger" title="Remove" onclick="askDeleteRecord(${e.id})">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-        </button>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
+}
+
+function updateLiveClassification() {
+  const preview = document.getElementById('recordLivePreview');
+  if (!preview || !window.HMStore || !HMStore.getVitalClassification) return;
+
+  let entry = null;
+  if (currentType === 'bp') {
+    const sys = Number(document.getElementById('fSystolic')?.value);
+    const dia = Number(document.getElementById('fDiastolic')?.value);
+    if (sys && dia) entry = { systolic: sys, diastolic: dia };
+  } else if (currentType === 'sugar') {
+    const val = Number(document.getElementById('fValue')?.value);
+    const ctx = document.getElementById('fContext')?.value || 'Fasting';
+    if (val) entry = { value: val, context: ctx };
+  } else {
+    const val = Number(document.getElementById('fValue')?.value);
+    if (val) entry = { value: val };
+  }
+
+  if (!entry) {
+    preview.style.display = 'none';
+    preview.innerHTML = '';
+    return;
+  }
+
+  const cls = HMStore.getVitalClassification(currentType, entry);
+  if (cls) {
+    preview.style.display = 'block';
+    preview.style.background = cls.bg;
+    preview.style.color = cls.color;
+    preview.style.border = `1px solid ${cls.border}`;
+    preview.innerHTML = `<b>${cls.fullStatus || cls.status}</b>: ${cls.tip}`;
+  } else {
+    preview.style.display = 'none';
+  }
 }
 
 function openAddRecord() {
@@ -234,6 +299,25 @@ function openAddRecord() {
   document.getElementById('addRecordForm').reset();
   document.getElementById('fDate').value = new Date().toISOString().slice(0, 10);
 
+  const preview = document.getElementById('recordLivePreview');
+  if (preview) {
+    preview.style.display = 'none';
+    preview.innerHTML = '';
+  }
+
+  // Attach live preview input listeners
+  setTimeout(() => {
+    ['fSystolic', 'fDiastolic', 'fValue', 'fContext'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.removeEventListener('input', updateLiveClassification);
+        el.removeEventListener('change', updateLiveClassification);
+        el.addEventListener('input', updateLiveClassification);
+        el.addEventListener('change', updateLiveClassification);
+      }
+    });
+  }, 50);
+
   openModal('addRecordModal');
 }
 
@@ -242,10 +326,12 @@ function askDeleteRecord(id) {
   openModal('deleteRecordModal');
 }
 
-function confirmDeleteRecord() {
-  records[currentType] = (records[currentType] || []).filter(e => e.id !== pendingDeleteRecord);
-  pendingDeleteRecord = null;
-  persistRecords();
+async function confirmDeleteRecord() {
+  if (pendingDeleteRecord) {
+    await HMStore.deleteHealthRecord(currentType, pendingDeleteRecord);
+    records = HMStore.getRecords();
+    pendingDeleteRecord = null;
+  }
   closeModal('deleteRecordModal');
   renderHero();
   renderChart();
@@ -253,13 +339,13 @@ function confirmDeleteRecord() {
   showToast('Reading removed');
 }
 
-document.getElementById('addRecordForm').addEventListener('submit', function (e) {
+document.getElementById('addRecordForm').addEventListener('submit', async function (e) {
   e.preventDefault();
   const date = document.getElementById('fDate').value || new Date().toISOString().slice(0, 10);
   const note = document.getElementById('fNote').value.trim();
   const currentProfileId = window.HMStore ? HMStore.getActiveProfileId() : 'owner';
 
-  let entry = { id: nextRecordId[currentType]++, memberId: currentProfileId, date, note };
+  let entry = { memberId: currentProfileId, date, note };
 
   if (currentType === 'bp') {
     const systolic = Number(document.getElementById('fSystolic').value);
@@ -278,18 +364,25 @@ document.getElementById('addRecordForm').addEventListener('submit', function (e)
     entry.value = value;
   }
 
-  if (!records[currentType]) records[currentType] = [];
-  records[currentType].push(entry);
-  records[currentType].sort((a, b) => a.date.localeCompare(b.date));
-  persistRecords();
+  await HMStore.saveHealthRecord(currentType, entry);
+  records = HMStore.getRecords();
 
   closeModal('addRecordModal');
   renderHero();
   renderChart();
   renderHistory();
-  showToast('Reading saved');
+  showToast('Reading saved to cloud');
 });
 
 // Initialization
 initPageHeader();
 switchType('weight');
+
+if (window.HMStore && typeof HMStore.fetchRecordsAndDocuments === 'function') {
+  HMStore.fetchRecordsAndDocuments().then(() => {
+    records = HMStore.getRecords();
+    renderHero();
+    renderChart();
+    renderHistory();
+  });
+}

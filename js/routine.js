@@ -86,7 +86,7 @@ function renderToday() {
 
     return `
       <div class="list-row">
-        <button class="task-check ${done ? 'done' : ''}" onclick="toggleToday(${r.id})" aria-label="Mark ${r.name} done">
+        <button class="task-check ${done ? 'done' : ''}" onclick="toggleToday('${r.id}')" aria-label="Mark ${r.name} done">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
         </button>
         <div class="list-row-icon">${categoryIcons[r.category] || categoryIcons.Custom}</div>
@@ -97,10 +97,10 @@ function renderToday() {
           <div class="meta">${r.target ? r.target + ' &middot; ' : ''}${r.frequency}</div>
         </div>
         <div class="list-row-side">
-          <button class="icon-action" title="Edit" onclick="openEditRoutine(${r.id})">
+          <button class="icon-action" title="Edit" onclick="openEditRoutine('${r.id}')">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
           </button>
-          <button class="icon-action danger" title="Remove" onclick="askDeleteRoutine(${r.id})">
+          <button class="icon-action danger" title="Remove" onclick="askDeleteRoutine('${r.id}')">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
           </button>
         </div>
@@ -135,15 +135,17 @@ function renderWeekly() {
   }).join('');
 }
 
-function toggleToday(id) {
-  const r = routines.find(x => x.id === id);
+async function toggleToday(id) {
+  routines = HMStore.getRoutines();
+  const r = routines.find(x => String(x.id) === String(id));
   if (!r) return;
   if (!r.week) r.week = [false, false, false, false, false, false, false];
-  r.week[TODAY_INDEX] = !r.week[TODAY_INDEX];
-  persistRoutines();
+  const nextVal = !r.week[TODAY_INDEX];
+  await HMStore.logRoutineDay(r.id, TODAY_INDEX, nextVal);
+  routines = HMStore.getRoutines();
   renderToday();
   renderWeekly();
-  showToast(`${r.name} marked ${r.week[TODAY_INDEX] ? 'completed' : 'pending'}`);
+  showToast(`${r.name} marked ${nextVal ? 'completed' : 'pending'}`);
 }
 
 function openAddRoutine() {
@@ -158,7 +160,8 @@ function openAddRoutine() {
 }
 
 function openEditRoutine(id) {
-  const r = routines.find(x => x.id === id);
+  routines = HMStore.getRoutines();
+  const r = routines.find(x => String(x.id) === String(id));
   if (!r) return;
   document.getElementById('routineModalTitle').textContent = 'Edit routine';
   document.getElementById('rtId').value = r.id;
@@ -176,17 +179,19 @@ function askDeleteRoutine(id) {
   openModal('deleteRoutineModal');
 }
 
-function confirmDeleteRoutine() {
-  routines = routines.filter(r => r.id !== pendingDeleteRoutineId);
-  pendingDeleteRoutineId = null;
-  persistRoutines();
+async function confirmDeleteRoutine() {
+  if (pendingDeleteRoutineId) {
+    await HMStore.deleteRoutine(pendingDeleteRoutineId);
+    routines = HMStore.getRoutines();
+    pendingDeleteRoutineId = null;
+  }
   closeModal('deleteRoutineModal');
   renderToday();
   renderWeekly();
   showToast('Routine removed');
 }
 
-document.getElementById('routineForm').addEventListener('submit', function (e) {
+document.getElementById('routineForm').addEventListener('submit', async function (e) {
   e.preventDefault();
 
   const idVal = document.getElementById('rtId').value;
@@ -204,21 +209,20 @@ document.getElementById('routineForm').addEventListener('submit', function (e) {
   if (!data.name) return;
 
   if (idVal) {
-    const r = routines.find(x => x.id === Number(idVal));
+    routines = HMStore.getRoutines();
+    const r = routines.find(x => String(x.id) === String(idVal));
     if (r) Object.assign(r, data);
-    persistRoutines();
+    await HMStore.saveRoutine(r || { id: idVal, ...data });
     showToast('Routine updated');
   } else {
-    const nextId = routines.length > 0 ? Math.max(...routines.map(x => x.id)) + 1 : 1;
-    routines.push({
-      id: nextId,
+    await HMStore.saveRoutine({
       week: [false, false, false, false, false, false, false],
       ...data
     });
-    persistRoutines();
     showToast('Routine added');
   }
 
+  routines = HMStore.getRoutines();
   closeModal('routineModal');
   renderToday();
   renderWeekly();
@@ -228,3 +232,11 @@ document.getElementById('routineForm').addEventListener('submit', function (e) {
 initPageHeader();
 renderToday();
 renderWeekly();
+
+if (window.HMStore && typeof HMStore.fetchMedicinesAndRoutines === 'function') {
+  HMStore.fetchMedicinesAndRoutines().then(() => {
+    routines = HMStore.getRoutines();
+    renderToday();
+    renderWeekly();
+  });
+}

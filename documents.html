@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthmate — Medical Documents & Vault</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+<link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
+      </div>
+      <span class="brand-name">Healthmate</span>
+    </div>
+
+    <ul class="nav-list">
+      <li><a class="nav-item" href="dashboard.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+        Dashboard
+      </a></li>
+      <li><a class="nav-item" href="medicines.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
+        Medicines
+      </a></li>
+      <li><a class="nav-item" href="routine.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        Daily Routine
+      </a></li>
+      <li><a class="nav-item" href="records.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+        Health Records
+      </a></li>
+      <li><a class="nav-item" href="appointments.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M10 14h4"/><path d="M12 12v4"/></svg>
+        Appointments
+      </a></li>
+      <li><a class="nav-item active" href="documents.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Medical Vault
+      </a></li>
+      <li><a class="nav-item" href="report.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Doctor Report
+      </a></li>
+      <li><a class="nav-item" href="settings.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a></li>
+    </ul>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="topbar">
+      <div class="font-heading" style="font-size:1rem;font-weight:600;">Medical Vault</div>
+      <div class="topbar-actions" style="position:relative;">
+        <button class="icon-btn" onclick="openEmergencyModal()" title="Emergency Medical ID" aria-label="Emergency Medical ID" style="color:var(--color-error);background:#FEF2F2;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+        </button>
+        <button class="icon-btn" onclick="toggleNotifPanel()" aria-label="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="notif-panel" id="notifPanel"></div>
+        <div class="avatar">IF</div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <div class="page-header">
+        <div>
+          <h1>Medical Vault & Lab Reports</h1>
+          <p>Preserve prescriptions, blood tests, radiology scans, and clinical checkups in your personal health archive.</p>
+        </div>
+        <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;">
+          <button class="btn-hm btn-primary" onclick="openUploadDocModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Upload Document
+          </button>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="vault-search-row">
+        <div class="vault-search-input-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="vaultSearchInput" placeholder="Search by test name, doctor, diagnostic clinic, or notes...">
+        </div>
+        <div id="vaultDocCount" style="font-size:0.82rem;color:var(--color-text-muted);font-weight:600;white-space:nowrap;">
+          0 documents
+        </div>
+      </div>
+
+      <div class="doc-tab-row">
+        <button class="doc-tab-btn active" data-cat="all" onclick="filterDocCategory('all')">All Records</button>
+        <button class="doc-tab-btn" data-cat="prescription" onclick="filterDocCategory('prescription')">Prescriptions</button>
+        <button class="doc-tab-btn" data-cat="lab" onclick="filterDocCategory('lab')">Lab & Blood Tests</button>
+        <button class="doc-tab-btn" data-cat="radiology" onclick="filterDocCategory('radiology')">Radiology & X-Ray</button>
+        <button class="doc-tab-btn" data-cat="other" onclick="filterDocCategory('other')">Checkups & Other</button>
+      </div>
+
+      <!-- ============ DOCUMENTS GRID ============ -->
+      <section class="section">
+        <div class="vault-grid" id="vaultDocsGrid">
+          <!-- Rendered dynamically by js/documents.js -->
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============ MODAL: UPLOAD DOCUMENT ============ -->
+<div class="modal-hm-backdrop" id="uploadDocModal">
+  <div class="modal-hm" style="max-width:540px;">
+    <div class="modal-hm-header">
+      <h2>Upload Medical Document</h2>
+      <button type="button" class="modal-hm-close" onclick="closeModal('uploadDocModal')" aria-label="Close">✕</button>
+    </div>
+    <form id="uploadDocForm" onsubmit="handleSaveDocument(event)">
+      <div class="modal-hm-body">
+
+        <!-- File Upload Zone (Drag & Drop + Click) -->
+        <div class="form-group-hm">
+          <label>Document File (PDF or Image)</label>
+          <input type="file" id="docFileInput" accept="application/pdf,image/png,image/jpeg,image/webp" style="display:none;">
+          
+          <div class="doc-drop-zone" id="docDropZone">
+            <div id="docDropPrompt">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--color-primary);margin-bottom:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <div style="font-size:0.9rem;font-weight:600;color:var(--color-text);">Drag & Drop file here, or <span style="color:var(--color-primary);text-decoration:underline;">browse</span></div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Supports PDF, PNG, JPG up to 10MB</div>
+            </div>
+
+            <div class="doc-file-preview-box" id="docFilePreviewBox" style="display:none;">
+              <div style="display:flex;align-items:center;gap:10px;overflow:hidden;">
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:6px;background:var(--color-primary-tint);color:var(--color-primary);flex-shrink:0;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </span>
+                <div style="overflow:hidden;">
+                  <div id="stagedFileName" style="font-size:0.86rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--color-text);"></div>
+                  <div id="stagedFileMeta" style="font-size:0.75rem;color:var(--color-text-muted);"></div>
+                </div>
+              </div>
+              <button type="button" class="btn-hm btn-ghost btn-sm" onclick="removeStagedFile(event)" style="color:var(--color-error);">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group-hm">
+          <label for="docTitle">Document / Test Title *</label>
+          <input type="text" id="docTitle" required placeholder="e.g. Fasting Blood Glucose & Lipid Panel">
+        </div>
+
+        <div class="form-row-hm">
+          <div class="form-group-hm">
+            <label for="docCategory">Category</label>
+            <select id="docCategory">
+              <option value="prescription">Prescription</option>
+              <option value="lab" selected>Lab / Blood Test</option>
+              <option value="radiology">Radiology / X-Ray / Scan</option>
+              <option value="other">Clinical Checkup / Other</option>
+            </select>
+          </div>
+          <div class="form-group-hm">
+            <label for="docDate">Date Recorded</label>
+            <input type="date" id="docDate">
+          </div>
+        </div>
+
+        <div class="form-row-hm">
+          <div class="form-group-hm">
+            <label for="docDoctor">Doctor / Physician Name</label>
+            <input type="text" id="docDoctor" placeholder="e.g. Dr. A. Rahman">
+          </div>
+          <div class="form-group-hm">
+            <label for="docFacility">Hospital / Diagnostic Center</label>
+            <input type="text" id="docFacility" placeholder="e.g. Popular Diagnostic Centre">
+          </div>
+        </div>
+
+        <div class="form-group-hm">
+          <label for="docNotes">Key Findings / Notes</label>
+          <textarea id="docNotes" rows="2" placeholder="e.g. Cholesterol normal, advised to repeat HbA1c after 3 months"></textarea>
+        </div>
+
+      </div>
+      <div class="modal-hm-actions">
+        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('uploadDocModal')">Cancel</button>
+        <button type="submit" class="btn-hm btn-primary">Save to Vault</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: VIEW DOCUMENT ============ -->
+<div class="modal-hm-backdrop" id="viewDocModal">
+  <div class="modal-hm" style="max-width:640px;">
+    <div class="modal-hm-header">
+      <div>
+        <h2 id="viewDocTitle" style="font-size:1.15rem;margin:0 0 4px 0;">Document Preview</h2>
+        <div id="viewDocMeta" style="display:flex;align-items:center;gap:8px;"></div>
+      </div>
+      <button type="button" class="modal-hm-close" onclick="closeModal('viewDocModal')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-hm-body">
+      <div id="viewDocStage" style="margin-bottom:14px;"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#F8FAFC;padding:12px 14px;border-radius:6px;border:1px solid #E2E8F0;font-size:0.82rem;margin-bottom:12px;">
+        <div>
+          <span style="color:var(--color-text-muted);display:block;font-size:0.75rem;">Attending Doctor</span>
+          <b id="viewDocDoctor" style="color:var(--color-text);"></b>
+        </div>
+        <div>
+          <span style="color:var(--color-text-muted);display:block;font-size:0.75rem;">Diagnostic Facility</span>
+          <b id="viewDocFacility" style="color:var(--color-text);"></b>
+        </div>
+      </div>
+
+      <div style="font-size:0.82rem;">
+        <span style="color:var(--color-text-muted);display:block;font-size:0.75rem;margin-bottom:2px;">Notes / Clinical Guidance</span>
+        <div id="viewDocNotes" style="color:var(--color-text-secondary);background:#FAFAF8;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);line-height:1.45;"></div>
+      </div>
+    </div>
+    <div class="modal-hm-actions">
+      <button type="button" class="btn-hm btn-ghost" onclick="closeModal('viewDocModal')">Close</button>
+      <button type="button" class="btn-hm btn-primary" id="viewDocDownloadBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download File
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EMERGENCY MEDICAL ID MODAL ============ -->
+<div class="modal-hm-backdrop" id="emergencyIdModal">
+  <div class="modal-hm" style="max-width:480px;padding:var(--space-4);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:#FEF2F2;color:var(--color-error);font-weight:bold;">🚑</span>
+        <h3 style="margin:0;font-size:1.1rem;">Emergency Medical ID</h3>
+      </div>
+      <button type="button" class="icon-btn" onclick="closeModal('emergencyIdModal')" aria-label="Close" style="width:28px;height:28px;">✕</button>
+    </div>
+
+    <div class="emergency-card-visual" id="emCardVisual">
+      <div class="emergency-header">
+        <div>
+          <div style="font-size:1.2rem;font-weight:700;" id="emName">Ifty Ahmed</div>
+          <div style="font-size:0.8rem;color:var(--color-text-muted);" id="emAge">29 years • Personal Account</div>
+        </div>
+        <div class="emergency-blood-badge" id="emBloodBadge">
+          <span>BLOOD</span>
+          <b id="emBlood">B+</b>
+        </div>
+      </div>
+
+      <div style="margin: 12px 0;">
+        <a id="emCallBtn" href="tel:+8801700000000" class="emergency-call-btn" style="width:100%;justify-content:center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span id="emCallLabel">Call Emergency: +8801700000000</span>
+        </a>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.8rem;margin-top:10px;">
+        <div style="background:#FFFFFF;border:1px solid #FEE2E2;padding:8px 10px;border-radius:6px;">
+          <div style="font-weight:600;color:#DC2626;font-size:0.72rem;text-transform:uppercase;">Allergies</div>
+          <div id="emAllergies" style="font-weight:500;margin-top:2px;">Dust</div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid var(--color-border);padding:8px 10px;border-radius:6px;">
+          <div style="font-weight:600;color:var(--color-text-secondary);font-size:0.72rem;text-transform:uppercase;">Conditions</div>
+          <div id="emConditions" style="font-weight:500;margin-top:2px;">Mild seasonal allergy</div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;background:#FFFFFF;border:1px solid var(--color-border);padding:8px 10px;border-radius:6px;font-size:0.8rem;">
+        <div style="font-weight:600;color:var(--color-text-secondary);font-size:0.72rem;text-transform:uppercase;">Active Prescriptions</div>
+        <div id="emMedsList" style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:8px;">
+      <a href="report.html" class="btn-hm btn-ghost" style="font-size:0.82rem;padding:6px 12px;text-decoration:none;">Full Doctor's Report →</a>
+      <button type="button" class="btn-hm btn-secondary" onclick="closeModal('emergencyIdModal')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Bottom Nav -->
+<nav class="bottom-nav no-print">
+  <a href="dashboard.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Dashboard</a>
+  <a href="medicines.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>Medicines</a>
+  <a href="routine.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Routine</a>
+  <a href="records.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>Records</a>
+  <a class="active" href="documents.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Vault</a>
+  <a href="settings.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</a>
+</nav>
+
+<!-- Toast -->
+<div class="toast-hm" id="toastHm">
+  <span class="dot-success"></span>
+  <span>Saved</span>
+</div>
+
+<script src="/js/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/store.js"></script>
+<script src="js/documents.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

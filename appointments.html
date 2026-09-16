@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthmate — Doctor Appointments & Follow-up Scheduler</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+<link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
+      </div>
+      <span class="brand-name">Healthmate</span>
+    </div>
+
+    <ul class="nav-list">
+      <li><a class="nav-item" href="dashboard.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+        Dashboard
+      </a></li>
+      <li><a class="nav-item" href="medicines.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
+        Medicines
+      </a></li>
+      <li><a class="nav-item" href="routine.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        Daily Routine
+      </a></li>
+      <li><a class="nav-item" href="records.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+        Health Records
+      </a></li>
+      <li><a class="nav-item active" href="appointments.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M10 14h4"/><path d="M12 12v4"/></svg>
+        Appointments
+      </a></li>
+      <li><a class="nav-item" href="documents.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Medical Vault
+      </a></li>
+      <li><a class="nav-item" href="report.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Doctor Report
+      </a></li>
+      <li><a class="nav-item" href="settings.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a></li>
+    </ul>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="topbar">
+      <div class="font-heading" style="font-size:1rem;font-weight:600;">Appointments & Follow-ups</div>
+      <div class="topbar-actions" style="position:relative;">
+        <button class="icon-btn" onclick="openEmergencyModal()" title="Emergency Medical ID" aria-label="Emergency Medical ID" style="color:var(--color-error);background:#FEF2F2;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+        </button>
+        <button class="icon-btn" onclick="toggleNotifPanel()" aria-label="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="notif-panel" id="notifPanel"></div>
+        <a href="settings.html" class="avatar" id="topbarAvatar" title="Personal Settings" style="text-decoration:none;">IA</a>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- Header & Schedule Action -->
+      <div class="page-header">
+        <div>
+          <h1>Doctor Consultations & Follow-ups</h1>
+          <p>Schedule visits, track clinical follow-up dates, and prepare pre-visit checklists so no question is forgotten.</p>
+        </div>
+        <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;">
+          <button class="btn-hm btn-primary" onclick="openScheduleModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Schedule Consultation
+          </button>
+        </div>
+      </div>
+
+      <!-- Preparation Tip Banner -->
+      <div class="panel" style="background:linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);border:1px solid #A7F3D0;padding:14px 18px;margin-bottom:var(--space-4);border-radius:var(--radius-md);">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:flex-start;gap:12px;">
+            <div style="width:36px;height:36px;border-radius:8px;background:#10B981;color:#FFFFFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div>
+              <b style="font-size:0.92rem;color:#065F46;">Pre-Consultation Preparation Guide</b>
+              <div style="font-size:0.8rem;color:#047857;margin-top:2px;">
+                Before visiting your physician: <b>1.</b> Review latest BP & vitals in Health Records. <b>2.</b> Ensure recent lab tests are in Medical Vault. <b>3.</b> Write your questions directly into the checklist below.
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <a href="records.html" class="btn-hm btn-ghost" style="font-size:0.78rem;padding:5px 10px;background:#FFFFFF;text-decoration:none;border-color:#A7F3D0;color:#065F46;">
+              Review Vitals →
+            </a>
+            <a href="documents.html" class="btn-hm btn-ghost" style="font-size:0.78rem;padding:5px 10px;background:#FFFFFF;text-decoration:none;border-color:#A7F3D0;color:#065F46;">
+              Vault Reports →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="appt-search-row">
+        <div class="vault-search-input-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="apptSearchInput" placeholder="Search by doctor name, specialty, hospital/chamber, or condition...">
+        </div>
+        <div class="segmented-control" role="tablist" aria-label="Appointment view filter">
+          <button type="button" class="segmented-pill active" data-tab="upcoming" onclick="setApptTab('upcoming')" role="tab">
+            <span>Upcoming</span>
+            <span class="pill-count" id="countUpcoming">0</span>
+          </button>
+          <button type="button" class="segmented-pill" data-tab="completed" onclick="setApptTab('completed')" role="tab">
+            <span>Completed</span>
+            <span class="pill-count" id="countCompleted">0</span>
+          </button>
+          <button type="button" class="segmented-pill" data-tab="all" onclick="setApptTab('all')" role="tab">
+            <span>All Visits</span>
+            <span class="pill-count" id="countAll">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ============ APPOINTMENTS GRID ============ -->
+      <section class="section">
+        <div class="appt-cards-grid" id="appointmentsContainer">
+          <!-- Rendered dynamically by js/appointments.js -->
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============ MODAL: SCHEDULE / EDIT APPOINTMENT ============ -->
+<div class="modal-hm-backdrop" id="scheduleApptModal">
+  <div class="modal-hm" style="max-width:540px;">
+    <div class="modal-hm-header">
+      <h2 id="scheduleModalTitle">Schedule Medical Consultation</h2>
+      <button type="button" class="modal-hm-close" onclick="closeModal('scheduleApptModal')" aria-label="Close">✕</button>
+    </div>
+    <form id="scheduleApptForm" onsubmit="handleSaveAppointment(event)">
+      <div class="modal-hm-body">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+          <div class="form-group-hm">
+            <label for="apptDoctorInput">Doctor Name *</label>
+            <input type="text" id="apptDoctorInput" placeholder="e.g. Dr. A. Chowdhury" required>
+          </div>
+          <div class="form-group-hm">
+            <label for="apptSpecialtyInput">Medical Specialty *</label>
+            <input type="text" id="apptSpecialtyInput" list="specialtySuggestions" placeholder="e.g. Cardiologist" required>
+            <datalist id="specialtySuggestions">
+              <option value="Cardiologist">
+              <option value="Internal Medicine / General Physician">
+              <option value="Endocrinologist / Diabetologist">
+              <option value="Dental Surgeon">
+              <option value="Dermatologist">
+              <option value="ENT Specialist">
+              <option value="Neurologist">
+              <option value="Ophthalmologist (Eye)">
+              <option value="Orthopedic Surgeon">
+              <option value="Pulmonologist (Chest & Lungs)">
+              <option value="Gastroenterologist">
+              <option value="Psychiatrist / Therapist">
+            </datalist>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:var(--space-3);">
+          <div class="form-group-hm">
+            <label for="apptHospitalInput">Hospital / Chamber Location</label>
+            <input type="text" id="apptHospitalInput" placeholder="e.g. Popular Diagnostic Centre, Dhanmondi">
+          </div>
+          <div class="form-group-hm">
+            <label for="apptPhoneInput">Chamber / Serial Phone</label>
+            <input type="tel" id="apptPhoneInput" placeholder="e.g. +880 1711-889900">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
+          <div class="form-group-hm">
+            <label for="apptDateInput">Appointment Date *</label>
+            <input type="date" id="apptDateInput" required>
+          </div>
+          <div class="form-group-hm">
+            <label for="apptTimeInput">Scheduled Time</label>
+            <input type="text" id="apptTimeInput" placeholder="e.g. 06:30 PM">
+          </div>
+        </div>
+
+        <div class="form-group-hm">
+          <label for="apptReasonInput">Reason for Visit / Primary Concern</label>
+          <input type="text" id="apptReasonInput" placeholder="e.g. 3-Month BP checkup & cholesterol review">
+        </div>
+
+        <!-- Pre-visit preparation checklist items -->
+        <div class="form-group-hm">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label style="margin:0;">Pre-Visit Checklist & Questions to Ask</label>
+            <button type="button" class="btn-hm btn-ghost" onclick="addModalChecklistRow()" style="font-size:0.75rem;padding:2px 8px;">
+              + Add Item
+            </button>
+          </div>
+          <div id="modalChecklistRows">
+            <!-- Dynamic checklist items -->
+          </div>
+          <div style="font-size:0.74rem;color:var(--color-text-muted);margin-top:4px;">
+            Add test reports to carry, symptom questions, or medications to discuss.
+          </div>
+        </div>
+
+        <div class="form-group-hm">
+          <label for="apptNotesInput">Clinical Guidance / Prior Doctor Advice</label>
+          <textarea id="apptNotesInput" rows="2" placeholder="e.g. Fasting 10 hours required before appointment; keep previous ECG report handy."></textarea>
+        </div>
+
+        <div class="form-group-hm">
+          <label for="apptStatusInput">Status</label>
+          <select id="apptStatusInput">
+            <option value="upcoming">Upcoming Consultation</option>
+            <option value="completed">Completed Visit</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="modal-hm-footer">
+        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('scheduleApptModal')">Cancel</button>
+        <button type="submit" class="btn-hm btn-primary">Save Consultation</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: SCHEDULE FOLLOW-UP ============ -->
+<div class="modal-hm-backdrop" id="followUpModal">
+  <div class="modal-hm" style="max-width:440px;">
+    <div class="modal-hm-header">
+      <h2>Schedule Next Follow-Up</h2>
+      <button type="button" class="modal-hm-close" onclick="closeModal('followUpModal')" aria-label="Close">✕</button>
+    </div>
+    <form id="followUpForm" onsubmit="handleSaveFollowUp(event)">
+      <input type="hidden" id="followUpParentId">
+      <div class="modal-hm-body">
+        <div style="background:var(--color-bg);padding:10px 12px;border-radius:var(--radius-sm);margin-bottom:var(--space-3);border:1px solid var(--color-border);">
+          <div style="font-size:0.75rem;color:var(--color-text-muted);text-transform:uppercase;font-weight:700;">Completed Consultation With</div>
+          <div id="followUpDocName" style="font-weight:700;font-size:0.95rem;color:var(--color-text);margin-top:2px;">Doctor</div>
+          <div id="followUpSpecialty" style="font-size:0.78rem;color:var(--color-primary-dark);">Specialty</div>
+        </div>
+
+        <div class="form-group-hm">
+          <label for="followUpDateInput">Follow-up Date *</label>
+          <input type="date" id="followUpDateInput" required>
+        </div>
+
+        <div class="form-group-hm">
+          <label for="followUpTimeInput">Preferred Time</label>
+          <input type="text" id="followUpTimeInput" value="10:00 AM">
+        </div>
+
+        <div class="form-group-hm">
+          <label for="followUpReasonInput">Follow-up Objective</label>
+          <input type="text" id="followUpReasonInput" placeholder="e.g. Review response to dosage adjustment">
+        </div>
+      </div>
+
+      <div class="modal-hm-footer">
+        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('followUpModal')">Skip for Now</button>
+        <button type="submit" class="btn-hm btn-primary">Set Follow-Up Date</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ EMERGENCY MEDICAL ID MODAL ============ -->
+<div class="modal-hm-backdrop" id="emergencyIdModal">
+  <div class="modal-hm" style="max-width:480px;padding:var(--space-4);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:#FEF2F2;color:var(--color-error);font-weight:bold;">🚑</span>
+        <h3 style="margin:0;font-size:1.1rem;">Emergency Medical ID</h3>
+      </div>
+      <button type="button" class="icon-btn" onclick="closeModal('emergencyIdModal')" aria-label="Close" style="width:28px;height:28px;">✕</button>
+    </div>
+
+    <div class="emergency-card-visual" id="emCardVisual">
+      <div class="emergency-header">
+        <div>
+          <div style="font-size:1.2rem;font-weight:700;" id="emName">Ifty Ahmed</div>
+          <div style="font-size:0.8rem;color:var(--color-text-muted);" id="emAge">24 years • Personal Account</div>
+        </div>
+        <div class="emergency-blood-badge" id="emBloodBadge">
+          <span>BLOOD</span>
+          <b id="emBlood">B+</b>
+        </div>
+      </div>
+
+      <div style="margin: 12px 0;">
+        <a id="emCallBtn" href="tel:+8801700000000" class="emergency-call-btn" style="width:100%;justify-content:center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span id="emCallLabel">Call Emergency: +8801700000000</span>
+        </a>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.8rem;margin-top:10px;">
+        <div style="background:#FFFFFF;border:1px solid #FEE2E2;padding:8px 10px;border-radius:6px;">
+          <div style="font-weight:600;color:#DC2626;font-size:0.72rem;text-transform:uppercase;">Allergies</div>
+          <div id="emAllergies" style="font-weight:500;margin-top:2px;">Dust</div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid var(--color-border);padding:8px 10px;border-radius:6px;">
+          <div style="font-weight:600;color:var(--color-text-secondary);font-size:0.72rem;text-transform:uppercase;">Conditions</div>
+          <div id="emConditions" style="font-weight:500;margin-top:2px;">Mild seasonal allergy</div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;background:#FFFFFF;border:1px solid var(--color-border);padding:8px 10px;border-radius:6px;font-size:0.8rem;">
+        <div style="font-weight:600;color:var(--color-text-secondary);font-size:0.72rem;text-transform:uppercase;">Active Prescriptions</div>
+        <div id="emMedsList" style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:8px;">
+      <a href="report.html" class="btn-hm btn-ghost" style="font-size:0.82rem;padding:6px 12px;text-decoration:none;">Full Doctor's Report →</a>
+      <button type="button" class="btn-hm btn-secondary" onclick="closeModal('emergencyIdModal')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Bottom Nav -->
+<nav class="bottom-nav no-print">
+  <a href="dashboard.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Dashboard</a>
+  <a href="medicines.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>Medicines</a>
+  <a href="routine.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Routine</a>
+  <a class="active" href="appointments.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Visits</a>
+  <a href="settings.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82"/></svg>Settings</a>
+</nav>
+
+<!-- Toast -->
+<div class="toast-hm" id="toastHm">
+  <span class="dot-success"></span>
+  <span>Saved</span>
+</div>
+
+<script src="/js/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/store.js"></script>
+<script src="js/appointments.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
