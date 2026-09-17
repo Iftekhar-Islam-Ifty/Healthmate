@@ -32,10 +32,10 @@ function initPageHeader() {
 
   if (activeProfile && !activeProfile.isOwner) {
     if (titleEl) titleEl.textContent = `${activeProfile.name}'s Medicines`;
-    if (subEl) subEl.textContent = `Today's schedule and medicine inventory for ${activeProfile.name}.`;
+    if (subEl) subEl.textContent = `${activeProfile.name}-এর আজকের শিডিউল ও ওষুধের তালিকা।`;
   } else {
     if (titleEl) titleEl.textContent = "Medicines";
-    if (subEl) subEl.textContent = "Today's schedule and your medicine list.";
+    if (subEl) subEl.textContent = "আজকের প্রেসক্রিপশন শিডিউল ও ওষুধের বিস্তারিত তালিকা।";
   }
 }
 
@@ -56,11 +56,11 @@ function renderRefillBanner() {
   banner.style.display = 'block';
 
   const names = lowStock.map(m => {
-    return `<b>${m.name}</b>: ${m.stock} ${m.unit || 'pills'} remaining (Threshold: ${m.refillThreshold || 5})`;
+    return `<b>${m.name}</b>: ${m.stock} ${m.unit || 'pills'} বাকি (Refill লিমিট: ${m.refillThreshold || 5})`;
   }).join(' &middot; ');
 
   if (textEl) {
-    textEl.innerHTML = `⚠️ Low supply for ${activeProfile ? activeProfile.name : 'you'}: ${names}`;
+    textEl.innerHTML = `⚠️ <b>${activeProfile ? activeProfile.name : 'আপনার'}</b> ওষুধের স্টক কমে গেছে: ${names}`;
   }
   if (actionsEl) {
     actionsEl.innerHTML = lowStock.map(m => `
@@ -76,27 +76,29 @@ function renderSchedule() {
   const list = getFilteredMedicines();
 
   if (list.length === 0) {
-    el.innerHTML = `<div style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font-size:0.9rem;">No medicines scheduled today.</div>`;
+    el.innerHTML = `<div style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font-size:0.9rem;">আজকের জন্য কোনো ওষুধ শিডিউল করা নেই।</div>`;
     return;
   }
 
   el.innerHTML = list.map(m => {
     const meta = statusMeta[m.status] || statusMeta.pending;
+    const isTaken = m.status === 'taken';
     const isLow = typeof m.stock === 'number' && m.stock <= (m.refillThreshold || 5);
 
     const stockBadge = isLow
       ? `<span class="badge-hm badge-warning" style="margin-right:var(--space-2);font-size:0.75rem;" title="Threshold: ${m.refillThreshold || 5}"><span class="dot"></span>Refill needed (${m.stock} left)</span>`
       : `<span style="font-size:0.78rem;color:var(--color-text-muted);margin-right:var(--space-2);">${m.stock || 0} left</span>`;
 
-    const actionBtn = m.status === 'taken'
-      ? `<span style="font-size:0.8rem;color:var(--color-success);font-weight:500;">✓ Completed</span>`
-      : `<button class="btn-hm btn-secondary" style="padding:6px 14px;font-size:0.8rem;" onclick="markTaken('${m.id}')">Mark as taken</button>`;
+    const actionBtn = isTaken
+      ? `<span style="font-size:0.8rem;color:var(--color-success-dark);font-weight:600;padding:5px 12px;border-radius:6px;background:#ECFDF5;border:1px solid #A7F3D0;">✓ Completed</span>`
+      : `<button class="btn-hm btn-primary" style="padding:6px 14px;font-size:0.8rem;box-shadow:0 2px 6px rgba(13,110,110,0.2);" onclick="markTaken('${m.id}')">Mark as taken</button>`;
 
     return `
-      <div class="med-row" style="flex-wrap:wrap;gap:var(--space-2);">
-        <span class="med-time">${m.time}</span>
-        <div style="flex:1;min-width:140px;display:flex;align-items:center;">
-          <span class="med-name">${m.name}</span>
+      <div class="med-row" style="flex-wrap:wrap;gap:var(--space-2);background:${isTaken ? '#F0FDF4' : '#FFFFFF'};padding:12px 18px;border-bottom:1px solid ${isTaken ? '#DCFCE7' : 'var(--color-border)'};">
+        <span class="today-med-time-pill">${m.time}</span>
+        <div style="flex:1;min-width:140px;display:flex;align-items:center;gap:8px;">
+          <span class="med-name" style="font-weight:${isTaken ? '600' : '700'};color:${isTaken ? 'var(--color-text-secondary)' : 'var(--color-text)'};">${m.name}</span>
+          <span style="font-size:0.78rem;color:var(--color-text-muted);">${m.dosage || ''}</span>
         </div>
         ${stockBadge}
         <span class="badge-hm ${meta.badgeClass}" style="margin-right:var(--space-2);"><span class="dot"></span>${meta.label}</span>

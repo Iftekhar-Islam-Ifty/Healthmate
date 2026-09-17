@@ -83,7 +83,7 @@
       <div class="page-header">
         <div>
           <h1>Settings</h1>
-          <p>Manage your personal profile, health preferences, and data.</p>
+          <p>ব্যক্তিগত প্রোফাইল, স্বাস্থ্য পছন্দ ও ডেটা ব্যাকআপ ম্যানেজ করুন।</p>
         </div>
       </div>
 
@@ -91,7 +91,7 @@
       <section class="section">
         <div class="section-head">
           <h2>Personal Profile</h2>
-          <p>Your individual identity and baseline vital parameters.</p>
+          <p>আপনার ব্যক্তিগত পরিচয় এবং প্রাথমিক স্বাস্থ্য সূচকসমূহ।</p>
         </div>
         <div class="hm-card">
           <div class="control-row" style="justify-content:space-between;align-items:flex-start;">
@@ -142,13 +142,13 @@
       <section class="section">
         <div class="section-head">
           <h2>Reminders &amp; Alerts</h2>
-          <p>Customize automated prompts for medicine timings and daily habits.</p>
+          <p>ওষুধের সময় ও দৈনিক অভ্যাসের জন্য স্বয়ংক্রিয় প্রম্পট নিয়ন্ত্রণ করুন।</p>
         </div>
         <div class="panel" style="padding: 0 var(--space-4);">
           <div class="permission-row">
             <div>
               <div class="p-label">Daily medicine reminders</div>
-              <div class="p-sub">Get notified when it's time for scheduled doses and low stock refills.</div>
+              <div class="p-sub">নির্ধারিত ডোজের সময় এবং ওষুধের স্টক কমে গেলে নোটিফিকেশন পান।</div>
             </div>
             <label class="toggle">
               <input type="checkbox" id="prefMeds" onchange="onPrefChange('medicineReminders', this.checked)">
@@ -159,7 +159,7 @@
           <div class="permission-row">
             <div>
               <div class="p-label">Daily habit &amp; routine tracking prompts</div>
-              <div class="p-sub">Gentle prompts for water targets, walks, and sleep hours.</div>
+              <div class="p-sub">পর্যাপ্ত পানি পান, হাঁটা ও ঘুমের লক্ষ্যের জন্য নিয়মিত রিমাইন্ডার পান।</div>
             </div>
             <label class="toggle">
               <input type="checkbox" id="prefRoutines" onchange="onPrefChange('routineReminders', this.checked)">
@@ -170,7 +170,7 @@
           <div class="permission-row">
             <div>
               <div class="p-label">Vital readings follow-up alerts</div>
-              <div class="p-sub">Alerts when blood pressure or sugar levels require logging or review.</div>
+              <div class="p-sub">রক্তচাপ বা সুগারের মাত্রা লগ করা বা পর্যালোচনার প্রয়োজন হলে অ্যালার্ট পান।</div>
             </div>
             <label class="toggle">
               <input type="checkbox" id="prefAlerts" onchange="onPrefChange('healthAlerts', this.checked)">
@@ -184,7 +184,7 @@
       <section class="section">
         <div class="section-head">
           <h2>Data &amp; Portability</h2>
-          <p>Your Healthmate data is stored locally. Export backups, print clinical summaries, or restore anytime.</p>
+          <p>আপনার Healthmate ডেটা সুরক্ষিতভাবে সংরক্ষিত থাকে। যেকোনো সময় ব্যাকআপ ডাউনলোড বা রিস্টোর করুন।</p>
         </div>
         <div class="panel" style="padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);">
           
@@ -193,7 +193,7 @@
             <div>
               <div style="font-weight:600;font-size:0.92rem;">Doctor's Consultation Report</div>
               <div style="font-size:0.82rem;color:var(--color-text-muted);margin-top:2px;">
-                Generate a printable A4 clinical sheet with all medications, habits, and recent vitals.
+                সমস্ত ওষুধ, অভ্যাস ও সাম্প্রতিক Vitals সহ প্রিন্টযোগ্য ক্লিনিক্যাল শিট তৈরি করুন।
               </div>
             </div>
             <a href="report.html" class="btn-hm btn-ghost" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
@@ -207,7 +207,7 @@
             <div>
               <div style="font-weight:600;font-size:0.92rem;">Export Full Backup</div>
               <div style="font-size:0.82rem;color:var(--color-text-muted);margin-top:2px;">
-                Download your medicines, routines, vitals, and profile as a JSON backup file.
+                ওষুধ, রুটিন ও স্বাস্থ্য রেকর্ডের সম্পূর্ণ ব্যাকআপ JSON ফাইল হিসেবে ডাউনলোড করুন।
               </div>
             </div>
             <button type="button" class="btn-hm btn-secondary" onclick="downloadBackupFile()">

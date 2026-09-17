@@ -82,7 +82,7 @@
       <div class="page-header">
         <div>
           <h1 id="recordsPageTitle">Health Records</h1>
-          <p id="recordsPageSub">Track measurements over time and spot trends early.</p>
+          <p id="recordsPageSub">সময়ের সাথে সাথে স্বাস্থ্য পরিমাপ ট্র্যাক করুন এবং ট্রেন্ড পর্যবেক্ষণ করুন।</p>
         </div>
         <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;">
           <a href="report.html" class="btn-hm btn-ghost" style="text-decoration:none;font-size:0.85rem;">
@@ -100,9 +100,9 @@
         <button class="tab-btn" data-type="temp" onclick="switchType('temp')">Temperature</button>
       </div>
 
-      <!-- ============ TREND ============ -->
+      <!-- ============ TREND (Major Analytics Area) ============ -->
       <section class="section">
-        <div class="hm-card">
+        <div class="hm-card hm-card-major">
           <div class="record-hero" id="recordHero"></div>
           <div class="chart-wrap">
             <canvas id="recordChart"></canvas>
@@ -110,18 +110,18 @@
         </div>
       </section>
 
-      <!-- ============ HISTORY ============ -->
+      <!-- ============ HISTORY (Reference Logs) ============ -->
       <section class="section">
         <div class="section-head">
           <h2>History</h2>
-          <p>Most recent first.</p>
+          <p>সর্বশেষ পরিমাপ প্রথমে দেখানো হয়েছে (Most recent first)।</p>
         </div>
-        <div class="panel" id="historyList" style="padding: 0 var(--space-4);"></div>
+        <div class="panel panel-minor" id="historyList" style="padding: 0 var(--space-4);"></div>
         <div id="historyEmpty" style="display:none;">
           <div class="empty-state">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
             <h3>No readings yet</h3>
-            <p>Add the first reading to start tracking this measurement.</p>
+            <p>এই স্বাস্থ্য সূচকটি ট্র্যাক করতে প্রথম রিডিং যোগ করুন।</p>
             <button class="btn-hm btn-primary" onclick="openAddRecord()">Add a reading</button>
           </div>
         </div>

@@ -21,22 +21,24 @@
   --color-accent-tint: #FBECE8;
   --color-accent-soft: rgba(224, 122, 95, 0.08);
 
-  /* Backgrounds & Surfaces — Calming Cream & Warm Alabaster Canvas */
-  --color-bg: #FAF8F5;
-  --color-bg-subtle: #F3EFE8;
+  /* Backgrounds & Surfaces — Clinical Eye-Comfort Canvas & Crisp White Cards */
+  --color-bg: #F1F5F9;
+  --color-bg-subtle: #E2E8F0;
   --color-surface: #FFFFFF;
-  --color-surface-hover: #F8F5EE;
-  --color-border: #E8E3DA;
-  --color-border-subtle: #F0EBE3;
+  --color-surface-hover: #F8FAFC;
+  --color-surface-sunken: #EAF0F6;
+  --color-border: #E2E8F0;
+  --color-border-subtle: #EDF2F7;
+  --color-border-strong: #CBD5E1;
 
   /* Selective Glassmorphism Tokens */
-  --glass-bg: rgba(250, 248, 245, 0.88);
-  --glass-bg-card: rgba(255, 255, 255, 0.92);
-  --glass-border: rgba(255, 255, 255, 0.75);
-  --glass-border-subtle: rgba(232, 227, 218, 0.85);
+  --glass-bg: rgba(241, 245, 249, 0.92);
+  --glass-bg-card: rgba(255, 255, 255, 0.94);
+  --glass-border: rgba(255, 255, 255, 0.85);
+  --glass-border-subtle: rgba(226, 232, 240, 0.9);
   --glass-blur: blur(12px);
   --glass-blur-lg: blur(16px);
-  --glass-shadow: 0 12px 32px -10px rgba(15, 23, 42, 0.08);
+  --glass-shadow: 0 10px 30px -8px rgba(15, 23, 42, 0.08);
 
   /* Typography Colors */
   --color-text: #0F172A;
@@ -556,23 +558,23 @@ a { color: inherit; }
   flex-shrink: 0;
 }
 
-.badge-success { background: var(--color-success-tint); color: var(--color-success-dark); }
-.badge-success .dot { background: var(--color-success); }
+.badge-success { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
+.badge-success .dot { background: #10B981; }
 
-.badge-warning { background: var(--color-warning-tint); color: var(--color-warning-dark); }
-.badge-warning .dot { background: var(--color-warning); }
+.badge-warning { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+.badge-warning .dot { background: #F59E0B; }
 
-.badge-info { background: var(--color-info-tint); color: var(--color-info-dark); }
-.badge-info .dot { background: var(--color-info); }
+.badge-info { background: #F0F9FF; color: #075985; border: 1px solid #BAE6FD; }
+.badge-info .dot { background: #0284C7; }
 
-.badge-error { background: var(--color-error-tint); color: var(--color-error-dark); }
-.badge-error .dot { background: var(--color-error); }
+.badge-error { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+.badge-error .dot { background: #EF4444; }
 
-.badge-neutral { background: var(--color-bg-subtle); color: var(--color-text-secondary); }
-.badge-neutral .dot { background: var(--color-text-muted); }
+.badge-neutral { background: #F1F5F9; color: #334155; border: 1px solid #CBD5E1; }
+.badge-neutral .dot { background: #64748B; }
 
 /* =========================================================
-   CARDS & SURFACES — Depth & Selective Glassmorphism
+   CARDS & SURFACES — Depth & Visual Hierarchy (Major vs Minor)
 ========================================================= */
 .card-grid {
   display: grid;
@@ -585,13 +587,38 @@ a { color: inherit; }
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-4);
-  box-shadow: var(--shadow-xs);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+/* Major Priority Card (Hero focus, Active schedule, Urgent vitals) */
+.hm-card-major, .panel-major {
+  border-left: 4px solid var(--color-primary);
+  box-shadow: 0 2px 8px -1px rgba(15, 23, 42, 0.06), 0 1px 4px rgba(13, 110, 110, 0.04);
+}
+
+/* Minor Reference Card (Secondary logs, Info panels, Archival) */
+.hm-card-minor, .panel-minor {
+  background: #FDFEFE;
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+}
+
+/* Attention / Alert Card (Low stock, critical appointment, missed dose) */
+.hm-card-alert {
+  border-left: 4px solid var(--color-warning);
+  background: #FFFCF5;
+}
+
+/* Safe / Success Card (All completed, healthy vitals) */
+.hm-card-success {
+  border-left: 4px solid var(--color-success);
+  background: #FAFEFB;
 }
 
 .hm-card.hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 6px 18px -3px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
 }
 
 /* Strategic Glass Card for hero/overview areas */
@@ -1044,62 +1071,64 @@ a { color: inherit; }
   }
   .topbar .font-heading {
     font-size: 0.95rem;
+    font-weight: 600;
   }
   .icon-btn, .avatar {
-    width: 34px;
-    height: 34px;
-    font-size: 0.8rem;
-  }
-
-  .content {
-    padding: 12px 12px 76px;
-  }
-
-  .section {
-    margin-bottom: 12px;
-  }
-  .section-head {
-    margin-bottom: 6px;
-  }
-  .section-head h2 {
-    font-size: 1.05rem;
-  }
-  .section-head p {
-    font-size: 0.78rem;
-    margin-top: 2px;
-  }
-
-  .hm-card, .panel {
-    padding: 12px 14px;
-    border-radius: var(--radius-md);
-  }
-
-  .page-header {
-    margin-bottom: 12px;
-    gap: 8px;
-  }
-  .page-header h1 {
-    font-size: 1.25rem;
-  }
-  .page-header p {
-    font-size: 0.8rem;
-  }
-  .page-header .btn-hm {
-    padding: 6px 14px;
-    font-size: 0.8rem;
-  }
-
-  .btn-hm {
-    padding: 7px 15px;
+    width: 36px;
+    height: 36px;
     font-size: 0.82rem;
   }
 
-  .field {
+  .content {
+    padding: 12px 14px 78px;
+  }
+
+  .section {
     margin-bottom: 10px;
   }
-  .field label {
-    font-size: 0.76rem;
+  .section-head {
     margin-bottom: 4px;
+  }
+  .section-head h2 {
+    font-size: 0.94rem;
+  }
+  .section-head p {
+    font-size: 0.72rem;
+    margin-top: 1px;
+  }
+
+  .hm-card, .panel {
+    padding: 10px 12px;
+    border-radius: 10px;
+  }
+
+  .page-header {
+    margin-bottom: 8px;
+    gap: 6px;
+  }
+  .page-header h1 {
+    font-size: 1.15rem;
+  }
+  .page-header p {
+    font-size: 0.74rem;
+  }
+  .page-header .btn-hm {
+    padding: 5px 12px;
+    font-size: 0.76rem;
+    border-radius: 8px;
+  }
+
+  .btn-hm {
+    padding: 6px 13px;
+    font-size: 0.78rem;
+  }
+
+  .field {
+    margin-bottom: 8px;
+  }
+  .field label {
+    font-size: 0.72rem;
+    margin-bottom: 3px;
   }
   .field input[type="text"],
   .field input[type="date"],
@@ -1109,67 +1138,73 @@ a { color: inherit; }
   .field input[type="number"],
   .field select,
   .field textarea {
-    padding: 8px 12px;
-    font-size: 0.86rem;
+    padding: 7px 10px;
+    font-size: 0.82rem;
+    border-radius: 8px;
   }
 
   .tab-row {
-    gap: 6px;
+    gap: 4px;
     overflow-x: auto;
     padding-bottom: 4px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
   .tab-row::-webkit-scrollbar {
     display: none;
   }
   .tab-btn {
-    padding: 6px 12px;
-    font-size: 0.78rem;
+    padding: 5px 10px;
+    font-size: 0.75rem;
     white-space: nowrap;
     flex-shrink: 0;
+    border-radius: 8px;
   }
 
   .list-row {
-    padding: 10px 12px;
-    gap: 10px;
+    padding: 8px 10px;
+    gap: 8px;
   }
   .list-row-icon {
-    width: 34px;
-    height: 34px;
+    width: 30px;
+    height: 30px;
   }
   .list-row-main .name {
-    font-size: 0.88rem;
+    font-size: 0.84rem;
   }
   .list-row-main .meta {
-    font-size: 0.76rem;
+    font-size: 0.72rem;
   }
 
   .chart-wrap {
-    height: 180px;
-    margin-top: 10px;
+    height: 155px;
+    margin-top: 8px;
   }
   .record-hero .value {
-    font-size: 1.55rem;
+    font-size: 1.42rem;
+  }
+  .record-hero .unit {
+    font-size: 0.78rem;
   }
 
   .week-bars {
-    height: 72px;
+    height: 58px;
+    gap: 4px;
   }
 
   .modal-hm {
-    padding: 18px 16px;
-    border-radius: var(--radius-md);
+    padding: 16px 14px;
+    border-radius: 12px;
     max-height: 90vh;
     overflow-y: auto;
   }
   .modal-hm h3 {
-    font-size: 1.05rem;
-    margin-bottom: 10px;
+    font-size: 0.98rem;
+    margin-bottom: 8px;
   }
   .modal-hm-actions {
-    margin-top: 14px;
+    margin-top: 12px;
   }
 
   .bottom-nav {
@@ -1437,14 +1472,14 @@ a { color: inherit; }
 ========================================================= */
 @media (max-width: 767px) {
   .page-header {
-    margin-bottom: 12px;
-    gap: 8px;
+    margin-bottom: 8px;
+    gap: 6px;
   }
   .page-header h1 {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
   }
   .page-header p {
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     margin-top: 1px;
   }
 
@@ -1453,66 +1488,66 @@ a { color: inherit; }
     gap: 6px;
   }
   .med-time {
-    font-size: 0.74rem;
-    width: 58px;
+    font-size: 0.72rem;
+    width: 54px;
   }
   .med-name {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
   }
 
   .empty-state {
-    padding: 24px 14px;
+    padding: 20px 12px;
   }
   .empty-state svg {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
   }
   .empty-state h3 {
-    font-size: 0.95rem;
+    font-size: 0.90rem;
   }
   .empty-state p {
-    font-size: 0.78rem;
+    font-size: 0.74rem;
   }
 
   .profile-hero {
     gap: 10px;
   }
   .profile-hero-avatar {
-    width: 48px;
-    height: 48px;
-    font-size: 1.1rem;
+    width: 44px;
+    height: 44px;
+    font-size: 1.05rem;
   }
   .profile-hero-name {
-    font-size: 1.05rem;
+    font-size: 1.0rem;
   }
 
   .info-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    gap: 6px;
   }
   .info-item .label {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
   }
   .info-item .value {
-    font-size: 0.85rem;
-  }
-
-  .demo-note {
-    padding: 6px 10px;
-    margin-bottom: 10px;
-    font-size: 0.75rem;
-  }
-
-  .permission-row {
-    padding: 8px 0;
     font-size: 0.82rem;
   }
 
+  .demo-note {
+    padding: 5px 8px;
+    margin-bottom: 8px;
+    font-size: 0.72rem;
+  }
+
+  .permission-row {
+    padding: 6px 0;
+    font-size: 0.80rem;
+  }
+
   .record-hero .value {
-    font-size: 1.55rem;
+    font-size: 1.42rem;
   }
   .chart-wrap {
-    height: 170px;
+    height: 155px;
     margin-top: 8px;
   }
 }

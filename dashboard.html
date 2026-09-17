@@ -392,20 +392,24 @@
   }
 
   .vital-metric-card.vm-bp {
-    border-top: 3px solid var(--color-primary);
-    background: linear-gradient(180deg, rgba(13, 110, 110, 0.03) 0%, #FFFFFF 100%);
+    border: 1px solid #CCFBF1;
+    border-top: 3.5px solid #0D6E6E;
+    background: #F0FDFA;
   }
   .vital-metric-card.vm-sugar {
-    border-top: 3px solid var(--color-warning);
-    background: linear-gradient(180deg, rgba(245, 158, 11, 0.03) 0%, #FFFFFF 100%);
+    border: 1px solid #FEF3C7;
+    border-top: 3.5px solid #F59E0B;
+    background: #FFFBEB;
   }
   .vital-metric-card.vm-weight {
-    border-top: 3px solid var(--color-accent);
-    background: linear-gradient(180deg, rgba(224, 122, 95, 0.03) 0%, #FFFFFF 100%);
+    border: 1px solid #FFEDD5;
+    border-top: 3.5px solid #E07A5F;
+    background: #FFF7ED;
   }
   .vital-metric-card.vm-blood {
-    border-top: 3px solid var(--color-secondary);
-    background: linear-gradient(180deg, rgba(51, 92, 103, 0.03) 0%, #FFFFFF 100%);
+    border: 1px solid #E2E8F0;
+    border-top: 3.5px solid #335C67;
+    background: #F8FAFC;
   }
 
   .vital-metric-card .vm-label {
@@ -416,7 +420,7 @@
     font-weight: 600;
   }
   .vital-metric-card .vm-value {
-    font-size: 1.3rem;
+    font-size: 1.35rem;
     font-weight: 700;
     color: var(--color-text);
     margin: 4px 0 2px;
@@ -427,6 +431,14 @@
     color: var(--color-text-secondary);
   }
 
+  /* Today's Schedule Major Action Container */
+  .today-items-panel {
+    background: #FFFFFF;
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-primary);
+    box-shadow: 0 2px 8px -1px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(13, 110, 110, 0.04);
+  }
+
   .today-med-row {
     display: flex;
     align-items: center;
@@ -434,13 +446,28 @@
     padding: var(--space-3) var(--space-4);
     border-bottom: 1px solid var(--color-border);
     gap: var(--space-3);
+    background: #FFFFFF;
     transition: background 0.12s ease;
   }
   .today-med-row:last-child {
     border-bottom: none;
   }
   .today-med-row.is-taken {
-    background: rgba(16, 185, 129, 0.04);
+    background: #F0FDF4;
+    border-bottom: 1px solid #DCFCE7;
+  }
+  .today-med-time-pill {
+    font-size: 0.73rem;
+    font-weight: 700;
+    color: var(--color-primary-dark);
+    background: var(--color-primary-tint);
+    padding: 2px 7px;
+    border-radius: 6px;
+    letter-spacing: 0.01em;
+  }
+  .today-med-row.is-taken .today-med-time-pill {
+    background: #DCFCE7;
+    color: #166534;
   }
 
   .today-routine-row {
@@ -450,9 +477,15 @@
     padding: var(--space-3) var(--space-4);
     border-bottom: 1px solid var(--color-border);
     gap: var(--space-3);
+    background: #FFFFFF;
+    transition: background 0.12s ease;
   }
   .today-routine-row:last-child {
     border-bottom: none;
+  }
+  .today-routine-row.is-done {
+    background: #F0FDF4;
+    border-bottom: 1px solid #DCFCE7;
   }
 
   .routine-checkbox {
@@ -548,6 +581,139 @@
   }
 
   /* Smart Health Insights Styles */
+  .smart-pulse-strip {
+    padding: 0 !important;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: #FFFFFF;
+  }
+  .smart-pulse-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #FFFFFF;
+    cursor: pointer;
+    user-select: none;
+    gap: 12px;
+    transition: background var(--transition-fast);
+  }
+  .smart-pulse-bar:hover {
+    background: #F8FAFB;
+  }
+  .smart-pulse-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .pulse-indicator-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #10B981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    flex-shrink: 0;
+  }
+  .pulse-indicator-dot.warning {
+    background: #F59E0B;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+  }
+  .pulse-indicator-dot.danger {
+    background: #EF4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+  }
+  .smart-pulse-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--color-primary-tint);
+    color: var(--color-primary-dark);
+    flex-shrink: 0;
+  }
+  .smart-pulse-headline {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .smart-pulse-title {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .smart-pulse-sub {
+    font-size: 0.73rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .smart-pulse-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .smart-pulse-pills {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .smart-pill {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: #F1F5F9;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .smart-pulse-toggle-btn {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 5px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: var(--radius-sm);
+    background: #F4F6F8;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+  }
+  .smart-pulse-toggle-btn:hover {
+    background: #EAEFF4;
+    color: var(--color-text);
+  }
+  .smart-pulse-chevron {
+    transition: transform 0.2s ease;
+  }
+  .smart-pulse-strip.expanded .smart-pulse-chevron {
+    transform: rotate(180deg);
+  }
+  .smart-insights-collapsible {
+    border-top: 1px solid var(--color-border);
+    padding: 14px 16px;
+    background: #FAFBFB;
+    animation: fadeIn 0.2s ease;
+  }
+  .smart-insights-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
   .smart-insights-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -606,184 +772,363 @@
     text-decoration: underline;
   }
 
+  @media (max-width: 768px) {
+    .smart-pulse-pills {
+      display: none;
+    }
+    .smart-pulse-bar {
+      padding: 8px 12px;
+    }
+  }
+
   /* Responsive Adjustments */
   @media (max-width: 960px) {
     .dash-grid-2 {
       grid-template-columns: 1fr;
-      gap: 12px;
-    }
-    .hero-stat-tiles {
-      grid-template-columns: 1fr 1fr;
+      gap: 14px;
     }
   }
 
   @media (max-width: 767px) {
+    /* Mobile-Native Stacked Layout */
     .dash-grid-2 {
-      gap: 10px;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
     }
 
-    /* Quick Actions: compact 3-column bar */
+    /* Quick Actions: Compact 5-column side-by-side row on mobile */
     .quick-actions-row {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      margin-bottom: 10px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      margin-bottom: 12px;
     }
     .quick-action-card {
-      padding: 8px 4px;
+      padding: 7px 2px 6px;
       flex-direction: column;
+      align-items: center;
       text-align: center;
-      gap: 4px;
+      justify-content: flex-start;
+      gap: 3px;
       border-radius: 10px;
+      min-height: 64px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+    .quick-action-card:nth-child(5) {
+      grid-column: span 1;
     }
     .qa-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      flex-shrink: 0;
+      margin-bottom: 1px;
     }
     .qa-icon svg {
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
+    }
+    .qa-text {
+      min-width: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
     }
     .qa-title {
-      font-size: 0.74rem;
-      font-weight: 600;
-      line-height: 1.2;
+      font-size: 0.63rem;
+      font-weight: 700;
+      line-height: 1.15;
+      text-align: center;
+      word-break: break-word;
+      letter-spacing: -0.2px;
+      white-space: normal;
     }
     .qa-sub {
-      display: none;
+      display: block !important;
+      font-size: 0.50rem;
+      color: var(--color-text-muted);
+      line-height: 1.1;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
 
     /* Greeting compact header */
     .greeting {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
     .greeting h1 {
-      font-size: 1.15rem;
+      font-size: 1.20rem;
+      font-weight: 700;
     }
     .greeting p {
-      font-size: 0.76rem;
-      margin-top: 1px;
+      font-size: 0.80rem;
+      margin-top: 2px;
     }
     #todayDateBadge {
-      font-size: 0.72rem;
-      padding: 3px 7px;
+      font-size: 0.74rem;
+      padding: 4px 10px;
     }
 
-    /* Today's Hero Card compact */
+    /* Today's Hero Card (Full Width Mobile Card) */
     .today-hero-card {
-      padding: 12px 14px;
-      border-radius: 12px;
-      gap: 8px;
+      padding: 16px 14px;
+      border-radius: 14px;
+      gap: 12px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 24px -4px rgba(13, 110, 110, 0.22);
     }
     .hero-card-header h2 {
-      font-size: 1rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.25;
     }
     .hero-card-header p {
-      font-size: 0.72rem;
+      display: block !important;
+      font-size: 0.76rem;
+      color: rgba(255, 255, 255, 0.82);
+      margin-top: 2px;
     }
     .hero-status-badge {
-      font-size: 0.68rem;
-      padding: 2px 7px;
+      font-size: 0.72rem;
+      padding: 3px 9px;
+      gap: 5px;
     }
     .hero-metrics-body {
       flex-direction: row !important;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
     .hero-ring-container svg {
-      width: 66px;
-      height: 66px;
+      width: 74px;
+      height: 74px;
+    }
+    .hero-ring-container {
+      flex-shrink: 0;
     }
     .hero-stat-tiles {
-      gap: 6px;
+      gap: 8px;
+      display: grid;
       grid-template-columns: 1fr 1fr;
+      flex: 1;
+      min-width: 0;
     }
     .hero-tile {
-      padding: 6px 8px;
-      gap: 2px;
+      padding: 8px 10px;
+      gap: 4px;
       border-radius: 8px;
     }
+    .hero-tile-top {
+      gap: 5px;
+    }
+    .hero-tile-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+    }
+    .hero-tile-icon svg {
+      width: 11px;
+      height: 11px;
+    }
     .hero-tile-label {
-      font-size: 0.66rem;
+      font-size: 0.70rem;
+      font-weight: 500;
     }
     .hero-tile-val {
-      font-size: 0.76rem;
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+    .hero-mini-bar {
+      height: 3.5px;
+      margin-top: 2px;
     }
     .hero-nextup-banner {
-      padding: 6px 8px;
-      gap: 6px;
+      padding: 8px 10px;
+      gap: 8px;
       border-radius: 8px;
     }
     .hero-nextup-badge {
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
+    }
+    .hero-nextup-badge svg {
+      width: 13px;
+      height: 13px;
     }
     .hero-nextup-tag {
       font-size: 0.62rem;
     }
     .hero-nextup-title {
-      font-size: 0.74rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .hero-nextup-action {
-      padding: 2px 7px;
-      font-size: 0.68rem;
+      padding: 4px 10px;
+      font-size: 0.72rem;
     }
 
-    /* Vitals Card compact */
-    .vitals-summary-grid {
-      gap: 6px;
-      margin-top: 6px;
+    /* Vitals Card (Full Width Mobile Card) */
+    .dash-grid-2 > .hm-card.hm-card-minor {
+      padding: 16px 14px;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
     }
-    .vital-metric-card {
-      padding: 7px 8px;
-      border-radius: 8px;
+    .dash-grid-2 > .hm-card.hm-card-minor h2 {
+      font-size: 1.05rem !important;
+      line-height: 1.25;
     }
-    .vital-metric-card .vm-label {
-      font-size: 0.64rem;
+    .dash-grid-2 > .hm-card.hm-card-minor p {
+      display: block !important;
+      font-size: 0.76rem !important;
+      color: var(--color-text-muted) !important;
+      margin-top: 2px;
     }
-    .vital-metric-card .vm-value {
-      font-size: 1.05rem;
-      margin: 1px 0;
-    }
-    .vital-metric-card .vm-sub {
-      font-size: 0.66rem;
-    }
-
-    /* Today's rows compact */
-    .today-med-row, .today-routine-row {
-      padding: 8px 10px;
-      gap: 8px;
-    }
-    .today-med-row .btn-hm {
-      font-size: 0.74rem !important;
+    .dash-grid-2 > .hm-card.hm-card-minor .btn-hm {
+      font-size: 0.76rem !important;
       padding: 4px 10px !important;
     }
+    .vitals-summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .vital-metric-card {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border-top-width: 3px;
+    }
+    .vital-metric-card .vm-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      line-height: 1.15;
+    }
+    .vital-metric-card .vm-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 3px 0 2px;
+      line-height: 1.15;
+    }
+    .vital-metric-card .vm-sub {
+      font-size: 0.68rem;
+      line-height: 1.2;
+      white-space: normal;
+    }
+
+    /* Today's schedule rows */
+    .today-items-panel {
+      border-radius: 12px;
+    }
+    .today-med-row, .today-routine-row {
+      padding: 10px 12px;
+      gap: 8px;
+    }
+    .today-med-time-pill {
+      font-size: 0.72rem;
+      padding: 3px 7px;
+    }
+    .today-med-row .med-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+    .today-med-row .btn-hm {
+      font-size: 0.76rem !important;
+      padding: 5px 12px !important;
+      border-radius: 8px;
+    }
     .routine-checkbox {
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
     }
     .segmented-pill {
-      padding: 4px 9px;
-      font-size: 0.75rem;
-      gap: 4px;
+      padding: 5px 11px;
+      font-size: 0.78rem;
+      gap: 5px;
     }
     .segmented-pill svg {
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
+    }
+    .today-tab-viewall {
+      font-size: 0.76rem;
+      padding: 4px 8px;
+    }
+
+    /* Smart Health Insights compact bar */
+    .smart-pulse-strip {
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+    .smart-pulse-bar {
+      padding: 10px 12px;
+      gap: 10px;
+    }
+    .smart-pulse-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+    }
+    .smart-pulse-icon svg {
+      width: 15px;
+      height: 15px;
+    }
+    .smart-pulse-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+    .smart-pulse-sub {
+      font-size: 0.72rem;
+      line-height: 1.2;
+    }
+    .smart-pulse-toggle-btn {
+      font-size: 0.74rem;
+      padding: 4px 8px;
     }
   }
 
-  @media (max-width: 480px) {
-    .hero-metrics-body {
-      flex-direction: row !important;
-      align-items: center;
+  @media (max-width: 360px) {
+    .quick-actions-row {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 2px;
     }
-    .hero-ring-container {
-      margin: 0;
-      flex-shrink: 0;
+    .quick-action-card {
+      padding: 5px 1px 4px;
+      min-height: 58px;
+    }
+    .qa-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+    }
+    .qa-icon svg {
+      width: 12px;
+      height: 12px;
+    }
+    .qa-title {
+      font-size: 0.56rem;
+    }
+    .qa-sub {
+      font-size: 0.44rem;
+    }
+    .hero-metrics-body {
+      flex-direction: column !important;
+      align-items: center;
+      gap: 10px;
     }
     .hero-stat-tiles {
-      grid-template-columns: 1fr;
+      width: 100%;
     }
   }
 </style>
@@ -963,7 +1308,7 @@
           </div>
           <div class="qa-text">
             <div class="qa-title" style="color:#4F46E5;">Medical Vault</div>
-            <div class="qa-sub" style="color:var(--color-text-muted);">Lab & Rx files</div>
+            <div class="qa-sub" style="color:var(--color-text-muted);">Lab &amp; Rx files</div>
           </div>
         </a>
       </div>
@@ -977,7 +1322,7 @@
             <div class="hero-card-header">
               <div>
                 <h2>Today's Health Status</h2>
-                <p>Daily medicines and routine progress</p>
+                <p>দৈনিক ওষুধ ও স্বাস্থ্য রুটিন সম্পন্ন করার অগ্রগতি</p>
               </div>
               <div class="hero-status-badge" id="dashStatusBadge">
                 <span class="status-pulse-dot"></span>
@@ -1045,17 +1390,17 @@
                 </div>
               </div>
               <a href="medicines.html" class="hero-nextup-action">
-                View Schedule →
+                Schedule দেখুন →
               </a>
             </div>
           </div>
 
           <!-- Card 2: My Health Vitals (Latest readings with clean color-coded accents) -->
-          <div class="hm-card">
+          <div class="hm-card hm-card-minor">
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <div class="section-head" style="margin-bottom:0;">
                 <h2 style="font-size:1.05rem;">My Health Vitals</h2>
-                <p style="font-size:0.8rem;">Recent physiological indicators.</p>
+                <p style="font-size:0.8rem;">সাম্প্রতিক স্বাস্থ্য পরিমাপ ও সূচকসমূহ</p>
               </div>
               <a href="records.html" class="btn-hm btn-ghost" style="font-size:0.78rem;padding:4px 8px;text-decoration:none;">
                 History →
@@ -1066,22 +1411,22 @@
               <div class="vital-metric-card vm-bp">
                 <div class="vm-label">Blood Pressure</div>
                 <div class="vm-value" id="vitalBpVal">118/78</div>
-                <div class="vm-sub" id="vitalBpSub">mmHg · Normal range</div>
+                <div class="vm-sub" id="vitalBpSub">mmHg · স্বাভাবিক রেঞ্জ (Normal)</div>
               </div>
               <div class="vital-metric-card vm-sugar">
                 <div class="vm-label">Blood Sugar</div>
                 <div class="vm-value" id="vitalSugarVal">92</div>
-                <div class="vm-sub" id="vitalSugarSub">mg/dL · Fasting</div>
+                <div class="vm-sub" id="vitalSugarSub">mg/dL · খালি পেটে (Fasting)</div>
               </div>
               <div class="vital-metric-card vm-weight">
                 <div class="vm-label">Body Weight</div>
                 <div class="vm-value" id="vitalWeightVal">70.5</div>
-                <div class="vm-sub" id="vitalWeightSub">kg · Latest check</div>
+                <div class="vm-sub" id="vitalWeightSub">kg · সর্বশেষ পরিমাপ</div>
               </div>
               <div class="vital-metric-card vm-blood">
                 <div class="vm-label">Blood Group</div>
                 <div class="vm-value" id="vitalBloodVal">B+</div>
-                <div class="vm-sub" id="vitalBloodSub">Rh positive</div>
+                <div class="vm-sub" id="vitalBloodSub">Rh পজিটিভ (Rh+)</div>
               </div>
             </div>
           </div>
@@ -1089,26 +1434,40 @@
         </div>
       </section>
 
-      <!-- ============ SMART HEALTH INSIGHTS & CLINICAL ANALYSIS ============ -->
-      <section class="section" id="smartInsightsSection">
-        <div class="hm-card" style="padding:var(--space-3) var(--space-4);">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);flex-wrap:wrap;gap:8px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:var(--color-primary-tint);color:var(--color-primary-dark);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      <!-- ============ SMART HEALTH PULSE & COMPACT INSIGHTS ============ -->
+      <section class="section" id="smartInsightsSection" style="margin-bottom: var(--space-3);">
+        <div class="hm-card smart-pulse-strip" id="smartPulseStrip">
+          <div class="smart-pulse-bar" onclick="toggleSmartInsightsExpand()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSmartInsightsExpand();}" aria-label="Toggle clinical insights summary">
+            <div class="smart-pulse-left">
+              <span class="pulse-indicator-dot" id="pulseDot"></span>
+              <span class="smart-pulse-icon" id="pulseIcon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
               </span>
-              <div>
-                <h2 style="font-size:1rem;margin:0;font-weight:700;">Smart Health Insights</h2>
-                <p style="font-size:0.76rem;color:var(--color-text-muted);margin:0;">Clinical analysis of recent vitals, prescription adherence, and habits.</p>
+              <div class="smart-pulse-headline">
+                <div class="smart-pulse-title" id="smartPulseTitle">Health Pulse: স্বাস্থ্য সূচক ও ওষুধ বিশ্লেষণ করা হচ্ছে...</div>
+                <div class="smart-pulse-sub" id="smartPulseSub">সক্রিয় স্বাস্থ্য সূচকসমূহ রিয়েল-টাইম পর্যবেক্ষণ করা হচ্ছে</div>
               </div>
             </div>
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span class="badge-hm badge-success" style="font-size:0.72rem;padding:2px 8px;">Active Analysis</span>
+            <div class="smart-pulse-right">
+              <div class="smart-pulse-pills" id="smartPulsePills">
+                <!-- Mini status pills rendered dynamically -->
+              </div>
+              <button type="button" class="smart-pulse-toggle-btn" id="smartPulseToggleBtn" onclick="event.stopPropagation(); toggleSmartInsightsExpand();" aria-expanded="false" title="Toggle detailed insights">
+                <span id="smartPulseToggleText">Insights (4)</span>
+                <svg class="smart-pulse-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
             </div>
           </div>
 
-          <div class="smart-insights-grid" id="smartInsightsContainer">
-            <!-- Rendered dynamically by renderSmartInsights() -->
+          <!-- Expandable Detailed Insights Drawer -->
+          <div class="smart-insights-collapsible" id="smartInsightsCollapsible" style="display:none;">
+            <div class="smart-insights-details-header">
+              <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--color-text-muted);">Clinical Advisory & Analysis</span>
+              <span class="badge-hm badge-success" style="font-size:0.7rem;padding:2px 8px;">Active Analysis</span>
+            </div>
+            <div class="smart-insights-grid" id="smartInsightsContainer">
+              <!-- Detailed cards rendered dynamically -->
+            </div>
           </div>
         </div>
       </section>
@@ -1133,7 +1492,7 @@
           </a>
         </div>
 
-        <div class="panel today-items-panel" style="padding:0;overflow:hidden;">
+        <div class="panel panel-major today-items-panel" style="padding:0;overflow:hidden;">
           <div id="todayMedsView">
             <div id="dashboardMedsList"></div>
           </div>
@@ -1402,20 +1761,79 @@
     if (bloodSubEl) bloodSubEl.textContent = 'Blood type recorded';
   }
 
+  let isInsightsExpanded = false;
+  function toggleSmartInsightsExpand(force) {
+    const strip = document.getElementById('smartPulseStrip');
+    const collapsible = document.getElementById('smartInsightsCollapsible');
+    const toggleBtn = document.getElementById('smartPulseToggleBtn');
+    if (!collapsible) return;
+
+    if (typeof force === 'boolean') {
+      isInsightsExpanded = force;
+    } else {
+      isInsightsExpanded = !isInsightsExpanded;
+    }
+
+    if (isInsightsExpanded) {
+      collapsible.style.display = 'block';
+      if (strip) strip.classList.add('expanded');
+      if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+    } else {
+      collapsible.style.display = 'none';
+      if (strip) strip.classList.remove('expanded');
+      if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+    }
+  }
+
   function renderSmartInsights() {
     const container = document.getElementById('smartInsightsContainer');
+    const pulseDot = document.getElementById('pulseDot');
+    const pulseTitle = document.getElementById('smartPulseTitle');
+    const pulseSub = document.getElementById('smartPulseSub');
+    const pulsePills = document.getElementById('smartPulsePills');
+    const toggleText = document.getElementById('smartPulseToggleText');
     if (!container) return;
 
     const insights = HMStore.getSmartInsights ? HMStore.getSmartInsights() : [];
     if (!insights || insights.length === 0) {
+      if (pulseTitle) pulseTitle.textContent = 'Health Pulse: Normal & Stable';
+      if (pulseSub) pulseSub.textContent = 'স্মার্ট হেলথ ইনসাইট পেতে দৈনিক Vitals ও স্বাস্থ্য রুটিন লগ করুন';
+      if (toggleText) toggleText.textContent = 'Insights (0)';
       container.innerHTML = `
         <div style="padding:var(--space-3);color:var(--color-text-muted);font-size:0.84rem;grid-column:1/-1;">
-          Add your daily vitals and routines to generate smart clinical insights.
+          স্মার্ট ক্লিনিক্যাল ইনসাইট ও অ্যালার্ট তৈরি করতে আপনার দৈনিক Vitals এবং স্বাস্থ্য রুটিন যুক্ত করুন।
         </div>
       `;
       return;
     }
 
+    if (toggleText) toggleText.textContent = `Insights (${insights.length})`;
+
+    // Check if there is a warning or alert (e.g. low stock, elevated BP)
+    const alertItem = insights.find(i => i.level === 'danger') || insights.find(i => i.level === 'warning');
+    if (alertItem) {
+      if (pulseDot) {
+        pulseDot.className = `pulse-indicator-dot ${alertItem.level === 'danger' ? 'danger' : 'warning'}`;
+      }
+      if (pulseTitle) pulseTitle.textContent = alertItem.title;
+      if (pulseSub) pulseSub.textContent = alertItem.description.length > 80 ? (alertItem.description.slice(0, 78) + '...') : alertItem.description;
+    } else {
+      if (pulseDot) pulseDot.className = 'pulse-indicator-dot';
+      if (pulseTitle) pulseTitle.textContent = 'Health Pulse: All Vitals & Adherence On Track';
+      if (pulseSub) pulseSub.textContent = 'দৈনিক প্রেসক্রিপশন ও স্বাস্থ্য সূচকসমূহ সম্পূর্ণ স্বাভাবিক সীমার মধ্যে রয়েছে';
+    }
+
+    // Render mini quick pills for immediate feedback
+    if (pulsePills) {
+      const pillsHtml = insights.slice(0, 2).map(item => `
+        <span class="smart-pill" style="background:${item.badgeBg};color:${item.badgeColor};border:1px solid rgba(0,0,0,0.06);">
+          ${item.badgeText}
+        </span>
+      `).join('');
+      pulsePills.innerHTML = pillsHtml;
+    }
+
+    // Render detailed cards inside collapsible drawer
     container.innerHTML = insights.map(item => `
       <div class="insight-item-card">
         <div>
@@ -1487,7 +1905,7 @@
     if (meds.length === 0) {
       container.innerHTML = `
         <div style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font-size:0.88rem;">
-          No medicines scheduled for today. <a href="medicines.html" style="color:var(--color-primary);font-weight:500;">+ Add a medicine</a>
+          আজকের জন্য কোনো ওষুধ শিডিউল করা নেই। <a href="medicines.html" style="color:var(--color-primary);font-weight:600;">+ নতুন ওষুধ যোগ করুন</a>
         </div>
       `;
       return;
@@ -1499,32 +1917,33 @@
 
       return `
         <div class="today-med-row ${isTaken ? 'is-taken' : ''}">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:${isTaken ? 'var(--color-success)' : 'var(--color-primary-tint)'};color:${isTaken ? '#FFFFFF' : 'var(--color-primary)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+            <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:${isTaken ? '#ECFDF5' : 'var(--color-primary-tint)'};color:${isTaken ? '#059669' : 'var(--color-primary)'};border:1px solid ${isTaken ? '#A7F3D0' : 'rgba(13,110,110,0.15)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
               ${isTaken 
                 ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
                 : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>'
               }
             </div>
-            <div>
-              <div style="font-weight:600;font-size:0.92rem;color:var(--color-text);">${m.name}</div>
+            <div style="min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span style="font-weight:700;font-size:0.94rem;color:${isTaken ? 'var(--color-text-secondary)' : 'var(--color-text)'};">${m.name}</span>
+                <span class="today-med-time-pill">${m.time}</span>
+                ${isLow ? `<span class="badge-hm badge-warning" style="font-size:0.68rem;padding:2px 7px;">Refill (${m.stock} left)</span>` : ''}
+              </div>
               <div style="font-size:0.78rem;color:var(--color-text-muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px;">
-                <span>${m.time}</span>
-                <span>•</span>
                 <span>${m.dosage}</span>
                 <span>•</span>
                 <span>${m.meal || 'As directed'}</span>
-                ${isLow ? `<span class="badge-hm badge-warning" style="font-size:0.7rem;padding:2px 6px;">${m.stock} left</span>` : ''}
               </div>
             </div>
           </div>
 
-          <div>
+          <div style="flex-shrink:0;">
             ${isTaken 
-              ? `<button type="button" class="btn-hm btn-ghost" onclick="toggleMedStatus('${m.id}')" style="font-size:0.8rem;color:var(--color-success);font-weight:600;border:1px solid rgba(16,185,129,0.3);background:rgba(16,185,129,0.06);">
+              ? `<button type="button" class="btn-hm btn-ghost" onclick="toggleMedStatus('${m.id}')" style="font-size:0.8rem;color:var(--color-success-dark);font-weight:600;border:1px solid #A7F3D0;background:#ECFDF5;padding:6px 14px;">
                    ✓ Taken
                  </button>`
-              : `<button type="button" class="btn-hm btn-primary" onclick="toggleMedStatus('${m.id}')" style="font-size:0.8rem;padding:6px 12px;">
+              : `<button type="button" class="btn-hm btn-primary" onclick="toggleMedStatus('${m.id}')" style="font-size:0.82rem;padding:7px 16px;box-shadow:0 2px 6px rgba(13,110,110,0.25);">
                    Mark Taken
                  </button>`
             }
@@ -1559,7 +1978,7 @@
     if (routines.length === 0) {
       container.innerHTML = `
         <div style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font-size:0.88rem;">
-          No habits configured yet. <a href="routine.html" style="color:var(--color-primary);font-weight:500;">+ Add a routine</a>
+          এখনও কোনো স্বাস্থ্য রুটিন যোগ করা হয়নি। <a href="routine.html" style="color:var(--color-primary);font-weight:600;">+ নতুন রুটিন যোগ করুন</a>
         </div>
       `;
       return;
@@ -1569,7 +1988,7 @@
       const isDone = !!(r.week && r.week[TODAY_WEEK_INDEX]);
 
       return `
-        <div class="today-routine-row">
+        <div class="today-routine-row ${isDone ? 'is-done' : ''}">
           <div style="display:flex;align-items:center;gap:12px;">
             <div class="routine-checkbox ${isDone ? 'done' : ''}" onclick="toggleRoutineStatus('${r.id}')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1582,8 +2001,8 @@
             </div>
           </div>
 
-          <div style="font-size:0.8rem;color:${isDone ? 'var(--color-success)' : 'var(--color-text-muted)'};font-weight:500;">
-            ${isDone ? 'Done today' : 'Pending'}
+          <div style="font-size:0.8rem;color:${isDone ? 'var(--color-success-dark)' : 'var(--color-text-muted)'};font-weight:600;">
+            ${isDone ? '✓ Done today' : 'Pending'}
           </div>
         </div>
       `;
