@@ -6,11 +6,14 @@
 <title>Healthmate — Settings</title>
 <meta name="description" content="Manage your personal health profile, preferences, and notifications.">
 
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link rel="apple-touch-icon" href="/icon.svg">
+<link rel="manifest" href="/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-<link href="css/style.css" rel="stylesheet">
+<link href="/css/style.css" rel="stylesheet">
 </head>
 <body>
 
@@ -335,10 +338,15 @@
   </div>
 </div>
 
-<script src="/js/supabase.js"></script>
-<script src="js/supabase-config.js"></script>
-<script src="js/store.js"></script>
-<script src="js/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  if (!window.supabase) {
+    document.write('<script src="/js/supabase.js"><\/script>');
+  }
+</script>
+<script src="/js/supabase-config.js"></script>
+<script src="/js/store.js"></script>
+<script src="/js/app.js"></script>
 <script>
   function renderSettings() {
     const user = HMStore.getUser();

@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "node server.js",
     "build": "echo 'Build successful'",
+    "lint": "node -c server.js js/*.js",
     "start": "node server.js"
   },
   "dependencies": {
