@@ -8,6 +8,14 @@
 <meta property="og:title" content="Healthmate — Personal Dashboard">
 <meta property="og:description" content="Your personal health management space — track medicines, daily routines, and health records in one place.">
 
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D6E6E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Healthmate">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -1344,16 +1352,18 @@
   }
 
   function renderVitalsCard(user) {
-    const records = HMStore.getRecords();
+    const records = HMStore.getRecords ? HMStore.getRecords() : {};
 
     // BP
     const bpList = records.bp || [];
     if (bpList.length > 0) {
       const latest = bpList[bpList.length - 1];
       const cls = HMStore.getVitalClassification ? HMStore.getVitalClassification('bp', latest) : null;
-      document.getElementById('vitalBpVal').textContent = `${latest.systolic}/${latest.diastolic}`;
+      const bpValEl = document.getElementById('vitalBpVal');
+      const bpSubEl = document.getElementById('vitalBpSub');
+      if (bpValEl) bpValEl.textContent = `${latest.systolic}/${latest.diastolic}`;
       const badgeHtml = cls ? `<span style="display:inline-block;padding:1px 6px;border-radius:10px;background:${cls.bg};color:${cls.color};font-size:0.7rem;font-weight:600;margin-left:4px;">${cls.status}</span>` : '';
-      document.getElementById('vitalBpSub').innerHTML = `mmHg ${badgeHtml}`;
+      if (bpSubEl) bpSubEl.innerHTML = `mmHg ${badgeHtml}`;
     }
 
     // Sugar
@@ -1361,9 +1371,11 @@
     if (sugarList.length > 0) {
       const latest = sugarList[sugarList.length - 1];
       const cls = HMStore.getVitalClassification ? HMStore.getVitalClassification('sugar', latest) : null;
-      document.getElementById('vitalSugarVal').textContent = latest.value;
+      const sugarValEl = document.getElementById('vitalSugarVal');
+      const sugarSubEl = document.getElementById('vitalSugarSub');
+      if (sugarValEl) sugarValEl.textContent = latest.value;
       const badgeHtml = cls ? `<span style="display:inline-block;padding:1px 6px;border-radius:10px;background:${cls.bg};color:${cls.color};font-size:0.7rem;font-weight:600;margin-left:4px;">${cls.status}</span>` : '';
-      document.getElementById('vitalSugarSub').innerHTML = `mg/dL · ${latest.context || 'Fasting'} ${badgeHtml}`;
+      if (sugarSubEl) sugarSubEl.innerHTML = `mg/dL · ${latest.context || 'Fasting'} ${badgeHtml}`;
     }
 
     // Weight
@@ -1371,14 +1383,18 @@
     if (weightList.length > 0) {
       const latest = weightList[weightList.length - 1];
       const cls = HMStore.getVitalClassification ? HMStore.getVitalClassification('weight', latest) : null;
-      document.getElementById('vitalWeightVal').textContent = latest.value;
+      const weightValEl = document.getElementById('vitalWeightVal');
+      const weightSubEl = document.getElementById('vitalWeightSub');
+      if (weightValEl) weightValEl.textContent = latest.value;
       const badgeHtml = cls ? `<span style="display:inline-block;padding:1px 6px;border-radius:10px;background:${cls.bg};color:${cls.color};font-size:0.7rem;font-weight:600;margin-left:4px;">${cls.status}</span>` : '';
-      document.getElementById('vitalWeightSub').innerHTML = `kg ${badgeHtml}`;
+      if (weightSubEl) weightSubEl.innerHTML = `kg ${badgeHtml}`;
     }
 
     // Blood
-    document.getElementById('vitalBloodVal').textContent = user.blood || 'B+';
-    document.getElementById('vitalBloodSub').textContent = 'Blood type recorded';
+    const bloodValEl = document.getElementById('vitalBloodVal');
+    const bloodSubEl = document.getElementById('vitalBloodSub');
+    if (bloodValEl) bloodValEl.textContent = (user && user.blood) ? user.blood : 'B+';
+    if (bloodSubEl) bloodSubEl.textContent = 'Blood type recorded';
   }
 
   function renderSmartInsights() {
@@ -1676,27 +1692,37 @@
   });
 
   function openEmergencyModal() {
+    if (!window.HMStore || !HMStore.getEmergencyData) return;
     const data = HMStore.getEmergencyData();
-    document.getElementById('emName').textContent = data.name;
-    document.getElementById('emAge').textContent = `${data.age} years • Personal Account`;
-    document.getElementById('emBlood').textContent = data.blood || 'B+';
+    const nameEl = document.getElementById('emName');
+    if (nameEl) nameEl.textContent = data.name;
+    const ageEl = document.getElementById('emAge');
+    if (ageEl) ageEl.textContent = `${data.age} years • Personal Account`;
+    const bloodEl = document.getElementById('emBlood');
+    if (bloodEl) bloodEl.textContent = data.blood || 'B+';
     
     const phone = data.emergency || '+8801700000000';
-    document.getElementById('emCallBtn').href = `tel:${phone}`;
-    document.getElementById('emCallLabel').textContent = `Call Emergency: ${phone}`;
+    const callBtn = document.getElementById('emCallBtn');
+    if (callBtn) callBtn.href = `tel:${phone}`;
+    const callLabel = document.getElementById('emCallLabel');
+    if (callLabel) callLabel.textContent = `Call Emergency: ${phone}`;
     
-    document.getElementById('emAllergies').textContent = (data.allergies && data.allergies.length) ? data.allergies.join(', ') : 'None reported';
-    document.getElementById('emConditions').textContent = (data.conditions && data.conditions.length) ? data.conditions.join(', ') : 'None';
+    const allergiesEl = document.getElementById('emAllergies');
+    if (allergiesEl) allergiesEl.textContent = (data.allergies && data.allergies.length) ? data.allergies.join(', ') : 'None reported';
+    const conditionsEl = document.getElementById('emConditions');
+    if (conditionsEl) conditionsEl.textContent = (data.conditions && data.conditions.length) ? data.conditions.join(', ') : 'None';
     
     const medsContainer = document.getElementById('emMedsList');
-    if (data.activeMeds && data.activeMeds.length > 0) {
-      medsContainer.innerHTML = data.activeMeds.map(m => `
-        <span style="display:inline-block;padding:2px 8px;background:var(--color-primary-tint);color:var(--color-primary-dark);border-radius:12px;font-size:0.75rem;font-weight:500;">
-          ${m.name} (${m.dosage})
-        </span>
-      `).join('');
-    } else {
-      medsContainer.innerHTML = '<span style="color:var(--color-text-muted);font-size:0.75rem;">No active medications</span>';
+    if (medsContainer) {
+      if (data.activeMeds && data.activeMeds.length > 0) {
+        medsContainer.innerHTML = data.activeMeds.map(m => `
+          <span style="display:inline-block;padding:2px 8px;background:var(--color-primary-tint);color:var(--color-primary-dark);border-radius:12px;font-size:0.75rem;font-weight:500;">
+            ${m.name} (${m.dosage})
+          </span>
+        `).join('');
+      } else {
+        medsContainer.innerHTML = '<span style="color:var(--color-text-muted);font-size:0.75rem;">No active medications</span>';
+      }
     }
 
     openModal('emergencyIdModal');
@@ -1765,5 +1791,12 @@
   </div>
 </div>
 
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch((err) => console.log('SW reg note:', err));
+    });
+  }
+</script>
 </body>
 </html>

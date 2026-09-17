@@ -326,50 +326,60 @@ function previewDocument(id) {
   const modal = document.getElementById('viewDocModal');
   const catCfg = getCategoryConfig(doc.category);
 
-  document.getElementById('viewDocTitle').textContent = doc.title;
-  document.getElementById('viewDocMeta').innerHTML = `
-    <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;background:${catCfg.bg};color:${catCfg.color};font-size:0.75rem;font-weight:700;">
-      ${catCfg.icon} ${catCfg.label}
-    </span>
-    <span style="font-size:0.78rem;color:var(--color-text-muted);">Recorded: ${doc.date}</span>
-  `;
+  const titleEl = document.getElementById('viewDocTitle');
+  if (titleEl) titleEl.textContent = doc.title;
+  
+  const metaEl = document.getElementById('viewDocMeta');
+  if (metaEl) {
+    metaEl.innerHTML = `
+      <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;background:${catCfg.bg};color:${catCfg.color};font-size:0.75rem;font-weight:700;">
+        ${catCfg.icon} ${catCfg.label}
+      </span>
+      <span style="font-size:0.78rem;color:var(--color-text-muted);">Recorded: ${doc.date}</span>
+    `;
+  }
 
-  document.getElementById('viewDocDoctor').textContent = doc.doctor || 'Not specified';
-  document.getElementById('viewDocFacility').textContent = doc.facility || 'Not specified';
-  document.getElementById('viewDocNotes').textContent = doc.notes || 'No notes added.';
+  const doctorEl = document.getElementById('viewDocDoctor');
+  if (doctorEl) doctorEl.textContent = doc.doctor || 'Not specified';
+  const facilityEl = document.getElementById('viewDocFacility');
+  if (facilityEl) facilityEl.textContent = doc.facility || 'Not specified';
+  const notesEl = document.getElementById('viewDocNotes');
+  if (notesEl) notesEl.textContent = doc.notes || 'No notes added.';
 
   const previewStage = document.getElementById('viewDocStage');
-  if (doc.fileData && doc.fileType === 'image') {
-    previewStage.innerHTML = `
-      <div style="max-height:420px;overflow:auto;text-align:center;background:#0F172A;border-radius:6px;padding:12px;">
-        <img src="${doc.fileData}" alt="${doc.title}" style="max-width:100%;max-height:380px;object-fit:contain;border-radius:4px;">
-      </div>
-    `;
-  } else {
-    // Clinical sheet preview
-    previewStage.innerHTML = `
-      <div style="background:#FFFFFF;border:1px solid var(--color-border);border-radius:8px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-        <div style="display:flex;justify-content:space-between;border-bottom:2px solid var(--color-primary);padding-bottom:12px;margin-bottom:14px;">
-          <div>
-            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.1rem;color:var(--color-primary-dark);">${doc.facility || 'Clinical Healthcare Facility'}</div>
-            <div style="font-size:0.78rem;color:var(--color-text-muted);">${doc.doctor ? 'Attending: ' + doc.doctor : 'Healthmate Vault Archive'}</div>
+  if (previewStage) {
+    if (doc.fileData && doc.fileType === 'image') {
+      previewStage.innerHTML = `
+        <div style="max-height:420px;overflow:auto;text-align:center;background:#0F172A;border-radius:6px;padding:12px;">
+          <img src="${doc.fileData}" alt="${doc.title}" style="max-width:100%;max-height:380px;object-fit:contain;border-radius:4px;">
+        </div>
+      `;
+    } else {
+      // Clinical sheet preview
+      previewStage.innerHTML = `
+        <div style="background:#FFFFFF;border:1px solid var(--color-border);border-radius:8px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+          <div style="display:flex;justify-content:space-between;border-bottom:2px solid var(--color-primary);padding-bottom:12px;margin-bottom:14px;">
+            <div>
+              <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.1rem;color:var(--color-primary-dark);">${doc.facility || 'Clinical Healthcare Facility'}</div>
+              <div style="font-size:0.78rem;color:var(--color-text-muted);">${doc.doctor ? 'Attending: ' + doc.doctor : 'Healthmate Vault Archive'}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:0.75rem;color:var(--color-text-muted);">${doc.date}</div>
+              <div style="font-size:0.78rem;font-weight:600;color:var(--color-primary);">${(doc.fileType || 'PDF').toUpperCase()} DOCUMENT</div>
+            </div>
           </div>
-          <div style="text-align:right;">
-            <div style="font-size:0.75rem;color:var(--color-text-muted);">${doc.date}</div>
-            <div style="font-size:0.78rem;font-weight:600;color:var(--color-primary);">${(doc.fileType || 'PDF').toUpperCase()} DOCUMENT</div>
+          <div style="font-size:0.92rem;font-weight:700;color:var(--color-text);margin-bottom:8px;">${doc.title}</div>
+          <div style="font-size:0.84rem;color:var(--color-text-secondary);line-height:1.5;background:#F8FAFC;padding:12px;border-radius:6px;border:1px solid #E2E8F0;">
+            <b>Clinical Summary / Findings:</b><br>
+            ${doc.notes || 'Full archival record stored in patient personal health space.'}
+          </div>
+          <div style="margin-top:14px;display:flex;justify-content:space-between;font-size:0.75rem;color:var(--color-text-muted);">
+            <span>File: <b>${doc.fileName || 'document.pdf'}</b> (${doc.fileSize || '1.0 MB'})</span>
+            <span>Verified Patient: <b>Ifty (IA)</b></span>
           </div>
         </div>
-        <div style="font-size:0.92rem;font-weight:700;color:var(--color-text);margin-bottom:8px;">${doc.title}</div>
-        <div style="font-size:0.84rem;color:var(--color-text-secondary);line-height:1.5;background:#F8FAFC;padding:12px;border-radius:6px;border:1px solid #E2E8F0;">
-          <b>Clinical Summary / Findings:</b><br>
-          ${doc.notes || 'Full archival record stored in patient personal health space.'}
-        </div>
-        <div style="margin-top:14px;display:flex;justify-content:space-between;font-size:0.75rem;color:var(--color-text-muted);">
-          <span>File: <b>${doc.fileName || 'document.pdf'}</b> (${doc.fileSize || '1.0 MB'})</span>
-          <span>Verified Patient: <b>Ifty (IA)</b></span>
-        </div>
-      </div>
-    `;
+      `;
+    }
   }
 
   // Setup download button

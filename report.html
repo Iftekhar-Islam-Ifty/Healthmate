@@ -328,8 +328,10 @@
       const latestBp = bpList[bpList.length - 1];
       const cls = HMStore.getVitalClassification ? HMStore.getVitalClassification('bp', latestBp) : null;
       const badge = cls ? ` · <span style="color:${cls.color};font-weight:700;">${cls.status}</span>` : '';
-      document.getElementById('repBpVal').innerHTML = `${latestBp.systolic}/${latestBp.diastolic} mmHg${badge}`;
-      document.getElementById('repBpDate').textContent = latestBp.date;
+      const bpValEl = document.getElementById('repBpVal');
+      const bpDateEl = document.getElementById('repBpDate');
+      if (bpValEl) bpValEl.innerHTML = `${latestBp.systolic}/${latestBp.diastolic} mmHg${badge}`;
+      if (bpDateEl) bpDateEl.textContent = latestBp.date;
     }
 
     const sugarList = records.sugar || [];
@@ -337,8 +339,10 @@
       const latestSugar = sugarList[sugarList.length - 1];
       const cls = HMStore.getVitalClassification ? HMStore.getVitalClassification('sugar', latestSugar) : null;
       const badge = cls ? ` · <span style="color:${cls.color};font-weight:700;">${cls.status}</span>` : '';
-      document.getElementById('repSugarVal').innerHTML = `${latestSugar.value} mg/dL${badge}`;
-      document.getElementById('repSugarDate').textContent = `${latestSugar.date} (${latestSugar.context || 'Fasting'})`;
+      const sugarValEl = document.getElementById('repSugarVal');
+      const sugarDateEl = document.getElementById('repSugarDate');
+      if (sugarValEl) sugarValEl.innerHTML = `${latestSugar.value} mg/dL${badge}`;
+      if (sugarDateEl) sugarDateEl.textContent = `${latestSugar.date} (${latestSugar.context || 'Fasting'})`;
     }
 
     const weightList = records.weight || [];
@@ -346,8 +350,10 @@
       const latestWeight = weightList[weightList.length - 1];
       const cls = HMStore.getVitalClassification ? HMStore.getVitalClassification('weight', latestWeight) : null;
       const badge = cls ? ` · <span style="color:${cls.color};font-weight:700;">${cls.status}</span>` : '';
-      document.getElementById('repWeightVal').innerHTML = `${latestWeight.value} kg${badge}`;
-      document.getElementById('repWeightDate').textContent = latestWeight.date;
+      const weightValEl = document.getElementById('repWeightVal');
+      const weightDateEl = document.getElementById('repWeightDate');
+      if (weightValEl) weightValEl.innerHTML = `${latestWeight.value} kg${badge}`;
+      if (weightDateEl) weightDateEl.textContent = latestWeight.date;
     }
 
     const tempList = records.temp || [];
@@ -355,8 +361,10 @@
       const latestTemp = tempList[tempList.length - 1];
       const cls = HMStore.getVitalClassification ? HMStore.getVitalClassification('temp', latestTemp) : null;
       const badge = cls ? ` · <span style="color:${cls.color};font-weight:700;">${cls.status}</span>` : '';
-      document.getElementById('repTempVal').innerHTML = `${latestTemp.value} °F${badge}`;
-      document.getElementById('repTempDate').textContent = latestTemp.date;
+      const tempValEl = document.getElementById('repTempVal');
+      const tempDateEl = document.getElementById('repTempDate');
+      if (tempValEl) tempValEl.innerHTML = `${latestTemp.value} °F${badge}`;
+      if (tempDateEl) tempDateEl.textContent = latestTemp.date;
     }
 
     // Medicines Table

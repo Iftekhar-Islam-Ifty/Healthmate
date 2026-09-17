@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0D6E6E"/>
+      <stop offset="100%" stop-color="#084848"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <!-- Caduceus / Health Cross & Heart Pulse -->
+  <g filter="url(#shadow)">
+    <!-- Rounded Cross -->
+    <rect x="216" y="116" width="80" height="280" rx="40" fill="#FFFFFF"/>
+    <rect x="116" y="216" width="280" height="80" rx="40" fill="#FFFFFF"/>
+    <!-- Center Pulse Line -->
+    <path d="M156 256 H210 L234 200 L278 312 L302 256 H356" 
+          fill="none" 
+          stroke="#0D6E6E" 
+          stroke-width="24" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"/>
+  </g>
+</svg>

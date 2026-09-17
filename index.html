@@ -8,6 +8,14 @@
 <meta property="og:title" content="Healthmate — Log in">
 <meta property="og:description" content="Your personal health management space — track medicines, daily routines, and health records in one place.">
 
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D6E6E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Healthmate">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -342,11 +350,17 @@
       </form>
 
       <!-- Quick Demo Credentials helper -->
-      <div class="demo-badge-wrap" id="demoCredentialsBlock">
-        <div class="demo-info">
-          <b>Demo user:</b> ifty@example.com
+      <div class="demo-badge-wrap" id="demoCredentialsBlock" style="background:#F0FDF4;border:1px solid #BBF7D0;padding:12px;border-radius:10px;margin-top:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <div>
+            <div style="font-size:0.82rem;font-weight:700;color:#166534;">Demo Account</div>
+            <div style="font-size:0.75rem;color:#15803D;">ifty@example.com</div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button type="button" class="btn-hm btn-ghost" id="fillDemoBtn" onclick="fillDemoCredentials()" style="font-size:0.75rem;padding:4px 10px;color:#166534;border-color:#86EFAC;">Auto-Fill</button>
+            <button type="button" class="btn-hm btn-primary" id="instantDemoBtn" onclick="loginDemoDirect()" style="font-size:0.75rem;padding:4px 12px;background:#16A34A;border-color:#16A34A;">1-Click Demo</button>
+          </div>
         </div>
-        <button type="button" id="fillDemoBtn" onclick="fillDemoCredentials()">Fill Demo</button>
       </div>
 
       <p style="margin-top:var(--space-4);text-align:center;font-size:0.88rem;color:var(--color-text-muted);">
@@ -378,54 +392,95 @@
     togglePwBtn.addEventListener('click', function () {
       const isPassword = passwordInput.type === 'password';
       passwordInput.type = isPassword ? 'text' : 'password';
-      pwEyeIcon.innerHTML = isPassword
-        ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
-        : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+      if (pwEyeIcon) {
+        pwEyeIcon.innerHTML = isPassword
+          ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+          : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+      }
     });
   }
 
   // Quick fill demo helper
   function fillDemoCredentials() {
-    document.getElementById('email').value = 'ifty@example.com';
-    document.getElementById('password').value = 'password123';
+    const emailEl = document.getElementById('email');
+    const passEl = document.getElementById('password');
+    if (emailEl) emailEl.value = 'ifty@example.com';
+    if (passEl) passEl.value = 'password123';
     showToast('Demo credentials filled');
   }
 
-  // Form Submit Handler
-  document.getElementById('loginForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const email = document.getElementById('email');
-    const password = document.getElementById('password');
-    const emailField = document.getElementById('emailField');
-    const passwordField = document.getElementById('passwordField');
-    const submitBtn = document.getElementById('loginSubmitBtn');
-
-    let valid = true;
-    emailField.classList.toggle('has-error', email.value.trim() === '');
-    passwordField.classList.toggle('has-error', password.value.trim() === '');
-    if (email.value.trim() === '' || password.value.trim() === '') valid = false;
-
-    if (!valid) return;
-
-    const originalBtnText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = 'Logging in…';
-
-    try {
-      if (window.HMStore && typeof HMStore.login === 'function') {
-        await HMStore.login(email.value, password.value);
-      }
-      showToast('Logged in — opening personal dashboard…');
-      setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
-    } catch (err) {
-      console.error('Login error:', err);
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = originalBtnText;
-      const errMsg = err.message || 'Login failed. Please check your credentials.';
-      showToast(errMsg);
+  // 1-Click Instant Demo Login
+  async function loginDemoDirect() {
+    const demoBtn = document.getElementById('instantDemoBtn');
+    const origText = demoBtn ? demoBtn.innerHTML : '1-Click Demo';
+    if (demoBtn) {
+      demoBtn.disabled = true;
+      demoBtn.innerHTML = 'Connecting…';
     }
-  });
+    try {
+      fillDemoCredentials();
+      if (window.HMStore && typeof HMStore.quickDemoLogin === 'function') {
+        await HMStore.quickDemoLogin();
+      }
+      showToast('Demo session connected — opening dashboard…');
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 400);
+    } catch (e) {
+      console.warn('Demo login notice:', e);
+      if (demoBtn) {
+        demoBtn.disabled = false;
+        demoBtn.innerHTML = origText;
+      }
+      window.location.href = 'dashboard.html';
+    }
+  }
+
+  // Form Submit Handler
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+      const emailField = document.getElementById('emailField');
+      const passwordField = document.getElementById('passwordField');
+      const submitBtn = document.getElementById('loginSubmitBtn');
+
+      let valid = true;
+      if (emailField && email) emailField.classList.toggle('has-error', email.value.trim() === '');
+      if (passwordField && password) passwordField.classList.toggle('has-error', password.value.trim() === '');
+      if (!email || !password || email.value.trim() === '' || password.value.trim() === '') valid = false;
+
+      if (!valid) return;
+
+      const originalBtnText = submitBtn ? submitBtn.innerHTML : 'Log in';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Logging in…';
+      }
+
+      try {
+        if (window.HMStore && typeof HMStore.login === 'function') {
+          await HMStore.login(email.value, password.value);
+        }
+        showToast('Logged in — opening personal dashboard…');
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
+      } catch (err) {
+        console.warn('Login attempt note:', err);
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnText;
+        }
+        const errMsg = err.message || 'Login failed. Please check your credentials.';
+        showToast(errMsg.includes('credentials') ? 'Invalid email or password. Use 1-Click Demo or Register.' : errMsg);
+      }
+    });
+  }
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch((err) => console.log('SW reg note:', err));
+    });
+  }
 </script>
 
 </body>
