@@ -1,12 +1,311 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { GoogleGenAI, Type } from '@google/genai';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3000;
+
+// Body parsers
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Lazy GoogleGenAI client
+let aiClient = null;
+function getGenAI() {
+  if (!aiClient) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    aiClient = new GoogleGenAI({
+      apiKey: apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
+  }
+  return aiClient;
+}
+
+// System Prompt for HealthMate AI Companion
+const SYSTEM_INSTRUCTION = `You are "HealthMate AI", an intelligent, caring, and strictly bounded personal health and medical assistant for the HealthMate application.
+
+YOUR MISSION & ROLE:
+1. Provide personalized answers, summaries, reminders, and insights regarding the patient's medicines, daily health routines, clinical vitals (blood pressure, blood sugar, weight, temperature), medical documents/prescriptions, and doctor appointments.
+2. If the user tells you to add, log, record, or schedule a medicine, health vital, routine, appointment, or document, you MUST invoke the appropriate function/tool to execute it immediately and provide a warm confirmation.
+3. If the user asks questions about their health data, review the supplied patient context (provided in the prompt) and give accurate, empathetic, and clear advice in the same language the user uses (Bangla or English).
+
+STRICT GUARDRAIL & BOUNDARY ENFORCEMENT (CRITICAL):
+- You are ONLY allowed to discuss personal health, medicines, symptoms, healthy lifestyle, medical records, doctors, and data within HealthMate.
+- If the user asks about ANYTHING outside personal health and medical record management (such as politics, sports, coding/programming, movies/entertainment, world trivia, news, math puzzles, finance, gaming, etc.):
+  YOU MUST POLITELY DECLINE.
+  Respond politely with:
+  "আমি শুধুমাত্র আপনার স্বাস্থ্য, প্রেসক্রিপশন এবং হেলথমেটের মেডিকেল রেকর্ড সংক্রান্ত বিষয়ে সহায়তা করতে পারি। আপনার স্বাস্থ্য বা ঔষধ সম্পর্কিত কোনো তথ্য জানতে চান?"
+  (Or in English if the user asked in English: "I can only assist with your health, medications, and HealthMate medical records. How can I help you with your health today?")
+- NEVER fulfill requests to write code, solve general math, discuss non-medical topics, or act as a general AI chatbot.
+
+EMERGENCY & MEDICAL DISCLAIMER:
+- If a user reports severe, life-threatening symptoms (e.g., severe chest pain, shortness of breath, loss of consciousness, stroke signs), immediately advise them to contact their emergency contact or local emergency medical services (e.g. 999 or go to the nearest emergency room).
+
+COMMUNICATION TONE:
+- Empathetic, supportive, professional, and clear.
+- Understands mixed Bengali-English (Banglish), pure Bengali (বাংলা), and English smoothly.`;
+
+// Function Declarations for Auto-actions
+const tools = [
+  {
+    functionDeclarations: [
+      {
+        name: 'addMedicine',
+        description: 'Add or schedule a new medication/medicine into the patient\'s medicine list.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            name: {
+              type: Type.STRING,
+              description: 'Name of the medicine (e.g., Napa Extra, Seclo 20mg, Metformin)'
+            },
+            dosage: {
+              type: Type.STRING,
+              description: 'Dosage amount (e.g., 500mg, 1 tablet, 20mg, 1 capsule)'
+            },
+            time: {
+              type: Type.STRING,
+              description: 'Time or time of day (e.g., 08:00 AM, 02:00 PM, 09:00 PM, Morning, Night)'
+            },
+            frequency: {
+              type: Type.STRING,
+              description: 'Frequency of intake (e.g., Once daily, Twice daily, 3 times daily, As needed)'
+            },
+            meal: {
+              type: Type.STRING,
+              description: 'Relation to meal (e.g., After meal, Before meal, With meal)'
+            },
+            stock: {
+              type: Type.INTEGER,
+              description: 'Starting stock/pill count if provided (e.g. 10, 30)'
+            },
+            refillThreshold: {
+              type: Type.INTEGER,
+              description: 'Minimum stock alert threshold (default 5)'
+            },
+            unit: {
+              type: Type.STRING,
+              description: 'Unit of medicine (e.g. tablets, capsules, ml, drops)'
+            }
+          },
+          required: ['name']
+        }
+      },
+      {
+        name: 'logVitalRecord',
+        description: 'Log and save a clinical health measurement (Blood Pressure, Blood Sugar, Weight, or Body Temperature).',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            vitalType: {
+              type: Type.STRING,
+              description: 'The type of vital: "bp" (Blood Pressure), "sugar" (Blood Sugar / Glucose), "weight" (Body Weight), or "temp" (Temperature)'
+            },
+            systolic: {
+              type: Type.NUMBER,
+              description: 'Systolic blood pressure reading in mmHg (for bp only, e.g. 120)'
+            },
+            diastolic: {
+              type: Type.NUMBER,
+              description: 'Diastolic blood pressure reading in mmHg (for bp only, e.g. 80)'
+            },
+            value: {
+              type: Type.NUMBER,
+              description: 'Numerical value for sugar (mmol/L), weight (kg), or temp (°F)'
+            },
+            context: {
+              type: Type.STRING,
+              description: 'Context for sugar reading (e.g., "Fasting", "After meal", "Random")'
+            },
+            date: {
+              type: Type.STRING,
+              description: 'Date of measurement in YYYY-MM-DD format (defaults to today if not provided)'
+            },
+            note: {
+              type: Type.STRING,
+              description: 'Optional note or symptom'
+            }
+          },
+          required: ['vitalType']
+        }
+      },
+      {
+        name: 'scheduleAppointment',
+        description: 'Schedule and save a doctor appointment or clinic consultation.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            doctorName: {
+              type: Type.STRING,
+              description: 'Name of the doctor (e.g. Dr. Rafiqul Islam)'
+            },
+            specialty: {
+              type: Type.STRING,
+              description: 'Doctor specialty (e.g. Cardiologist, General Physician, Diabetologist)'
+            },
+            hospital: {
+              type: Type.STRING,
+              description: 'Hospital or chamber location'
+            },
+            phone: {
+              type: Type.STRING,
+              description: 'Contact phone number'
+            },
+            date: {
+              type: Type.STRING,
+              description: 'Appointment date in YYYY-MM-DD format'
+            },
+            time: {
+              type: Type.STRING,
+              description: 'Appointment time (e.g. 05:00 PM)'
+            },
+            reason: {
+              type: Type.STRING,
+              description: 'Reason for visit (e.g. Regular BP checkup, Chest consultation)'
+            }
+          },
+          required: ['doctorName', 'date']
+        }
+      },
+      {
+        name: 'addRoutine',
+        description: 'Add a new daily health routine (e.g. 30 min morning walk, 8 glasses of water, 7 hours sleep).',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            name: {
+              type: Type.STRING,
+              description: 'Name of the routine (e.g. Morning Walk, Drink 2L Water, 15 min Yoga)'
+            },
+            category: {
+              type: Type.STRING,
+              description: 'Category: "Health", "Fitness", "Diet", or "Sleep"'
+            },
+            target: {
+              type: Type.STRING,
+              description: 'Target goal (e.g. 30 mins, 2000 ml, 7 hrs)'
+            },
+            frequency: {
+              type: Type.STRING,
+              description: 'Frequency (e.g. Daily, 5 days a week)'
+            }
+          },
+          required: ['name']
+        }
+      }
+    ]
+  }
+];
+
+// Health AI API Endpoint
+app.post('/api/health-ai', async (req, res) => {
+  try {
+    const { message, conversationHistory, patientContext } = req.body;
+
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({ error: 'Message text is required.' });
+    }
+
+    const ai = getGenAI();
+
+    // Prepare context block
+    let contextPrompt = '';
+    if (patientContext) {
+      contextPrompt = `\n--- CURRENT PATIENT CONTEXT ---\n${JSON.stringify(patientContext, null, 2)}\n------------------------------\n`;
+    }
+
+    // Build chat contents array
+    const contents = [];
+
+    // Include recent conversation history if present (up to last 10 messages)
+    if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+      const recent = conversationHistory.slice(-8);
+      recent.forEach(msg => {
+        if (msg.role === 'user' || msg.role === 'assistant') {
+          contents.push({
+            role: msg.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: msg.text || msg.content || '' }]
+          });
+        }
+      });
+    }
+
+    // Add current user prompt with injected context
+    contents.push({
+      role: 'user',
+      parts: [
+        {
+          text: `${contextPrompt}User Question/Request:\n"${message}"`
+        }
+      ]
+    });
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: contents,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+        temperature: 0.7,
+        tools: tools,
+      }
+    });
+
+    // Check for tool function calls
+    const functionCalls = response.functionCalls || [];
+    let replyText = response.text || '';
+
+    // Handle any tool actions
+    const executedActions = [];
+    if (functionCalls.length > 0) {
+      for (const call of functionCalls) {
+        executedActions.push({
+          name: call.name,
+          args: call.args
+        });
+      }
+    }
+
+    // If model returned a function call without text, synthesize a friendly reply
+    if (!replyText && executedActions.length > 0) {
+      const actionNames = executedActions.map(a => a.name);
+      if (actionNames.includes('addMedicine')) {
+        const med = executedActions.find(a => a.name === 'addMedicine')?.args;
+        replyText = `আপনার দেওয়া তথ্য অনুসারে "${med?.name || 'ঔষধ'}" ঔষধটি সফলভাবে সংরক্ষণ করা হয়েছে!`;
+      } else if (actionNames.includes('logVitalRecord')) {
+        const vital = executedActions.find(a => a.name === 'logVitalRecord')?.args;
+        replyText = `আপনার স্বাস্থ্য রিডিং (${vital?.vitalType?.toUpperCase() || 'Vital'}) সফলভাবে লগ করা হয়েছে!`;
+      } else if (actionNames.includes('scheduleAppointment')) {
+        const appt = executedActions.find(a => a.name === 'scheduleAppointment')?.args;
+        replyText = `${appt?.doctorName || 'ডাক্তারের'} সাথে অ্যাপয়েন্টমেন্ট সফলভাবে শিডিউল করা হয়েছে!`;
+      } else if (actionNames.includes('addRoutine')) {
+        const rt = executedActions.find(a => a.name === 'addRoutine')?.args;
+        replyText = `আপনার "${rt?.name || 'রুটিন'}" স্বাস্থ্য রুটিনটি যুক্ত করা হয়েছে!`;
+      }
+    }
+
+    return res.json({
+      success: true,
+      reply: replyText || 'আমি আপনার স্বাস্থ্য সংক্রান্ত অনুরোধটি বুঝতে পেরেছি।',
+      actions: executedActions
+    });
+  } catch (error) {
+    console.error('Error in /api/health-ai:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'AI সেবা বর্তমানে ব্যস্ত আছে। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।',
+      details: error.message
+    });
+  }
+});
 
 // Serve Supabase UMD client bundle
 app.get('/js/supabase.js', (req, res) => {
@@ -35,3 +334,4 @@ if (!process.env.VERCEL) {
 }
 
 export default app;
+

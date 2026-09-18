@@ -11,6 +11,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "@google/genai": "^2.23.0",
     "@supabase/supabase-js": "^2.116.0",
     "express": "^4.21.2"
   }

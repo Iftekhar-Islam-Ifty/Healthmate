@@ -4,6 +4,7 @@
 
 let currentDocCategory = 'all';
 let currentSearchQuery = '';
+let currentDocSort = 'newest';
 let stagedFileData = null;
 let stagedFileName = '';
 let stagedFileType = 'pdf';
@@ -21,10 +22,12 @@ function initDocumentVault() {
   }
 
   setupVaultListeners();
+  updateCategoryPillCounters();
   renderDocumentsList();
 
   if (window.HMStore && typeof HMStore.fetchRecordsAndDocuments === 'function') {
     HMStore.fetchRecordsAndDocuments().then(() => {
+      updateCategoryPillCounters();
       renderDocumentsList();
     });
   }
@@ -33,12 +36,37 @@ function initDocumentVault() {
 function setupVaultListeners() {
   // Search input
   const searchInput = document.getElementById('vaultSearchInput');
+  const clearBtn = document.getElementById('vaultSearchClearBtn');
+
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
       currentSearchQuery = e.target.value.trim().toLowerCase();
+      if (clearBtn) {
+        clearBtn.style.display = currentSearchQuery ? 'inline-flex' : 'none';
+      }
       renderDocumentsList();
     });
   }
+
+  // Global Keyboard Shortcut: Press '/' or Ctrl+K / Cmd+K to search
+  document.addEventListener('keydown', (e) => {
+    const activeEl = document.activeElement;
+    const isEditing = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable || activeEl.tagName === 'SELECT');
+    
+    if (!isEditing && e.key === '/') {
+      e.preventDefault();
+      if (searchInput) {
+        searchInput.focus();
+        searchInput.select();
+      }
+    } else if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+      e.preventDefault();
+      if (searchInput) {
+        searchInput.focus();
+        searchInput.select();
+      }
+    }
+  });
 
   // Setup drag & drop for upload modal
   const dropZone = document.getElementById('docDropZone');
@@ -132,12 +160,64 @@ function removeStagedFile(e) {
 function filterDocCategory(category) {
   currentDocCategory = category;
 
-  // Update category tab UI
-  document.querySelectorAll('.doc-tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.getAttribute('data-cat') === category);
+  // Update category chip UI
+  document.querySelectorAll('.vault-chip-btn').forEach(btn => {
+    const isTarget = btn.getAttribute('data-cat') === category;
+    btn.classList.toggle('active', isTarget);
+    btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
   });
 
   renderDocumentsList();
+}
+
+function onDocSortChange(val) {
+  currentDocSort = val || 'newest';
+  renderDocumentsList();
+}
+
+function applyQuickSearch(term) {
+  const searchInput = document.getElementById('vaultSearchInput');
+  const clearBtn = document.getElementById('vaultSearchClearBtn');
+  if (searchInput) {
+    searchInput.value = term;
+    searchInput.focus();
+  }
+  currentSearchQuery = term.trim().toLowerCase();
+  if (clearBtn) {
+    clearBtn.style.display = currentSearchQuery ? 'inline-flex' : 'none';
+  }
+  renderDocumentsList();
+}
+
+function updateCategoryPillCounters() {
+  const docs = HMStore.getDocuments ? HMStore.getDocuments() : [];
+  const counts = {
+    all: docs.length,
+    prescription: 0,
+    lab: 0,
+    radiology: 0,
+    other: 0
+  };
+
+  docs.forEach(d => {
+    const cat = d.category || 'other';
+    if (counts[cat] !== undefined) {
+      counts[cat]++;
+    } else {
+      counts.other++;
+    }
+  });
+
+  const setEl = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+
+  setEl('countCatAll', counts.all);
+  setEl('countCatPrescription', counts.prescription);
+  setEl('countCatLab', counts.lab);
+  setEl('countCatRadiology', counts.radiology);
+  setEl('countCatOther', counts.other);
 }
 
 function getCategoryConfig(cat) {
@@ -177,16 +257,18 @@ function getCategoryConfig(cat) {
 function renderDocumentsList() {
   const container = document.getElementById('vaultDocsGrid');
   const countBadge = document.getElementById('vaultDocCount');
+  const filterDescEl = document.getElementById('vaultActiveFilterDesc');
   if (!container) return;
 
-  let docs = HMStore.getDocuments ? HMStore.getDocuments() : [];
+  const allDocs = HMStore.getDocuments ? HMStore.getDocuments() : [];
+  let docs = [...allDocs];
 
-  // Filter by category
+  // 1. Filter by category
   if (currentDocCategory !== 'all') {
     docs = docs.filter(d => (d.category || 'other') === currentDocCategory);
   }
 
-  // Filter by search query
+  // 2. Filter by search query
   if (currentSearchQuery) {
     docs = docs.filter(d => {
       const matchTitle = (d.title || '').toLowerCase().includes(currentSearchQuery);
@@ -198,9 +280,45 @@ function renderDocumentsList() {
     });
   }
 
+  // 3. Sort records
+  docs.sort((a, b) => {
+    if (currentDocSort === 'oldest') {
+      return (new Date(a.date || 0).getTime() || 0) - (new Date(b.date || 0).getTime() || 0);
+    } else if (currentDocSort === 'title') {
+      return (a.title || '').localeCompare(b.title || '');
+    } else if (currentDocSort === 'doctor') {
+      const docA = (a.doctor || a.facility || '').toLowerCase();
+      const docB = (b.doctor || b.facility || '').toLowerCase();
+      return docA.localeCompare(docB);
+    }
+    // Default: 'newest'
+    return (new Date(b.date || 0).getTime() || 0) - (new Date(a.date || 0).getTime() || 0);
+  });
+
+  // Update Status and Filter Descriptions
   if (countBadge) {
-    countBadge.textContent = `${docs.length} ${docs.length === 1 ? 'document' : 'documents'}`;
+    if (currentSearchQuery || currentDocCategory !== 'all') {
+      countBadge.textContent = `Showing ${docs.length} of ${allDocs.length} ${allDocs.length === 1 ? 'document' : 'documents'}`;
+    } else {
+      countBadge.textContent = `Total ${docs.length} ${docs.length === 1 ? 'document' : 'documents'}`;
+    }
   }
+
+  if (filterDescEl) {
+    if (currentSearchQuery) {
+      filterDescEl.style.display = 'inline-block';
+      filterDescEl.innerHTML = `Query: "<b>${escapeHtml(currentSearchQuery)}</b>"`;
+    } else if (currentDocCategory !== 'all') {
+      const catCfg = getCategoryConfig(currentDocCategory);
+      filterDescEl.style.display = 'inline-block';
+      filterDescEl.innerHTML = `Category: <b>${catCfg.label}</b>`;
+    } else {
+      filterDescEl.style.display = 'none';
+      filterDescEl.innerHTML = '';
+    }
+  }
+
+  updateCategoryPillCounters();
 
   if (docs.length === 0) {
     container.innerHTML = `
@@ -212,8 +330,11 @@ function renderDocumentsList() {
           </svg>
         </div>
         <h3>No documents found</h3>
-        <p>${currentSearchQuery ? 'No documents match your search keyword. Try another term.' : 'Your medical vault is empty in this category. Upload prescriptions, blood reports, or checkup records.'}</p>
-        <button class="btn-hm btn-primary" onclick="openUploadDocModal()" style="margin-top:12px;">+ Upload First Document</button>
+        <p>${currentSearchQuery ? `No records matched "${escapeHtml(currentSearchQuery)}". Try another medical test or doctor name.` : 'Your medical vault is empty in this category. Upload prescriptions, blood reports, or checkup records.'}</p>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
+          ${currentSearchQuery ? `<button class="btn-hm btn-ghost" onclick="clearDocSearch()">Clear Search Filter</button>` : ''}
+          <button class="btn-hm btn-primary" onclick="openUploadDocModal()">+ Upload First Document</button>
+        </div>
       </div>
     `;
     return;
@@ -489,7 +610,39 @@ async function deleteDoc(id) {
   }
 }
 
+function clearDocSearch() {
+  const searchInput = document.getElementById('vaultSearchInput');
+  const clearBtn = document.getElementById('vaultSearchClearBtn');
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.focus();
+  }
+  if (clearBtn) {
+    clearBtn.style.display = 'none';
+  }
+  currentSearchQuery = '';
+  renderDocumentsList();
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Global exports for HTML event bindings
+window.filterDocCategory = filterDocCategory;
+window.selectCategory = filterDocCategory;
+window.setDocFilter = filterDocCategory;
+window.filterDocuments = renderDocumentsList;
+window.clearDocSearch = clearDocSearch;
+window.onDocSortChange = onDocSortChange;
+window.applyQuickSearch = applyQuickSearch;
+window.updateCategoryPillCounters = updateCategoryPillCounters;
 window.askDeleteDoc = askDeleteDoc;
 window.confirmDeleteDoc = confirmDeleteDoc;
 window.deleteDoc = deleteDoc;
@@ -498,7 +651,3 @@ window.downloadDocument = downloadDocument;
 window.handleSaveDocument = handleSaveDocument;
 window.openUploadDocModal = openUploadDocModal;
 window.openUploadModal = openUploadDocModal;
-window.selectCategory = selectCategory;
-window.setDocFilter = setDocFilter;
-window.filterDocuments = filterDocuments;
-window.clearDocSearch = clearDocSearch;

@@ -348,7 +348,13 @@
     document.getElementById('repPatientConditions').textContent = (user.conditions && user.conditions.length) ? user.conditions.join(', ') : 'None';
 
     const avatar = document.getElementById('topbarAvatar');
-    if (avatar) avatar.textContent = user.initials || 'IA';
+    if (avatar) {
+      if (typeof renderAvatar === 'function') {
+        renderAvatar(avatar, user);
+      } else {
+        avatar.textContent = user.initials || 'IA';
+      }
+    }
 
     // Vitals
     const bpList = records.bp || [];

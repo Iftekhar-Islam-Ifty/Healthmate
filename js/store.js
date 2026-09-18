@@ -29,6 +29,7 @@ const HM_DEFAULT_USER = {
   accountType: 'single', // Fixed to 'single' personal health space
   role: 'Personal',
   initials: 'U',
+  avatar: '',
   age: null,
   blood: '',
   emergency: '',
@@ -41,6 +42,7 @@ const HM_DEFAULT_MEMBERS = [
     id: 'owner',
     name: 'User',
     initials: 'U',
+    avatar: '',
     role: 'Personal',
     age: null,
     blood: '',
@@ -172,8 +174,9 @@ const HMStore = {
       if (profile) {
         const cleanName = profile.full_name || (user.email ? user.email.split('@')[0] : 'User');
         const initials = cleanName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'U';
+        const currentLocal = this.getUser();
         const updatedUser = {
-          ...this.getUser(),
+          ...currentLocal,
           id: profile.id,
           name: cleanName,
           email: profile.email || user.email || '',
@@ -182,6 +185,7 @@ const HMStore = {
           emergency: profile.emergency_contact || '',
           allergies: Array.isArray(profile.allergies) ? profile.allergies : [],
           conditions: Array.isArray(profile.chronic_conditions) ? profile.chronic_conditions : [],
+          avatar: profile.avatar_url || profile.avatar || currentLocal.avatar || '',
           initials
         };
         this._set('user', updatedUser);
@@ -794,6 +798,7 @@ const HMStore = {
         ...members[ownerIdx],
         name: updated.name,
         initials: updated.initials,
+        avatar: updated.avatar || '',
         age: updated.age !== undefined ? updated.age : members[ownerIdx].age,
         blood: updated.blood || members[ownerIdx].blood,
         emergency: updated.emergency || members[ownerIdx].emergency,

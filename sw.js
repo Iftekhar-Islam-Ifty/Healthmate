@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healthmate-v4';
+const CACHE_NAME = 'healthmate-v7';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -10,10 +10,17 @@ const STATIC_ASSETS = [
   '/documents.html',
   '/settings.html',
   '/register.html',
+  '/report.html',
   '/css/style.css',
   '/js/supabase-config.js',
+  '/js/supabase.js',
   '/js/store.js',
+  '/js/app.js',
   '/js/records.js',
+  '/js/medicines.js',
+  '/js/routine.js',
+  '/js/appointments.js',
+  '/js/documents.js',
   '/icon.svg',
   '/manifest.json'
 ];

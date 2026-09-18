@@ -430,7 +430,7 @@ function addModalChecklistRow(text = '', isDone = false) {
   div.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:6px;';
   div.innerHTML = `
     <input type="text" class="modal-chk-text" value="${escapeHtml(text)}" placeholder="যেমন: খালিপেটে সুগার টেস্টের রিপোর্ট সাথে নেওয়া" style="flex:1;padding:7px 10px;font-size:0.84rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);">
-    <button type="button" class="icon-btn" onclick="document.getElementById('${rowId}').remove()" style="width:28px;height:28px;color:var(--color-error);" aria-label="Remove item">✕</button>
+    <button type="button" class="icon-btn" onclick="this.closest('div').remove()" style="width:28px;height:28px;color:var(--color-error);" aria-label="Remove item">✕</button>
   `;
   container.appendChild(div);
 }

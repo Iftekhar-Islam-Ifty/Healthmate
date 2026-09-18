@@ -110,23 +110,83 @@
         </div>
       </div>
 
-      <!-- Search & Filters -->
-      <div class="vault-search-row">
-        <div class="vault-search-input-wrap">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="vaultSearchInput" placeholder="Search by test name, doctor, diagnostic clinic, or notes...">
-        </div>
-        <div id="vaultDocCount" style="font-size:0.82rem;color:var(--color-text-muted);font-weight:600;white-space:nowrap;">
-          0 documents
-        </div>
-      </div>
+      <!-- ============ SEARCH & FILTER COMMAND HUB ============ -->
+      <div class="vault-search-hub hm-card" id="vaultSearchHub">
+        <!-- Top Main Search & Controls Row -->
+        <div class="vault-search-main-row">
+          <div class="vault-search-field-wrap">
+            <span class="vault-search-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input type="text" id="vaultSearchInput" class="vault-search-input" placeholder="Search by test name, doctor, clinic, tag or notes..." autocomplete="off" spellcheck="false" aria-label="Search medical vault documents">
+            <button type="button" class="vault-search-clear-btn" id="vaultSearchClearBtn" aria-label="Clear search text" title="Clear search" onclick="clearDocSearch()" style="display:none;">
+              ✕
+            </button>
+            <span class="vault-search-shortcut-badge" title="Press / or Ctrl+K to search">/</span>
+          </div>
 
-      <div class="doc-tab-row">
-        <button class="doc-tab-btn active" data-cat="all" onclick="filterDocCategory('all')">All Records</button>
-        <button class="doc-tab-btn" data-cat="prescription" onclick="filterDocCategory('prescription')">Prescriptions</button>
-        <button class="doc-tab-btn" data-cat="lab" onclick="filterDocCategory('lab')">Lab & Blood Tests</button>
-        <button class="doc-tab-btn" data-cat="radiology" onclick="filterDocCategory('radiology')">Radiology & X-Ray</button>
-        <button class="doc-tab-btn" data-cat="other" onclick="filterDocCategory('other')">Checkups & Other</button>
+          <!-- Controls: Sort Selector -->
+          <div class="vault-search-controls-wrap">
+            <div class="vault-sort-select-wrap">
+              <span class="vault-control-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+              </span>
+              <select id="vaultSortSelect" class="vault-sort-select" onchange="onDocSortChange(this.value)" aria-label="Sort documents">
+                <option value="newest">Newest Date</option>
+                <option value="oldest">Oldest Date</option>
+                <option value="title">Title (A-Z)</option>
+                <option value="doctor">Doctor / Clinic</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Filter Pills with Badges -->
+        <div class="vault-filter-pills-row">
+          <div class="vault-category-chips" id="vaultCategoryChips" role="tablist" aria-label="Document Categories">
+            <button type="button" class="vault-chip-btn active" data-cat="all" onclick="filterDocCategory('all')" role="tab" aria-selected="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span>All Records</span>
+              <span class="vault-chip-count" id="countCatAll">0</span>
+            </button>
+            <button type="button" class="vault-chip-btn" data-cat="prescription" onclick="filterDocCategory('prescription')" role="tab" aria-selected="false">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>
+              <span>Prescriptions</span>
+              <span class="vault-chip-count" id="countCatPrescription">0</span>
+            </button>
+            <button type="button" class="vault-chip-btn" data-cat="lab" onclick="filterDocCategory('lab')" role="tab" aria-selected="false">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2v7.31"/><path d="M14 9.3V2"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/></svg>
+              <span>Lab &amp; Blood Tests</span>
+              <span class="vault-chip-count" id="countCatLab">0</span>
+            </button>
+            <button type="button" class="vault-chip-btn" data-cat="radiology" onclick="filterDocCategory('radiology')" role="tab" aria-selected="false">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+              <span>Radiology &amp; X-Ray</span>
+              <span class="vault-chip-count" id="countCatRadiology">0</span>
+            </button>
+            <button type="button" class="vault-chip-btn" data-cat="other" onclick="filterDocCategory('other')" role="tab" aria-selected="false">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span>Checkups &amp; Other</span>
+              <span class="vault-chip-count" id="countCatOther">0</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Status & Quick Suggestions Bar -->
+        <div class="vault-filter-status-bar" id="vaultFilterStatusBar">
+          <div class="vault-results-info">
+            <span class="vault-status-indicator-dot"></span>
+            <span id="vaultDocCount" class="vault-doc-count-text">Showing 0 documents</span>
+            <span id="vaultActiveFilterDesc" class="vault-filter-desc"></span>
+          </div>
+          <div class="vault-quick-tags-wrap" id="vaultQuickTagsWrap">
+            <span class="vault-quick-label">Quick:</span>
+            <button type="button" class="vault-quick-tag" onclick="applyQuickSearch('CBC')">CBC</button>
+            <button type="button" class="vault-quick-tag" onclick="applyQuickSearch('Blood')">Blood</button>
+            <button type="button" class="vault-quick-tag" onclick="applyQuickSearch('Prescription')">Prescription</button>
+            <button type="button" class="vault-quick-tag" onclick="applyQuickSearch('X-Ray')">X-Ray</button>
+          </div>
+        </div>
       </div>
 
       <!-- ============ DOCUMENTS GRID ============ -->

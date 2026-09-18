@@ -98,60 +98,9 @@
       <div class="page-header">
         <div>
           <h1>Settings</h1>
-          <p>ব্যক্তিগত প্রোফাইল, স্বাস্থ্য পছন্দ ও ডেটা ব্যাকআপ ম্যানেজ করুন।</p>
+          <p>স্বাস্থ্য পছন্দ, রিমাইন্ডার এবং ডেটা ব্যাকআপ ও রিস্টোর নিয়ন্ত্রণ করুন।</p>
         </div>
       </div>
-
-      <!-- ============ PERSONAL HEALTH PROFILE ============ -->
-      <section class="section">
-        <div class="section-head">
-          <h2>Personal Profile</h2>
-          <p>আপনার ব্যক্তিগত পরিচয় এবং প্রাথমিক স্বাস্থ্য সূচকসমূহ।</p>
-        </div>
-        <div class="hm-card">
-          <div class="control-row" style="justify-content:space-between;align-items:flex-start;">
-            <div class="profile-hero">
-              <div class="profile-hero-avatar" id="cardAvatar">IA</div>
-              <div>
-                <div class="profile-hero-name" id="cardName">Ifty Ahmed</div>
-                <div class="profile-hero-role">
-                  <span class="badge-hm badge-info" id="cardBadge"><span class="dot"></span>Personal Account</span>
-                </div>
-              </div>
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <button type="button" class="btn-hm btn-ghost" onclick="openEmergencyModal()" style="color:var(--color-error);border-color:#FCA5A5;background:#FEF2F2;font-size:0.82rem;padding:6px 12px;font-weight:600;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Emergency ID
-              </button>
-              <button class="btn-hm btn-secondary" onclick="openEditAccountModal()">Edit profile</button>
-            </div>
-          </div>
-
-          <div class="info-grid" style="margin-top:var(--space-4);">
-            <div class="info-item">
-              <div class="label">Email Address</div>
-              <div class="value" id="cardEmail">ifty@example.com</div>
-            </div>
-            <div class="info-item">
-              <div class="label">Blood Group</div>
-              <div class="value" id="cardBlood">B+</div>
-            </div>
-            <div class="info-item">
-              <div class="label">Age</div>
-              <div class="value" id="cardAge">29 years</div>
-            </div>
-            <div class="info-item">
-              <div class="label">Emergency Contact</div>
-              <div class="value" id="cardEmergency">+8801700000000</div>
-            </div>
-            <div class="info-item" style="grid-column: 1 / -1;">
-              <div class="label">Conditions &amp; Allergies</div>
-              <div class="value" id="cardConditions">Mild seasonal allergy, Dust</div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <!-- ============ PREFERENCES & REMINDERS ============ -->
       <section class="section">
@@ -288,56 +237,6 @@
   <span>Saved</span>
 </div>
 
-<!-- Edit Profile Modal -->
-<div class="modal-hm-backdrop" id="editAccountModal">
-  <div class="modal-hm" style="max-width:440px;">
-    <h3>Edit Personal Profile</h3>
-    <form id="editAccountForm">
-      <div style="display:flex;flex-direction:column;gap:var(--space-3);">
-        <div class="field">
-          <label for="accName">Full name</label>
-          <input type="text" id="accName" required>
-        </div>
-        <div class="field">
-          <label for="accEmail">Email address</label>
-          <input type="email" id="accEmail" required>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);">
-          <div class="field">
-            <label for="accBlood">Blood group</label>
-            <select id="accBlood">
-              <option value="B+">B+ (Positive)</option>
-              <option value="A+">A+ (Positive)</option>
-              <option value="O+">O+ (Positive)</option>
-              <option value="AB+">AB+ (Positive)</option>
-              <option value="O-">O- (Negative)</option>
-              <option value="A-">A- (Negative)</option>
-              <option value="B-">B- (Negative)</option>
-              <option value="AB-">AB- (Negative)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="accAge">Age</label>
-            <input type="number" id="accAge" min="1" max="120">
-          </div>
-        </div>
-        <div class="field">
-          <label for="accEmergency">Emergency contact</label>
-          <input type="text" id="accEmergency" placeholder="+8801700000000">
-        </div>
-        <div class="field">
-          <label for="accConditions">Conditions &amp; Allergies (comma separated)</label>
-          <input type="text" id="accConditions" placeholder="e.g. Mild seasonal allergy, Dust">
-        </div>
-      </div>
-      <div class="modal-hm-actions">
-        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('editAccountModal')">Cancel</button>
-        <button type="submit" class="btn-hm btn-primary" id="accSaveBtn">Save Changes</button>
-      </div>
-    </form>
-  </div>
-</div>
-
 <!-- Reset Confirm Modal -->
 <div class="modal-hm-backdrop" id="resetConfirmModal">
   <div class="modal-hm" style="max-width:380px;">
@@ -363,93 +262,21 @@
 <script src="/js/app.js"></script>
 <script>
   function renderSettings() {
-    const user = HMStore.getUser();
-    const prefs = HMStore.getPreferences();
+    const user = HMStore.getUser ? HMStore.getUser() : null;
+    const prefs = HMStore.getPreferences ? HMStore.getPreferences() : {};
 
-    const initials = user.initials || (user.name ? user.name.slice(0, 2).toUpperCase() : 'IA');
     const topAvatar = document.getElementById('topbarAvatar');
-    if (topAvatar) topAvatar.textContent = initials;
+    if (topAvatar && user) renderAvatar(topAvatar, user);
 
-    document.getElementById('cardAvatar').textContent = initials;
-    document.getElementById('cardName').textContent = user.name || 'Personal User';
-    document.getElementById('cardEmail').textContent = user.email || '—';
-    document.getElementById('cardBlood').textContent = user.blood || 'B+';
-    document.getElementById('cardAge').textContent = user.age ? `${user.age} years` : '29 years';
-    document.getElementById('cardEmergency').textContent = user.emergency || '—';
+    const prefMeds = document.getElementById('prefMeds');
+    if (prefMeds) prefMeds.checked = !!prefs.medicineReminders;
 
-    const condList = [
-      ...(Array.isArray(user.conditions) ? user.conditions : []),
-      ...(Array.isArray(user.allergies) ? user.allergies : [])
-    ].filter(Boolean).join(', ');
-    document.getElementById('cardConditions').textContent = condList || 'None recorded';
+    const prefRoutines = document.getElementById('prefRoutines');
+    if (prefRoutines) prefRoutines.checked = !!prefs.routineReminders;
 
-    document.getElementById('prefMeds').checked = !!prefs.medicineReminders;
-    document.getElementById('prefRoutines').checked = !!prefs.routineReminders;
-    document.getElementById('prefAlerts').checked = !!prefs.healthAlerts;
+    const prefAlerts = document.getElementById('prefAlerts');
+    if (prefAlerts) prefAlerts.checked = !!prefs.healthAlerts;
   }
-
-  function openEditAccountModal() {
-    const user = HMStore.getUser();
-    document.getElementById('accName').value = user.name || '';
-    document.getElementById('accEmail').value = user.email || '';
-    document.getElementById('accBlood').value = user.blood || 'B+';
-    document.getElementById('accAge').value = user.age || 29;
-    document.getElementById('accEmergency').value = user.emergency || '';
-
-    const condList = [
-      ...(Array.isArray(user.conditions) ? user.conditions : []),
-      ...(Array.isArray(user.allergies) ? user.allergies : [])
-    ].filter(Boolean).join(', ');
-    document.getElementById('accConditions').value = condList;
-
-    openModal('editAccountModal');
-  }
-
-  document.getElementById('editAccountForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const saveBtn = document.getElementById('accSaveBtn');
-    const origText = saveBtn ? saveBtn.innerHTML : 'Save Changes';
-    if (saveBtn) {
-      saveBtn.disabled = true;
-      saveBtn.innerHTML = 'Saving to cloud…';
-    }
-
-    const name = document.getElementById('accName').value.trim();
-    const email = document.getElementById('accEmail').value.trim();
-    const blood = document.getElementById('accBlood').value;
-    const age = parseInt(document.getElementById('accAge').value, 10) || 29;
-    const emergency = document.getElementById('accEmergency').value.trim();
-    const condRaw = document.getElementById('accConditions').value.trim();
-    const conditions = condRaw ? condRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
-
-    const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'IA';
-
-    try {
-      await HMStore.saveUser({
-        name,
-        email,
-        blood,
-        age,
-        emergency,
-        conditions,
-        initials,
-        accountType: 'single',
-        role: 'Personal'
-      });
-
-      closeModal('editAccountModal');
-      renderSettings();
-      showToast('Personal profile synced with cloud');
-    } catch (err) {
-      console.error('Error saving profile:', err);
-      showToast('Error saving profile to cloud');
-    } finally {
-      if (saveBtn) {
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = origText;
-      }
-    }
-  });
 
   async function onPrefChange(key, value) {
     const prefs = HMStore.getPreferences();
@@ -513,43 +340,6 @@
       e.target.value = '';
     };
     reader.readAsText(file);
-  }
-
-  function openEmergencyModal() {
-    if (!window.HMStore || !HMStore.getEmergencyData) return;
-    const data = HMStore.getEmergencyData();
-    const nameEl = document.getElementById('emName');
-    if (nameEl) nameEl.textContent = data.name;
-    const ageEl = document.getElementById('emAge');
-    if (ageEl) ageEl.textContent = `${data.age} years • Personal Account`;
-    const bloodEl = document.getElementById('emBlood');
-    if (bloodEl) bloodEl.textContent = data.blood || 'B+';
-    
-    const phone = data.emergency || '+8801700000000';
-    const callBtn = document.getElementById('emCallBtn');
-    if (callBtn) callBtn.href = `tel:${phone}`;
-    const callLabel = document.getElementById('emCallLabel');
-    if (callLabel) callLabel.textContent = `Call Emergency: ${phone}`;
-    
-    const allergiesEl = document.getElementById('emAllergies');
-    if (allergiesEl) allergiesEl.textContent = (data.allergies && data.allergies.length) ? data.allergies.join(', ') : 'None reported';
-    const conditionsEl = document.getElementById('emConditions');
-    if (conditionsEl) conditionsEl.textContent = (data.conditions && data.conditions.length) ? data.conditions.join(', ') : 'None';
-    
-    const medsContainer = document.getElementById('emMedsList');
-    if (medsContainer) {
-      if (data.activeMeds && data.activeMeds.length > 0) {
-        medsContainer.innerHTML = data.activeMeds.map(m => `
-          <span style="display:inline-block;padding:2px 8px;background:var(--color-primary-tint);color:var(--color-primary-dark);border-radius:12px;font-size:0.75rem;font-weight:500;">
-            ${m.name} (${m.dosage})
-          </span>
-        `).join('');
-      } else {
-        medsContainer.innerHTML = '<span style="color:var(--color-text-muted);font-size:0.75rem;">No active medications</span>';
-      }
-    }
-
-    openModal('emergencyIdModal');
   }
 
   renderSettings();
