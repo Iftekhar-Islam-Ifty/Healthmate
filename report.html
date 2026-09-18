@@ -103,29 +103,14 @@
         </div>
         <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;">
           <a href="records.html" class="btn-hm btn-ghost" style="text-decoration:none;">← Back</a>
-          <a href="report.html" target="_blank" class="btn-hm btn-secondary" style="text-decoration:none;" title="Opens in new tab where browser print is never blocked">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            Open in New Tab
-          </a>
-          <button type="button" class="btn-hm btn-secondary" onclick="downloadStandaloneReport()" title="Download a standalone HTML report file">
+          <button type="button" class="btn-hm btn-secondary" onclick="exportDirectPDF()" id="btnDownloadPdf" title="ডাইরেক্ট PDF ফাইল ডাউনলোড করুন">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download Report
+            Download PDF
           </button>
-          <button type="button" class="btn-hm btn-primary" onclick="handlePrintReport()">
+          <button type="button" class="btn-hm btn-primary" onclick="handlePrintReport()" id="btnPrintReport" title="সরাসরি প্রিন্টার বা ব্রাউজার প্রিন্ট ডায়ালগে পাঠান">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-            Print / Save PDF
+            Print Report
           </button>
-        </div>
-      </div>
-
-      <!-- Iframe Notice Banner (visible only inside embedded iframe) -->
-      <div id="iframePrintNotice" class="panel no-print" style="display:none;background:#EFF6FF;border:1px solid #BFDBFE;padding:10px 14px;margin-bottom:var(--space-3);font-size:0.84rem;color:#1E40AF;border-radius:var(--radius-sm);">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span>ℹ️</span>
-            <span>ব্রাউজার সিকিউরিটির কারণে প্রিভিউ ফ্রেমের ভেতরে সরাসরি প্রিন্ট ডায়ালগ না খুললে <b>"Open in New Tab"</b> বাটনে ক্লিক করুন অথবা <b>"Download Report"</b> করুন।</span>
-          </div>
-          <a href="report.html" target="_blank" class="btn-hm btn-primary" style="font-size:0.75rem;padding:4px 10px;text-decoration:none;">নতুন ট্যাবে খুলুন ↗</a>
         </div>
       </div>
 
@@ -317,6 +302,7 @@
     document.write('<script src="/js/supabase.js"><\/script>');
   }
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="/js/supabase-config.js"></script>
 <script src="/js/store.js"></script>
 <script src="/js/app.js"></script>
@@ -486,21 +472,212 @@
         nextApptEl.textContent = '_________________';
       }
     }
-
-    // Check if running inside iframe and show notice
-    if (window.self !== window.top) {
-      const notice = document.getElementById('iframePrintNotice');
-      if (notice) notice.style.display = 'block';
-    }
   }
 
   function handlePrintReport() {
     try {
-      window.print();
-    } catch (e) {
-      console.warn('Direct print blocked by sandbox iframe:', e);
+      // 1. If running in an iframe, direct print via invisible child iframe to stay on same page
       if (window.self !== window.top) {
-        window.open('report.html', '_blank');
+        printViaHiddenIframe();
+      } else {
+        window.print();
+      }
+    } catch (e) {
+      console.warn('Direct print trigger error:', e);
+      window.print();
+    }
+  }
+
+  function printViaHiddenIframe() {
+    const reportSheet = document.querySelector('.report-sheet');
+    if (!reportSheet) {
+      window.print();
+      return;
+    }
+
+    // Remove any existing print frame
+    let frame = document.getElementById('hmHiddenPrintFrame');
+    if (frame) frame.remove();
+
+    frame = document.createElement('iframe');
+    frame.id = 'hmHiddenPrintFrame';
+    frame.style.position = 'fixed';
+    frame.style.right = '0';
+    frame.style.bottom = '0';
+    frame.style.width = '0';
+    frame.style.height = '0';
+    frame.style.border = '0';
+    document.body.appendChild(frame);
+
+    const doc = frame.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Healthmate Medical Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Hind Siliguri', 'Anek Bangla', 'Inter', system-ui, sans-serif; background: #FFFFFF; color: #0F172A; padding: 24px; line-height: 1.5; font-size: 13px; }
+  .report-sheet { width: 100%; max-width: 800px; margin: 0 auto; }
+  .report-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0D6E6E; padding-bottom: 14px; margin-bottom: 20px; }
+  .report-brand-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: #0D6E6E; }
+  .report-meta-tag { font-size: 12px; color: #64748B; margin-top: 2px; }
+  .report-patient-header { display: flex; justify-content: space-between; align-items: flex-start; }
+  .report-patient-badges { display: flex; gap: 10px; align-items: center; }
+  .report-patient-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; background: #F8FAFC; padding: 10px 14px; border-radius: 6px; font-size: 13px; border: 1px solid #E2E8F0; }
+  .report-vitals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .report-vital-box { border: 1px solid #E2E8F0; padding: 10px; border-radius: 6px; background: #F8FAFC; text-align: center; }
+  .report-table-wrap { width: 100%; margin-top: 8px; margin-bottom: 16px; border: 1px solid #E2E8F0; border-radius: 6px; }
+  .report-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .report-table th { background: #F1F5F9; color: #334155; font-weight: 600; text-align: left; padding: 7px 10px; border: 1px solid #E2E8F0; }
+  .report-table td { padding: 7px 10px; border: 1px solid #E2E8F0; color: #0F172A; }
+  .report-signature-block { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 32px; padding-top: 16px; border-top: 1px solid #E2E8F0; }
+  @media print {
+    body { padding: 0; }
+    .report-sheet { border: none !important; box-shadow: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="report-sheet">
+    ${reportSheet.innerHTML}
+  </div>
+</body>
+</html>`);
+    doc.close();
+
+    setTimeout(() => {
+      try {
+        frame.contentWindow.focus();
+        frame.contentWindow.print();
+      } catch (err) {
+        console.warn('Iframe print blocked, falling back to window.print():', err);
+        window.print();
+      }
+    }, 400);
+  }
+
+  async function exportDirectPDF() {
+    const reportSheet = document.querySelector('.report-sheet');
+    if (!reportSheet) return;
+
+    const btn = document.getElementById('btnDownloadPdf');
+    const originalHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;">⏳</span> PDF তৈরি হচ্ছে...`;
+    }
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const user = (window.HMStore && HMStore.getUser) ? HMStore.getUser() : {};
+    const sanitizedName = (user.name || 'Patient').toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const filename = `healthmate-doctor-report-${sanitizedName}-${todayStr}.pdf`;
+
+    // Clone element to a standalone pristine container with fixed A4 dimensions
+    // This prevents CSS clipping, responsive wraps, and viewport-dependent sizing issues.
+    const cloneWrapper = document.createElement('div');
+    cloneWrapper.style.position = 'fixed';
+    cloneWrapper.style.left = '-9999px';
+    cloneWrapper.style.top = '0';
+    cloneWrapper.style.width = '794px'; // Standard A4 width at 96 DPI
+    cloneWrapper.style.background = '#FFFFFF';
+    cloneWrapper.style.color = '#0F172A';
+    cloneWrapper.style.padding = '32px 36px';
+    cloneWrapper.style.boxSizing = 'border-box';
+    cloneWrapper.style.fontFamily = "'Hind Siliguri', 'Anek Bangla', 'Inter', system-ui, sans-serif";
+    cloneWrapper.innerHTML = reportSheet.innerHTML;
+
+    // Apply explicit clean styles to inner elements inside clone
+    const tables = cloneWrapper.querySelectorAll('table');
+    tables.forEach(t => {
+      t.style.width = '100%';
+      t.style.borderCollapse = 'collapse';
+      t.style.fontSize = '12px';
+    });
+    const cells = cloneWrapper.querySelectorAll('th, td');
+    cells.forEach(c => {
+      c.style.border = '1px solid #CBD5E1';
+      c.style.padding = '6px 8px';
+      c.style.color = '#0F172A';
+    });
+    const headers = cloneWrapper.querySelectorAll('th');
+    headers.forEach(h => {
+      h.style.background = '#F1F5F9';
+      h.style.color = '#1E293B';
+      h.style.fontWeight = '700';
+    });
+    const vitalsGrid = cloneWrapper.querySelector('#repVitalsGrid') || cloneWrapper.querySelector('.report-vitals-grid');
+    if (vitalsGrid) {
+      vitalsGrid.style.display = 'grid';
+      vitalsGrid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+      vitalsGrid.style.gap = '10px';
+    }
+    const detailsGrid = cloneWrapper.querySelector('.report-patient-details-grid');
+    if (detailsGrid) {
+      detailsGrid.style.display = 'grid';
+      detailsGrid.style.gridTemplateColumns = '1fr 1fr';
+      detailsGrid.style.gap = '12px';
+      detailsGrid.style.background = '#F8FAFC';
+      detailsGrid.style.border = '1px solid #E2E8F0';
+      detailsGrid.style.padding = '10px 14px';
+      detailsGrid.style.borderRadius = '6px';
+    }
+    const patientHeader = cloneWrapper.querySelector('.report-patient-header');
+    if (patientHeader) {
+      patientHeader.style.display = 'flex';
+      patientHeader.style.justifyContent = 'space-between';
+      patientHeader.style.alignItems = 'flex-start';
+    }
+    const sigBlock = cloneWrapper.querySelector('.report-signature-block');
+    if (sigBlock) {
+      sigBlock.style.display = 'flex';
+      sigBlock.style.justifyContent = 'space-between';
+      sigBlock.style.alignItems = 'flex-end';
+      sigBlock.style.marginTop = '28px';
+      sigBlock.style.paddingTop = '14px';
+      sigBlock.style.borderTop = '1px solid #E2E8F0';
+    }
+
+    document.body.appendChild(cloneWrapper);
+
+    if (window.html2pdf) {
+      const opt = {
+        margin: [8, 8, 8, 8], // mm
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          letterRendering: true,
+          windowWidth: 794
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      try {
+        await window.html2pdf().set(opt).from(cloneWrapper).save();
+        if (typeof showToast === 'function') {
+          showToast('ডক্টর রিপোর্ট PDF সফলভাবে ডাউনলোড হয়েছে');
+        }
+      } catch (err) {
+        console.error('html2pdf generation error, falling back:', err);
+        downloadStandaloneReport();
+      } finally {
+        cloneWrapper.remove();
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+        }
+      }
+    } else {
+      cloneWrapper.remove();
+      downloadStandaloneReport();
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
       }
     }
   }
@@ -516,32 +693,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Healthmate — Doctor Consultation Report (${todayStr})</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Hind Siliguri', 'Anek Bangla', 'Noto Sans Bengali', 'Inter', system-ui, -apple-system, sans-serif; background: #FFFFFF; color: #1E293B; padding: 24px; line-height: 1.6; font-size: 14px; }
   .report-sheet { max-width: 820px; width: 100%; margin: 0 auto; border: 1px solid #E2E8F0; border-radius: 8px; padding: 32px; background: #FFFFFF; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-  .report-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0D6E6E; padding-bottom: 16px; margin-bottom: 24px; gap: 12px; flex-wrap: wrap; }
+  .report-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0D6E6E; padding-bottom: 16px; margin-bottom: 24px; gap: 12px; }
   .report-brand-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: #0D6E6E; }
   .report-meta-tag { font-size: 12px; color: #64748B; margin-top: 2px; }
-  .report-patient-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
-  .report-patient-badges { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .report-patient-header { display: flex; justify-content: space-between; align-items: flex-start; }
+  .report-patient-badges { display: flex; gap: 10px; align-items: center; }
   .report-patient-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; background: #F8FAFC; padding: 10px 14px; border-radius: 6px; font-size: 13px; }
   .report-vitals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .report-vital-box { border: 1px solid #E2E8F0; padding: 10px; border-radius: 6px; background: #F8FAFC; min-width: 0; word-break: break-word; }
+  .report-vital-box { border: 1px solid #E2E8F0; padding: 10px; border-radius: 6px; background: #F8FAFC; min-width: 0; text-align: center; }
   .report-table-wrap { width: 100%; max-width: 100%; overflow-x: auto; margin-top: 8px; margin-bottom: 20px; border: 1px solid #E2E8F0; border-radius: 6px; }
-  .report-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 540px; }
-  .report-table th { background: #F1F5F9; color: #334155; font-weight: 600; text-align: left; padding: 8px 10px; border: 1px solid #E2E8F0; white-space: nowrap; }
+  .report-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .report-table th { background: #F1F5F9; color: #334155; font-weight: 600; text-align: left; padding: 8px 10px; border: 1px solid #E2E8F0; }
   .report-table td { padding: 8px 10px; border: 1px solid #E2E8F0; color: #1E293B; }
-  .report-signature-block { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 32px; padding-top: 16px; border-top: 1px solid #E2E8F0; gap: 16px; flex-wrap: wrap; }
-  @media (max-width: 768px) {
-    body { padding: 12px; }
-    .report-sheet { padding: 16px 12px; }
-    .report-vitals-grid { grid-template-columns: repeat(2, 1fr); }
-    .report-patient-details-grid { grid-template-columns: 1fr; }
-  }
+  .report-signature-block { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 32px; padding-top: 16px; border-top: 1px solid #E2E8F0; gap: 16px; }
   @media print {
     body { padding: 0; }
     .report-sheet { border: none; box-shadow: none; padding: 0; }

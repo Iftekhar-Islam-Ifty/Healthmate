@@ -3413,15 +3413,27 @@ a { color: inherit; }
   background: linear-gradient(135deg, #0A5959 0%, #043333 100%);
 }
 
-.hm-ai-sparkle {
+.hm-ai-med-icon {
   display: inline-flex;
-  font-size: 1.1rem;
-  animation: hmSparklePulse 2s infinite ease-in-out;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.28);
 }
 
-@keyframes hmSparklePulse {
-  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
-  50% { transform: scale(1.25) rotate(15deg); opacity: 1; }
+.hm-ai-med-icon svg {
+  animation: hmEcgPulse 2.4s infinite ease-in-out;
+}
+
+@keyframes hmEcgPulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  25% { transform: scale(1.12); opacity: 1; }
+  35% { transform: scale(0.96); }
+  45% { transform: scale(1.08); opacity: 1; }
 }
 
 .hm-ai-modal-panel {

@@ -375,7 +375,7 @@
       if (list && list.children.length === 0) {
         const user = HMStore.getUser ? HMStore.getUser() : {};
         const greetName = user.name || 'Friend';
-        const welcome = `নমস্কার / হ্যালো ${greetName}! আমি আপনার পার্সোনাল HealthMate AI সহযোগী। আপনার ঔষধ, ব্লাড প্রেসার, সুগার, ডাক্তারের অ্যাপয়েন্টমেন্ট বা যেকোনো স্বাস্থ্য বিষয়ক প্রশ্ন করতে পারেন।`;
+        const welcome = `হ্যালো ${greetName}! আমি আপনার পার্সোনাল HealthMate AI সহযোগী। আপনার ঔষধ, ব্লাড প্রেসার, সুগার, ডাক্তারের অ্যাপয়েন্টমেন্ট বা যেকোনো স্বাস্থ্য বিষয়ক প্রশ্ন করতে পারেন।`;
         appendAiChatMessage('assistant', welcome);
       }
     } else {
@@ -399,8 +399,11 @@
     trigger.className = 'hm-ai-floating-btn';
     trigger.setAttribute('aria-label', 'Open HealthMate AI Assistant');
     trigger.innerHTML = `
-      <div class="hm-ai-sparkle">✨</div>
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a8 8 0 0 0-8 8c0 3.31 2.02 6.16 4.9 7.37L8 22l4.5-2.25L17 22l-.9-4.63A8 8 0 0 0 12 2z"/><path d="M9 10h.01"/><path d="M15 10h.01"/></svg>
+      <div class="hm-ai-med-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
       <span class="hm-ai-btn-text">HealthMate AI</span>
     `;
     trigger.addEventListener('click', toggleAiWidget);
