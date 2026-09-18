@@ -24,32 +24,32 @@ function hmToUUID(id) {
 }
 
 const HM_DEFAULT_USER = {
-  name: 'Ifty',
-  email: 'ifty@example.com',
+  name: 'User',
+  email: '',
   accountType: 'single', // Fixed to 'single' personal health space
   role: 'Personal',
-  initials: 'IA',
-  age: 24,
-  blood: 'B+',
-  emergency: '+8801700000000',
-  conditions: ['মৃদু ঋতুভিত্তিক অ্যালার্জি'],
-  allergies: ['ধুলাবালি']
+  initials: 'U',
+  age: null,
+  blood: '',
+  emergency: '',
+  conditions: [],
+  allergies: []
 };
 
 const HM_DEFAULT_MEMBERS = [
   {
     id: 'owner',
-    name: 'Ifty',
-    initials: 'IA',
+    name: 'User',
+    initials: 'U',
     role: 'Personal',
-    age: 24,
-    blood: 'B+',
-    emergency: '+8801700000000',
-    conditions: ['মৃদু ঋতুভিত্তিক অ্যালার্জি'],
-    allergies: ['ধুলাবালি'],
+    age: null,
+    blood: '',
+    emergency: '',
+    conditions: [],
+    allergies: [],
     notes: 'ব্যক্তিগত স্বাস্থ্য প্রোফাইল।',
-    medStats: { done: 2, total: 2 },
-    routinePct: 80
+    medStats: { done: 0, total: 0 },
+    routinePct: 0
   }
 ];
 
@@ -132,7 +132,7 @@ const HMStore = {
           this._set('auth', true);
           const meta = data.session.user.user_metadata || {};
           const current = this.getUser();
-          const cleanName = meta.full_name || meta.name || current.name || 'Personal User';
+          const cleanName = meta.full_name || meta.name || current.name || (data.session.user.email ? data.session.user.email.split('@')[0] : 'User');
           const initials = cleanName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'U';
           const updatedUser = {
             ...current,
@@ -170,17 +170,17 @@ const HMStore = {
         .maybeSingle();
 
       if (profile) {
-        const cleanName = profile.full_name || user.email.split('@')[0];
+        const cleanName = profile.full_name || (user.email ? user.email.split('@')[0] : 'User');
         const initials = cleanName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'U';
         const updatedUser = {
           ...this.getUser(),
           id: profile.id,
           name: cleanName,
-          email: profile.email || user.email,
-          age: profile.age || 29,
-          blood: profile.blood_group || 'B+',
-          emergency: profile.emergency_contact || '+8801700000000',
-          allergies: Array.isArray(profile.allergies) ? profile.allergies : ['Dust'],
+          email: profile.email || user.email || '',
+          age: (profile.age !== undefined && profile.age !== null) ? profile.age : null,
+          blood: profile.blood_group || '',
+          emergency: profile.emergency_contact || '',
+          allergies: Array.isArray(profile.allergies) ? profile.allergies : [],
           conditions: Array.isArray(profile.chronic_conditions) ? profile.chronic_conditions : [],
           initials
         };
@@ -226,6 +226,9 @@ const HMStore = {
 
       const todayStr = new Date().toISOString().slice(0, 10);
 
+      const deletedMeds = new Set(this._get('deleted_medicines', []));
+      const deletedRoutines = new Set(this._get('deleted_routines', []));
+
       // 1. Fetch Medicines from cloud
       const { data: cloudMeds, error: medErr } = await window.hmSupabase
         .from('medicines')
@@ -242,8 +245,23 @@ const HMStore = {
           .eq('log_date', todayStr);
 
         const loggedTakenIds = new Set((logs || []).filter(l => l.status === 'taken').map(l => l.medicine_id));
+        const idsToDeleteFromCloud = [];
 
-        const mappedMeds = cloudMeds.map(m => ({
+        const validMeds = cloudMeds.filter(m => {
+          const isDel = deletedMeds.has(String(m.id)) || (m.name && deletedMeds.has(m.name.trim().toLowerCase()));
+          if (isDel) {
+            idsToDeleteFromCloud.push(m.id);
+            return false;
+          }
+          return true;
+        });
+
+        if (idsToDeleteFromCloud.length > 0) {
+          window.hmSupabase.from('medicine_logs').delete().in('medicine_id', idsToDeleteFromCloud).catch(() => {});
+          window.hmSupabase.from('medicines').delete().in('id', idsToDeleteFromCloud).catch(() => {});
+        }
+
+        const mappedMeds = validMeds.map(m => ({
           id: m.id,
           memberId: 'owner',
           name: m.name,
@@ -252,57 +270,16 @@ const HMStore = {
           frequency: m.period || 'Once daily',
           meal: m.condition || 'After meal',
           status: loggedTakenIds.has(m.id) ? 'taken' : (m.status || 'pending'),
-          stock: typeof m.stock === 'number' ? m.stock : 20,
+          stock: typeof m.stock === 'number' ? m.stock : 0,
           refillThreshold: typeof m.refill_alert === 'number' ? m.refill_alert : 5,
           unit: m.unit || 'tablets',
           reminder: m.is_active !== false
         }));
         this._set('medicines', mappedMeds);
-        this._set('seeded_medicines', true);
       } else {
-        const alreadySeeded = this._get('seeded_medicines', false);
-        if (alreadySeeded) {
-          this._set('medicines', []);
-        } else {
-          // Auto seed initial default medicines to cloud for this user (First time only)
-          const defaultMeds = this.getMedicines();
-          const payloads = defaultMeds.map(m => {
-            const validId = hmToUUID(m.id);
-            return {
-              id: validId,
-              user_id: user.id,
-              name: m.name,
-              dosage: m.dosage || '1 tablet',
-              time: m.time || '08:00 AM',
-              period: m.frequency || 'Once daily',
-              condition: m.meal || 'After meal',
-              stock: typeof m.stock === 'number' ? m.stock : 20,
-              refill_alert: typeof m.refillThreshold === 'number' ? m.refillThreshold : 5,
-              unit: m.unit || 'tablets',
-              is_active: m.reminder !== false,
-              status: m.status || 'pending'
-            };
-          });
-          const { error: seedErr } = await window.hmSupabase.from('medicines').upsert(payloads);
-          if (!seedErr) {
-            this._set('medicines', payloads.map(p => ({
-              id: p.id,
-              name: p.name,
-              dosage: p.dosage,
-              time: p.time,
-              frequency: p.period,
-              meal: p.condition,
-              stock: p.stock,
-              refillThreshold: p.refill_alert,
-              unit: p.unit,
-              reminder: p.is_active,
-              status: p.status,
-              memberId: 'owner'
-            })));
-          }
-          this._set('seeded_medicines', true);
-        }
+        this._set('medicines', []);
       }
+      this._set('seeded_medicines', true);
 
       // 2. Fetch Routines from cloud
       const { data: cloudRoutines, error: rtErr } = await window.hmSupabase
@@ -337,7 +314,22 @@ const HMStore = {
           logMap[l.routine_id][l.log_date] = !!l.completed;
         });
 
-        const mappedRoutines = cloudRoutines.map(r => {
+        const rtIdsToDelete = [];
+        const validRoutines = cloudRoutines.filter(r => {
+          const isDel = deletedRoutines.has(String(r.id)) || (r.name && deletedRoutines.has(r.name.trim().toLowerCase()));
+          if (isDel) {
+            rtIdsToDelete.push(r.id);
+            return false;
+          }
+          return true;
+        });
+
+        if (rtIdsToDelete.length > 0) {
+          window.hmSupabase.from('routine_logs').delete().in('routine_id', rtIdsToDelete).catch(() => {});
+          window.hmSupabase.from('routines').delete().in('id', rtIdsToDelete).catch(() => {});
+        }
+
+        const mappedRoutines = validRoutines.map(r => {
           const week = weekDates.map(dStr => !!(logMap[r.id] && logMap[r.id][dStr]));
           return {
             id: r.id,
@@ -351,42 +343,10 @@ const HMStore = {
           };
         });
         this._set('routines', mappedRoutines);
-        this._set('seeded_routines', true);
       } else {
-        const alreadySeeded = this._get('seeded_routines', false);
-        if (alreadySeeded) {
-          this._set('routines', []);
-        } else {
-          // Auto seed initial default routines to cloud for this user (First time only)
-          const defaultRoutines = this.getRoutines();
-          const payloads = defaultRoutines.map(r => {
-            const validId = hmToUUID(r.id);
-            return {
-              id: validId,
-              user_id: user.id,
-              name: r.name,
-              category: r.category || 'Health',
-              target: r.target || '',
-              frequency: r.frequency || 'Daily',
-              reminder: r.reminder !== false
-            };
-          });
-          const { error: seedRtErr } = await window.hmSupabase.from('routines').upsert(payloads);
-          if (!seedRtErr) {
-            this._set('routines', payloads.map((p, idx) => ({
-              id: p.id,
-              name: p.name,
-              category: p.category,
-              target: p.target,
-              frequency: p.frequency,
-              reminder: p.reminder,
-              memberId: 'owner',
-              week: defaultRoutines[idx] ? defaultRoutines[idx].week : [false, false, false, false, false, false, false]
-            })));
-          }
-          this._set('seeded_routines', true);
-        }
+        this._set('routines', []);
       }
+      this._set('seeded_routines', true);
 
       return true;
     } catch (err) {
@@ -401,6 +361,9 @@ const HMStore = {
       const { data: { user } } = await window.hmSupabase.auth.getUser();
       if (!user) return null;
 
+      const deletedKeys = new Set(this._get('deleted_records', []));
+      const deletedDocs = new Set(this._get('deleted_documents', []));
+
       // 1. Fetch Health Records (Vitals)
       const { data: cloudRecords, error: recErr } = await window.hmSupabase
         .from('health_records')
@@ -410,22 +373,41 @@ const HMStore = {
 
       if (cloudRecords && cloudRecords.length > 0) {
         const grouped = { weight: [], bp: [], sugar: [], temp: [] };
+        const idsToDeleteFromCloud = [];
+
         cloudRecords.forEach(r => {
+          const sigId = String(r.id);
+          const sigDate = r.record_date ? String(r.record_date).slice(0, 10) : '';
+          const sigVal = r.value !== null && r.value !== undefined ? String(Number(r.value)) : '';
+          const sigBp = `${r.systolic || ''}/${r.diastolic || ''}`;
+          
+          const isDeleted = 
+            deletedKeys.has(sigId) ||
+            deletedKeys.has(`${r.type}_${sigDate}_${sigVal}`) ||
+            deletedKeys.has(`${r.type}_${sigVal}`) ||
+            deletedKeys.has(`${r.type}_${sigDate}_${sigBp}`) ||
+            deletedKeys.has(`${r.type}_${sigBp}`);
+
+          if (isDeleted) {
+            idsToDeleteFromCloud.push(r.id);
+            return;
+          }
+
           if (!grouped[r.type]) grouped[r.type] = [];
           if (r.type === 'bp') {
             grouped.bp.push({
               id: r.id,
               memberId: 'owner',
-              date: r.record_date,
-              systolic: r.systolic,
-              diastolic: r.diastolic,
+              date: sigDate || r.record_date,
+              systolic: Number(r.systolic),
+              diastolic: Number(r.diastolic),
               note: r.note || ''
             });
           } else if (r.type === 'sugar') {
             grouped.sugar.push({
               id: r.id,
               memberId: 'owner',
-              date: r.record_date,
+              date: sigDate || r.record_date,
               value: Number(r.value),
               context: r.context || 'Fasting',
               note: r.note || ''
@@ -434,49 +416,22 @@ const HMStore = {
             grouped[r.type].push({
               id: r.id,
               memberId: 'owner',
-              date: r.record_date,
+              date: sigDate || r.record_date,
               value: Number(r.value),
               note: r.note || ''
             });
           }
         });
-        this._set('records', grouped);
-        this._set('seeded_records', true);
-      } else {
-        const alreadySeeded = this._get('seeded_records', false);
-        if (alreadySeeded) {
-          this._set('records', { weight: [], bp: [], sugar: [], temp: [] });
-        } else {
-          // Auto seed default records to Supabase for this user (First time only)
-          const defaultRecords = this.getRecords();
-          const payloads = [];
-          ['weight', 'bp', 'sugar', 'temp'].forEach(type => {
-            const list = defaultRecords[type] || [];
-            list.forEach(item => {
-              const id = hmToUUID(item.id);
-              item.id = id;
-              payloads.push({
-                id,
-                user_id: user.id,
-                type,
-                record_date: item.date || new Date().toISOString().slice(0, 10),
-                value: item.value !== undefined ? Number(item.value) : null,
-                systolic: item.systolic !== undefined ? Number(item.systolic) : null,
-                diastolic: item.diastolic !== undefined ? Number(item.diastolic) : null,
-                context: item.context || null,
-                note: item.note || ''
-              });
-            });
-          });
-          if (payloads.length > 0) {
-            const { error: seedRecErr } = await window.hmSupabase.from('health_records').upsert(payloads);
-            if (!seedRecErr) {
-              this._set('records', defaultRecords);
-            }
-          }
-          this._set('seeded_records', true);
+
+        if (idsToDeleteFromCloud.length > 0) {
+          window.hmSupabase.from('health_records').delete().in('id', idsToDeleteFromCloud).catch(() => {});
         }
+
+        this._set('records', grouped);
+      } else {
+        this._set('records', { weight: [], bp: [], sugar: [], temp: [] });
       }
+      this._set('seeded_records', true);
 
       // 2. Fetch Documents (Medical Vault)
       const { data: cloudDocs, error: docErr } = await window.hmSupabase
@@ -486,7 +441,21 @@ const HMStore = {
         .order('record_date', { ascending: false });
 
       if (cloudDocs && cloudDocs.length > 0) {
-        const mappedDocs = cloudDocs.map(d => ({
+        const docIdsToDelete = [];
+        const validDocs = cloudDocs.filter(d => {
+          const isDel = deletedDocs.has(String(d.id)) || (d.title && deletedDocs.has(d.title.trim().toLowerCase()));
+          if (isDel) {
+            docIdsToDelete.push(d.id);
+            return false;
+          }
+          return true;
+        });
+
+        if (docIdsToDelete.length > 0) {
+          window.hmSupabase.from('documents').delete().in('id', docIdsToDelete).catch(() => {});
+        }
+
+        const mappedDocs = validDocs.map(d => ({
           id: d.id,
           memberId: 'owner',
           title: d.title,
@@ -503,43 +472,10 @@ const HMStore = {
           tags: Array.isArray(d.tags) ? d.tags : []
         }));
         this._set('documents', mappedDocs);
-        this._set('seeded_documents', true);
       } else {
-        const alreadySeeded = this._get('seeded_documents', false);
-        if (alreadySeeded) {
-          this._set('documents', []);
-        } else {
-          // Auto seed default documents to Supabase for this user (First time only)
-          const defaultDocs = this.getDocuments();
-          const payloads = defaultDocs.map(d => {
-            const id = hmToUUID(d.id);
-            d.id = id;
-            return {
-              id,
-              user_id: user.id,
-              title: d.title,
-              category: d.category || 'other',
-              category_name: d.categoryName || 'Other',
-              record_date: d.date || new Date().toISOString().slice(0, 10),
-              doctor: d.doctor || '',
-              facility: d.facility || '',
-              file_type: d.fileType || 'pdf',
-              file_name: d.fileName || 'document.pdf',
-              file_size: d.fileSize || '1.0 MB',
-              file_data: d.fileData || '',
-              notes: d.notes || '',
-              tags: Array.isArray(d.tags) ? d.tags : []
-            };
-          });
-          if (payloads.length > 0) {
-            const { error: seedDocErr } = await window.hmSupabase.from('documents').upsert(payloads);
-            if (!seedDocErr) {
-              this._set('documents', defaultDocs);
-            }
-          }
-          this._set('seeded_documents', true);
-        }
+        this._set('documents', []);
       }
+      this._set('seeded_documents', true);
 
       return true;
     } catch (err) {
@@ -554,6 +490,8 @@ const HMStore = {
       const { data: { user } } = await window.hmSupabase.auth.getUser();
       if (!user) return null;
 
+      const deletedAppts = new Set(this._get('deleted_appointments', []));
+
       const { data: cloudAppts, error: apptErr } = await window.hmSupabase
         .from('appointments')
         .select('*')
@@ -561,7 +499,21 @@ const HMStore = {
         .order('appt_date', { ascending: true });
 
       if (cloudAppts && cloudAppts.length > 0) {
-        const mappedAppts = cloudAppts.map(a => ({
+        const apptIdsToDelete = [];
+        const validAppts = cloudAppts.filter(a => {
+          const isDel = deletedAppts.has(String(a.id)) || (a.doctor_name && deletedAppts.has(a.doctor_name.trim().toLowerCase()));
+          if (isDel) {
+            apptIdsToDelete.push(a.id);
+            return false;
+          }
+          return true;
+        });
+
+        if (apptIdsToDelete.length > 0) {
+          window.hmSupabase.from('appointments').delete().in('id', apptIdsToDelete).catch(() => {});
+        }
+
+        const mappedAppts = validAppts.map(a => ({
           id: a.id,
           memberId: 'owner',
           doctorName: a.doctor_name,
@@ -577,42 +529,10 @@ const HMStore = {
           followUpDate: a.follow_up_date || ''
         }));
         this._set('appointments', mappedAppts);
-        this._set('seeded_appointments', true);
       } else {
-        const alreadySeeded = this._get('seeded_appointments', false);
-        if (alreadySeeded) {
-          this._set('appointments', []);
-        } else {
-          // Auto-seed default appointments to Supabase for this user (First time only)
-          const defaultAppts = this.getAppointments();
-          const payloads = defaultAppts.map(a => {
-            const id = hmToUUID(a.id);
-            a.id = id;
-            return {
-              id,
-              user_id: user.id,
-              doctor_name: a.doctorName,
-              specialty: a.specialty || 'General Physician',
-              hospital: a.hospital || '',
-              phone: a.phone || '',
-              appt_date: a.date || new Date().toISOString().slice(0, 10),
-              appt_time: a.time || '10:00 AM',
-              status: a.status || 'upcoming',
-              reason: a.reason || 'Consultation',
-              pre_visit_checklist: Array.isArray(a.preVisitChecklist) ? a.preVisitChecklist : [],
-              notes: a.notes || '',
-              follow_up_date: a.followUpDate || null
-            };
-          });
-          if (payloads.length > 0) {
-            const { error: seedErr } = await window.hmSupabase.from('appointments').upsert(payloads);
-            if (!seedErr) {
-              this._set('appointments', defaultAppts);
-            }
-          }
-          this._set('seeded_appointments', true);
-        }
+        this._set('appointments', []);
       }
+      this._set('seeded_appointments', true);
 
       return true;
     } catch (err) {
@@ -683,8 +603,8 @@ const HMStore = {
           age: 29,
           blood: 'B+',
           emergency: '+8801700000000',
-          conditions: ['Hypertension (Stage 1)', 'Asthma'],
-          allergies: ['Dust', 'Penicillin']
+          conditions: [],
+          allergies: []
         };
         this._set('user', demoUser);
         this._set('auth', true);
@@ -719,8 +639,8 @@ const HMStore = {
         age: 29,
         blood: 'B+',
         emergency: '+8801700000000',
-        conditions: ['Hypertension (Stage 1)', 'Asthma'],
-        allergies: ['Dust', 'Penicillin']
+        conditions: [],
+        allergies: []
       };
       this._set('user', demoUser);
       this._set('auth', true);
@@ -746,10 +666,10 @@ const HMStore = {
     this._set('auth', false);
   },
 
-  async registerAccount({ name, email, password = '', emergency = '', blood = 'B+', age = 29, conditions = [] }) {
+  async registerAccount({ name, email, password = '', emergency = '', blood = '', age = null, conditions = [] }) {
     const cleanName = name.trim();
     const cleanEmail = email.trim();
-    const initials = cleanName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'IA';
+    const initials = cleanName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
     let remoteUserId = null;
 
@@ -761,9 +681,9 @@ const HMStore = {
           options: {
             data: {
               full_name: cleanName,
-              age: Number(age) || 29,
-              blood: blood || 'B+',
-              emergency: emergency.trim() || '+8801700000000',
+              age: age ? Number(age) : null,
+              blood: blood || '',
+              emergency: emergency.trim() || '',
               conditions: Array.isArray(conditions) ? conditions : []
             }
           }
@@ -786,10 +706,11 @@ const HMStore = {
       accountType: 'single',
       role: 'Personal',
       initials,
-      age: Number(age) || 29,
-      blood: blood || 'B+',
-      emergency: emergency.trim() || '+8801700000000',
-      conditions: Array.isArray(conditions) ? conditions : []
+      age: age ? Number(age) : null,
+      blood: blood || '',
+      emergency: emergency.trim() || '',
+      conditions: Array.isArray(conditions) ? conditions : [],
+      allergies: []
     };
 
     // Store in registered accounts collection for persistent authentication
@@ -824,10 +745,10 @@ const HMStore = {
       blood: user.blood,
       emergency: user.emergency,
       conditions: user.conditions,
-      allergies: ['Dust'],
-      notes: 'Personal health profile.',
-      medStats: { done: 2, total: 2 },
-      routinePct: 80
+      allergies: [],
+      notes: 'ব্যক্তিগত স্বাস্থ্য প্রোফাইল।',
+      medStats: { done: 0, total: 0 },
+      routinePct: 0
     };
 
     this.saveMembers([ownerMember]);
@@ -844,7 +765,7 @@ const HMStore = {
           blood: user.blood,
           emergency: user.emergency,
           conditions: user.conditions,
-          allergies: ['Dust'],
+          allergies: [],
           account_type: 'single',
           role: 'Personal',
           initials: initials,
@@ -862,7 +783,7 @@ const HMStore = {
     const current = this.getUser();
     const updated = { ...current, ...data };
     if (updated.name) {
-      updated.initials = updated.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'ME';
+      updated.initials = updated.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'U';
     }
     this._set('user', updated);
     // Sync with owner member
@@ -873,10 +794,11 @@ const HMStore = {
         ...members[ownerIdx],
         name: updated.name,
         initials: updated.initials,
-        age: updated.age || members[ownerIdx].age,
+        age: updated.age !== undefined ? updated.age : members[ownerIdx].age,
         blood: updated.blood || members[ownerIdx].blood,
         emergency: updated.emergency || members[ownerIdx].emergency,
-        conditions: updated.conditions || members[ownerIdx].conditions
+        conditions: updated.conditions || members[ownerIdx].conditions,
+        allergies: updated.allergies || members[ownerIdx].allergies || []
       };
       this.saveMembers(members);
     }
@@ -890,11 +812,11 @@ const HMStore = {
             id: user.id,
             full_name: updated.name || '',
             email: updated.email || user.email,
-            age: Number(updated.age) || 29,
-            blood_group: updated.blood || 'B+',
-            emergency_contact: updated.emergency || '+8801700000000',
+            age: (updated.age !== undefined && updated.age !== null && updated.age !== '') ? Number(updated.age) : null,
+            blood_group: updated.blood || '',
+            emergency_contact: updated.emergency || '',
             chronic_conditions: Array.isArray(updated.conditions) ? updated.conditions : [],
-            allergies: Array.isArray(updated.allergies) ? updated.allergies : ['Dust'],
+            allergies: Array.isArray(updated.allergies) ? updated.allergies : [],
             updated_at: new Date().toISOString()
           };
           const { error } = await window.hmSupabase.from('profiles').upsert(payload);
@@ -953,7 +875,7 @@ const HMStore = {
     const list = this._get('medicines', HM_DEFAULT_MEDICINES);
     // Ensure all items have memberId, stock, and refillThreshold
     let changed = false;
-    const normalized = list.map((m, idx) => {
+    const normalized = list.map((m) => {
       let updated = false;
       const copy = { ...m };
       if (!copy.memberId) {
@@ -961,7 +883,7 @@ const HMStore = {
         updated = true;
       }
       if (typeof copy.stock !== 'number') {
-        copy.stock = idx === 1 ? 3 : (idx === 2 ? 24 : 16);
+        copy.stock = 0;
         updated = true;
       }
       if (typeof copy.refillThreshold !== 'number') {
@@ -1056,9 +978,18 @@ const HMStore = {
     const strId = String(medId);
     const targetUUID = hmToUUID(medId);
     let meds = this.getMedicines();
+    const deletedItem = meds.find(m => String(m.id) === strId || String(m.id) === targetUUID);
     meds = meds.filter(m => String(m.id) !== strId && String(m.id) !== targetUUID);
     this._set('medicines', meds);
     this._set('seeded_medicines', true);
+
+    const deletedMeds = new Set(this._get('deleted_medicines', []));
+    deletedMeds.add(strId);
+    deletedMeds.add(targetUUID);
+    if (deletedItem && deletedItem.name) {
+      deletedMeds.add(deletedItem.name.trim().toLowerCase());
+    }
+    this._set('deleted_medicines', Array.from(deletedMeds));
 
     if (window.hmSupabase) {
       try {
@@ -1066,8 +997,12 @@ const HMStore = {
         if (user) {
           await window.hmSupabase.from('medicine_logs').delete().eq('user_id', user.id).eq('medicine_id', targetUUID).catch(() => {});
           await window.hmSupabase.from('medicines').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
-          if (strId !== targetUUID && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(strId)) {
+          if (strId !== targetUUID) {
+            await window.hmSupabase.from('medicine_logs').delete().eq('user_id', user.id).eq('medicine_id', strId).catch(() => {});
             await window.hmSupabase.from('medicines').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+          }
+          if (deletedItem && deletedItem.name) {
+            await window.hmSupabase.from('medicines').delete().eq('user_id', user.id).eq('name', deletedItem.name).catch(() => {});
           }
         }
       } catch (e) {
@@ -1294,9 +1229,18 @@ const HMStore = {
     const strId = String(routineId);
     const targetUUID = hmToUUID(routineId);
     let routines = this.getRoutines();
+    const deletedItem = routines.find(r => String(r.id) === strId || String(r.id) === targetUUID);
     routines = routines.filter(r => String(r.id) !== strId && String(r.id) !== targetUUID);
     this._set('routines', routines);
     this._set('seeded_routines', true);
+
+    const deletedRoutines = new Set(this._get('deleted_routines', []));
+    deletedRoutines.add(strId);
+    deletedRoutines.add(targetUUID);
+    if (deletedItem && deletedItem.name) {
+      deletedRoutines.add(deletedItem.name.trim().toLowerCase());
+    }
+    this._set('deleted_routines', Array.from(deletedRoutines));
 
     if (window.hmSupabase) {
       try {
@@ -1304,8 +1248,12 @@ const HMStore = {
         if (user) {
           await window.hmSupabase.from('routine_logs').delete().eq('user_id', user.id).eq('routine_id', targetUUID).catch(() => {});
           await window.hmSupabase.from('routines').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
-          if (strId !== targetUUID && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(strId)) {
+          if (strId !== targetUUID) {
+            await window.hmSupabase.from('routine_logs').delete().eq('user_id', user.id).eq('routine_id', strId).catch(() => {});
             await window.hmSupabase.from('routines').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+          }
+          if (deletedItem && deletedItem.name) {
+            await window.hmSupabase.from('routines').delete().eq('user_id', user.id).eq('name', deletedItem.name).catch(() => {});
           }
         }
       } catch (e) {
@@ -1371,6 +1319,24 @@ const HMStore = {
     records[type].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
     this._set('records', records);
 
+    // Unmark from deleted list if re-added
+    const deletedList = this._get('deleted_records', []);
+    if (deletedList.length > 0) {
+      const delSet = new Set(deletedList);
+      delSet.delete(String(entry.id));
+      if (entry.date) {
+        if (entry.value !== undefined && entry.value !== null) {
+          delSet.delete(`${type}_${String(entry.date).slice(0, 10)}_${entry.value}`);
+          delSet.delete(`${type}_${entry.value}`);
+        }
+        if (entry.systolic && entry.diastolic) {
+          delSet.delete(`${type}_${String(entry.date).slice(0, 10)}_${entry.systolic}/${entry.diastolic}`);
+          delSet.delete(`${type}_${entry.systolic}/${entry.diastolic}`);
+        }
+      }
+      this._set('deleted_records', Array.from(delSet));
+    }
+
     if (window.hmSupabase) {
       try {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
@@ -1399,19 +1365,50 @@ const HMStore = {
     const strId = String(recordId);
     const targetUUID = hmToUUID(recordId);
     const records = this.getRecords();
+    let deletedItem = null;
     if (records[type]) {
+      deletedItem = records[type].find(r => String(r.id) === strId || String(r.id) === targetUUID);
       records[type] = records[type].filter(r => String(r.id) !== strId && String(r.id) !== targetUUID);
       this._set('records', records);
       this._set('seeded_records', true);
     }
+
+    // Persist deleted signature so it will never resurrect on page refresh
+    const deletedList = this._get('deleted_records', []);
+    const delSet = new Set(deletedList);
+    delSet.add(strId);
+    delSet.add(targetUUID);
+    if (deletedItem) {
+      const sigDate = deletedItem.date ? String(deletedItem.date).slice(0, 10) : '';
+      if (deletedItem.value !== undefined && deletedItem.value !== null) {
+        if (sigDate) delSet.add(`${type}_${sigDate}_${deletedItem.value}`);
+        delSet.add(`${type}_${deletedItem.value}`);
+      }
+      if (deletedItem.systolic && deletedItem.diastolic) {
+        const bpVal = `${deletedItem.systolic}/${deletedItem.diastolic}`;
+        if (sigDate) delSet.add(`${type}_${sigDate}_${bpVal}`);
+        delSet.add(`${type}_${bpVal}`);
+      }
+    }
+    this._set('deleted_records', Array.from(delSet));
 
     if (window.hmSupabase) {
       try {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
           await window.hmSupabase.from('health_records').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
-          if (strId !== targetUUID && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(strId)) {
+          if (strId !== targetUUID) {
             await window.hmSupabase.from('health_records').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+          }
+          if (deletedItem) {
+            let query = window.hmSupabase.from('health_records').delete().eq('user_id', user.id).eq('type', type);
+            if (deletedItem.date) query = query.eq('record_date', String(deletedItem.date).slice(0, 10));
+            if (type === 'bp' && deletedItem.systolic && deletedItem.diastolic) {
+              query = query.eq('systolic', Number(deletedItem.systolic)).eq('diastolic', Number(deletedItem.diastolic));
+            } else if (deletedItem.value !== undefined && deletedItem.value !== null) {
+              query = query.eq('value', Number(deletedItem.value));
+            }
+            await query.catch(() => {});
           }
         }
       } catch (err) {
@@ -1516,17 +1513,29 @@ const HMStore = {
     const strId = String(id);
     const targetUUID = hmToUUID(id);
     let docs = this.getDocuments();
+    const deletedItem = docs.find(d => String(d.id) === strId || String(d.id) === targetUUID);
     docs = docs.filter(d => String(d.id) !== strId && String(d.id) !== targetUUID);
     this._set('documents', docs);
     this._set('seeded_documents', true);
+
+    const deletedDocs = new Set(this._get('deleted_documents', []));
+    deletedDocs.add(strId);
+    deletedDocs.add(targetUUID);
+    if (deletedItem && deletedItem.title) {
+      deletedDocs.add(deletedItem.title.trim().toLowerCase());
+    }
+    this._set('deleted_documents', Array.from(deletedDocs));
 
     if (window.hmSupabase) {
       try {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
           await window.hmSupabase.from('documents').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
-          if (strId !== targetUUID && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(strId)) {
+          if (strId !== targetUUID) {
             await window.hmSupabase.from('documents').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+          }
+          if (deletedItem && deletedItem.title) {
+            await window.hmSupabase.from('documents').delete().eq('user_id', user.id).eq('title', deletedItem.title).catch(() => {});
           }
         }
       } catch (err) {
@@ -1631,17 +1640,29 @@ const HMStore = {
     const strId = String(id);
     const targetUUID = hmToUUID(id);
     let appts = this.getAppointments();
+    const deletedItem = appts.find(a => String(a.id) === strId || String(a.id) === targetUUID);
     appts = appts.filter(a => String(a.id) !== strId && String(a.id) !== targetUUID);
     this._set('appointments', appts);
     this._set('seeded_appointments', true);
+
+    const deletedAppts = new Set(this._get('deleted_appointments', []));
+    deletedAppts.add(strId);
+    deletedAppts.add(targetUUID);
+    if (deletedItem && deletedItem.doctorName) {
+      deletedAppts.add(deletedItem.doctorName.trim().toLowerCase());
+    }
+    this._set('deleted_appointments', Array.from(deletedAppts));
 
     if (window.hmSupabase) {
       try {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
           await window.hmSupabase.from('appointments').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
-          if (strId !== targetUUID && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(strId)) {
+          if (strId !== targetUUID) {
             await window.hmSupabase.from('appointments').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+          }
+          if (deletedItem && deletedItem.doctorName) {
+            await window.hmSupabase.from('appointments').delete().eq('user_id', user.id).eq('doctor_name', deletedItem.doctorName).catch(() => {});
           }
         }
       } catch (err) {
@@ -1704,15 +1725,15 @@ const HMStore = {
     const user = this.getUser();
     return {
       id: 'owner',
-      name: user.name,
-      initials: user.initials || 'IA',
+      name: user.name || 'User',
+      initials: user.initials || 'U',
       role: 'Personal',
       isOwner: true,
-      age: user.age || 29,
-      blood: user.blood || 'B+',
-      emergency: user.emergency || '+8801700000000',
+      age: user.age || null,
+      blood: user.blood || '',
+      emergency: user.emergency || '',
       conditions: user.conditions || [],
-      allergies: user.allergies || ['Dust']
+      allergies: user.allergies || []
     };
   },
 
@@ -1808,12 +1829,12 @@ const HMStore = {
     const user = this.getUser();
     const meds = this.getMedicines();
     return {
-      name: user.name || 'Ifty Ahmed',
-      blood: user.blood || 'B+',
-      age: user.age || 29,
-      emergency: user.emergency || '+8801700000000',
+      name: user.name || 'User',
+      blood: user.blood || '',
+      age: user.age || null,
+      emergency: user.emergency || '',
       conditions: user.conditions || [],
-      allergies: user.allergies || ['Dust'],
+      allergies: user.allergies || [],
       activeMeds: meds.map(m => ({ name: m.name, dosage: m.dosage, time: m.time }))
     };
   },

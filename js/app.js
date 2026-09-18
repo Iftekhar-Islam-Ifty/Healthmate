@@ -236,17 +236,24 @@ function openEmergencyModal() {
   if (!window.HMStore || !HMStore.getEmergencyData) return;
   const data = HMStore.getEmergencyData();
   const nameEl = document.getElementById('emName');
-  if (nameEl) nameEl.textContent = data.name;
+  if (nameEl) nameEl.textContent = data.name || 'User';
   const ageEl = document.getElementById('emAge');
-  if (ageEl) ageEl.textContent = `${data.age} বছর • ব্যক্তিগত অ্যাকাউন্ট`;
+  if (ageEl) ageEl.textContent = data.age ? `${data.age} বছর • ব্যক্তিগত অ্যাকাউন্ট` : 'ব্যক্তিগত অ্যাকাউন্ট';
   const bloodEl = document.getElementById('emBlood');
-  if (bloodEl) bloodEl.textContent = data.blood || 'B+';
+  if (bloodEl) bloodEl.textContent = data.blood || '—';
   
-  const phone = data.emergency || '+8801700000000';
+  const phone = data.emergency || '';
   const callBtn = document.getElementById('emCallBtn');
-  if (callBtn) callBtn.href = `tel:${phone}`;
+  if (callBtn) {
+    if (phone) {
+      callBtn.href = `tel:${phone}`;
+      callBtn.style.display = 'inline-flex';
+    } else {
+      callBtn.style.display = 'none';
+    }
+  }
   const callLabel = document.getElementById('emCallLabel');
-  if (callLabel) callLabel.textContent = `ইমার্জেন্সি নম্বরে কল: ${phone}`;
+  if (callLabel) callLabel.textContent = phone ? `ইমার্জেন্সি নম্বরে কল: ${phone}` : 'ইমার্জেন্সি নম্বর যুক্ত করা নেই';
   
   const allergiesEl = document.getElementById('emAllergies');
   if (allergiesEl) allergiesEl.textContent = (data.allergies && data.allergies.length) ? data.allergies.join(', ') : 'জানা নেই / নেই';

@@ -328,9 +328,10 @@ function askDeleteRecord(id) {
 
 async function confirmDeleteRecord() {
   if (pendingDeleteRecord) {
-    await HMStore.deleteHealthRecord(currentType, pendingDeleteRecord);
-    records = HMStore.getRecords();
+    const idToDelete = pendingDeleteRecord;
     pendingDeleteRecord = null;
+    await HMStore.deleteHealthRecord(currentType, idToDelete);
+    records = HMStore.getRecords();
   }
   closeModal('deleteRecordModal');
   renderHero();
