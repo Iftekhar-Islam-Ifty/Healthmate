@@ -285,7 +285,9 @@ async function handleSaveDocument(e) {
 
   const title = document.getElementById('docTitle').value.trim();
   if (!title) {
-    alert('Please enter a document title');
+    if (typeof showToast === 'function') {
+      showToast('Please enter a document title');
+    }
     return;
   }
 
@@ -447,16 +449,56 @@ function downloadDocument(id) {
   URL.revokeObjectURL(url);
 }
 
-async function askDeleteDoc(id) {
+let pendingDocIdToDelete = null;
+
+function askDeleteDoc(id) {
   const docs = HMStore.getDocuments();
   const doc = docs.find(d => String(d.id) === String(id));
   if (!doc) return;
 
-  if (confirm(`Are you sure you want to delete "${doc.title}" from your medical vault?`)) {
-    await HMStore.deleteDocument(id);
-    renderDocumentsList();
-    if (typeof showToast === 'function') {
-      showToast('Document deleted from vault');
-    }
+  pendingDocIdToDelete = id;
+  const modalText = document.getElementById('deleteDocModalText');
+  if (modalText) {
+    modalText.textContent = `Are you sure you want to delete "${doc.title}" from your medical vault? This action cannot be undone.`;
+  }
+
+  const modalEl = document.getElementById('deleteDocModal');
+  if (modalEl && typeof openModal === 'function') {
+    openModal('deleteDocModal');
+  } else {
+    // Fallback if modal not present
+    deleteDoc(id);
   }
 }
+
+async function confirmDeleteDoc() {
+  if (!pendingDocIdToDelete) return;
+  const id = pendingDocIdToDelete;
+  pendingDocIdToDelete = null;
+  if (typeof closeModal === 'function') {
+    closeModal('deleteDocModal');
+  }
+  await deleteDoc(id);
+}
+
+async function deleteDoc(id) {
+  await HMStore.deleteDocument(id);
+  renderDocumentsList();
+  if (typeof showToast === 'function') {
+    showToast('Document deleted from vault');
+  }
+}
+
+// Global exports for HTML event bindings
+window.askDeleteDoc = askDeleteDoc;
+window.confirmDeleteDoc = confirmDeleteDoc;
+window.deleteDoc = deleteDoc;
+window.previewDocument = previewDocument;
+window.downloadDocument = downloadDocument;
+window.handleSaveDocument = handleSaveDocument;
+window.openUploadDocModal = openUploadDocModal;
+window.openUploadModal = openUploadDocModal;
+window.selectCategory = selectCategory;
+window.setDocFilter = setDocFilter;
+window.filterDocuments = filterDocuments;
+window.clearDocSearch = clearDocSearch;

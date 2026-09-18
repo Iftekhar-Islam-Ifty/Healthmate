@@ -11,7 +11,7 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
 <link href="/css/style.css" rel="stylesheet">
 </head>
@@ -26,6 +26,9 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
       </div>
       <span class="brand-name">Healthmate</span>
+      <button type="button" class="sidebar-close-btn" onclick="closeMobileSidebar()" aria-label="Close Navigation">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
 
     <ul class="nav-list">
@@ -62,12 +65,24 @@
         Settings
       </a></li>
     </ul>
+
+    <div class="sidebar-footer">
+      <button type="button" class="sidebar-emergency-btn" onclick="openEmergencyModal(); closeMobileSidebar();">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+        <span>Emergency Medical ID</span>
+      </button>
+    </div>
   </aside>
 
   <!-- ============ MAIN ============ -->
   <div class="main">
     <header class="topbar">
-      <div class="font-heading" style="font-size:1rem;font-weight:600;">Settings</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button type="button" class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Open Navigation Menu" title="Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="font-heading" style="font-size:1rem;font-weight:600;">Settings</div>
+      </div>
       <div class="topbar-actions" style="position:relative;">
         <button class="icon-btn" onclick="toggleNotifPanel()" aria-label="Notifications">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -261,12 +276,11 @@
 </div>
 
 <!-- Bottom nav (mobile) -->
-<nav class="bottom-nav">
-  <a href="dashboard.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Dashboard</a>
-  <a href="medicines.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>Medicines</a>
-  <a href="routine.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Routine</a>
-  <a href="records.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>Records</a>
-  <a class="active" href="settings.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82"/></svg>Settings</a>
+<nav class="bottom-nav no-print">
+  <a href="dashboard.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Dashboard</span></a>
+  <a href="medicines.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg><span>Medicines</span></a>
+  <a href="routine.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Routine</span></a>
+  <a href="records.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span>Records</span></a>
 </nav>
 
 <div class="toast-hm" id="toastHm">
@@ -333,7 +347,7 @@
     </p>
     <div class="modal-hm-actions">
       <button class="btn-hm btn-ghost" onclick="closeModal('resetConfirmModal')">Cancel</button>
-      <button class="btn-hm btn-primary" style="background:var(--color-error);" onclick="confirmResetData()">Yes, reset</button>
+      <button class="btn-hm btn-primary" id="confirmResetBtn" style="background:var(--color-error);" onclick="confirmResetData()">Yes, reset</button>
     </div>
   </div>
 </div>
@@ -444,11 +458,27 @@
     showToast('Preference saved to cloud');
   }
 
-  function confirmResetData() {
-    HMStore.resetToDefaults();
-    closeModal('resetConfirmModal');
-    renderSettings();
-    showToast('Sample health data restored');
+  async function confirmResetData() {
+    const btn = document.getElementById('confirmResetBtn');
+    const orig = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = 'Restoring...';
+    }
+    try {
+      await HMStore.resetToDefaults();
+      closeModal('resetConfirmModal');
+      renderSettings();
+      showToast('Sample health data restored');
+    } catch (err) {
+      console.error('Reset error:', err);
+      showToast('Sample health data restored');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = orig;
+      }
+    }
   }
 
   function downloadBackupFile() {

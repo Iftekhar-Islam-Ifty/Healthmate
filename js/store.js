@@ -9,6 +9,11 @@ function hmToUUID(id) {
   if (typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
     return id;
   }
+  const num = parseInt(id, 10);
+  if (!isNaN(num) && num > 0 && num < 1000000) {
+    const hex = num.toString(16).padStart(12, '0');
+    return `a0000000-0000-4000-8000-${hex}`;
+  }
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
   }
@@ -27,8 +32,8 @@ const HM_DEFAULT_USER = {
   age: 24,
   blood: 'B+',
   emergency: '+8801700000000',
-  conditions: ['Mild seasonal allergy'],
-  allergies: ['Dust']
+  conditions: ['মৃদু ঋতুভিত্তিক অ্যালার্জি'],
+  allergies: ['ধুলাবালি']
 };
 
 const HM_DEFAULT_MEMBERS = [
@@ -40,9 +45,9 @@ const HM_DEFAULT_MEMBERS = [
     age: 24,
     blood: 'B+',
     emergency: '+8801700000000',
-    conditions: ['Mild seasonal allergy'],
-    allergies: ['Dust'],
-    notes: 'Personal health profile.',
+    conditions: ['মৃদু ঋতুভিত্তিক অ্যালার্জি'],
+    allergies: ['ধুলাবালি'],
+    notes: 'ব্যক্তিগত স্বাস্থ্য প্রোফাইল।',
     medStats: { done: 2, total: 2 },
     routinePct: 80
   }
@@ -50,248 +55,20 @@ const HM_DEFAULT_MEMBERS = [
 
 const HM_DEFAULT_PERMISSIONS = {};
 
-const HM_DEFAULT_MEDICINES = [
-  {
-    id: 1,
-    memberId: 'owner',
-    name: 'Vitamin D3 (2000 IU)',
-    dosage: '1 capsule',
-    time: '8:30 AM',
-    frequency: 'Once daily',
-    meal: 'After breakfast',
-    start: '1 Sep 2026',
-    end: '',
-    instructions: 'Take with warm water after breakfast',
-    reminder: true,
-    status: 'taken',
-    stock: 24,
-    refillThreshold: 5,
-    unit: 'capsules'
-  },
-  {
-    id: 2,
-    memberId: 'owner',
-    name: 'Omega-3 Fish Oil',
-    dosage: '1 softgel',
-    time: '9:00 PM',
-    frequency: 'Once daily',
-    meal: 'After dinner',
-    start: '1 Sep 2026',
-    end: '',
-    instructions: 'Take after dinner for cardiovascular health',
-    reminder: true,
-    status: 'upcoming',
-    stock: 18,
-    refillThreshold: 6,
-    unit: 'softgels'
-  },
-  {
-    id: 3,
-    memberId: 'owner',
-    name: 'Calcium & Magnesium',
-    dosage: '1 tablet',
-    time: '1:30 PM',
-    frequency: 'Once daily',
-    meal: 'After lunch',
-    start: '5 Sep 2026',
-    end: '',
-    instructions: 'Bone and muscle health maintenance',
-    reminder: true,
-    status: 'taken',
-    stock: 4, // triggers low stock refill alert
-    refillThreshold: 5,
-    unit: 'tablets'
-  }
-];
+const HM_DEFAULT_MEDICINES = [];
 
-const HM_DEFAULT_ROUTINES = [
-  {
-    id: 1,
-    memberId: 'owner',
-    name: 'Drink 8 glasses of water',
-    category: 'Water',
-    frequency: 'Daily',
-    target: '8 glasses (2.5L)',
-    reminder: true,
-    week: [true, true, true, true, true, false, false]
-  },
-  {
-    id: 2,
-    memberId: 'owner',
-    name: 'Brisk morning walk',
-    category: 'Walking',
-    frequency: 'Daily',
-    target: '30 minutes',
-    reminder: true,
-    week: [true, true, false, true, true, false, false]
-  },
-  {
-    id: 3,
-    memberId: 'owner',
-    name: 'Sleep by 11:00 PM',
-    category: 'Sleep',
-    frequency: 'Daily',
-    target: '7-8 hours',
-    reminder: false,
-    week: [true, false, true, true, false, false, false]
-  },
-  {
-    id: 4,
-    memberId: 'owner',
-    name: 'Daily posture & stretching',
-    category: 'Exercise',
-    frequency: 'Daily',
-    target: '15 minutes',
-    reminder: true,
-    week: [true, true, true, true, true, false, false]
-  }
-];
+const HM_DEFAULT_ROUTINES = [];
 
 const HM_DEFAULT_RECORDS = {
-  weight: [
-    { id: 1, memberId: 'owner', date: '2026-09-08', value: 71.5, note: 'Morning weigh-in' },
-    { id: 2, memberId: 'owner', date: '2026-09-10', value: 71.2, note: '' },
-    { id: 3, memberId: 'owner', date: '2026-09-12', value: 70.8, note: '' },
-    { id: 4, memberId: 'owner', date: '2026-09-14', value: 70.5, note: 'After morning walk' }
-  ],
-  bp: [
-    { id: 1, memberId: 'owner', date: '2026-09-08', systolic: 120, diastolic: 80, note: 'Resting reading' },
-    { id: 2, memberId: 'owner', date: '2026-09-11', systolic: 119, diastolic: 79, note: 'Before breakfast' },
-    { id: 3, memberId: 'owner', date: '2026-09-14', systolic: 118, diastolic: 78, note: 'Optimal normal range' }
-  ],
-  sugar: [
-    { id: 1, memberId: 'owner', date: '2026-09-06', value: 92, context: 'Fasting', note: 'Routine annual check' },
-    { id: 2, memberId: 'owner', date: '2026-09-12', value: 115, context: 'After meal', note: '2 hrs after lunch' }
-  ],
-  temp: [
-    { id: 1, memberId: 'owner', date: '2026-09-14', value: 98.4, note: 'Normal body temperature' }
-  ]
+  weight: [],
+  bp: [],
+  sugar: [],
+  temp: []
 };
 
-const HM_DEFAULT_DOCUMENTS = [
-  {
-    id: 1,
-    memberId: 'owner',
-    title: 'Fasting Lipid Profile & Blood Count',
-    category: 'lab',
-    categoryName: 'Lab Test',
-    date: '2026-08-20',
-    doctor: 'Dr. A. Chowdhury (Cardiologist)',
-    facility: 'Popular Diagnostic Centre, Dhaka',
-    fileType: 'pdf',
-    fileName: 'Lipid_CBC_Report_Aug2026.pdf',
-    fileSize: '1.2 MB',
-    fileData: '',
-    notes: 'Total Cholesterol 185 mg/dL (Normal < 200). HDL 48 mg/dL. Fasting blood glucose normal.',
-    tags: ['Cholesterol', 'CBC', 'Lipid']
-  },
-  {
-    id: 2,
-    memberId: 'owner',
-    title: 'Prescription — Telmisartan & Multivitamin',
-    category: 'prescription',
-    categoryName: 'Prescription',
-    date: '2026-08-15',
-    doctor: 'Dr. M. Rahman (Internal Medicine)',
-    facility: 'Square Hospital, Dhaka',
-    fileType: 'image',
-    fileName: 'Prescription_Aug15.jpg',
-    fileSize: '840 KB',
-    fileData: '',
-    notes: 'Telmisartan 20mg once daily after breakfast. Vitamin D3 2000IU daily for 3 months.',
-    tags: ['BP', 'Prescription', 'Vitamin D3']
-  },
-  {
-    id: 3,
-    memberId: 'owner',
-    title: 'Chest X-Ray (PA View)',
-    category: 'radiology',
-    categoryName: 'Radiology / Imaging',
-    date: '2026-06-10',
-    doctor: 'Dr. K. Zaman (Consultant Radiologist)',
-    facility: 'Evercare Hospital, Dhaka',
-    fileType: 'pdf',
-    fileName: 'Chest_XRay_PA_Jun2026.pdf',
-    fileSize: '2.4 MB',
-    fileData: '',
-    notes: 'Bilateral lung fields clear. Bronchovascular markings normal. Heart size within normal limits. No active lung pathology.',
-    tags: ['Chest', 'X-Ray', 'Lungs']
-  },
-  {
-    id: 4,
-    memberId: 'owner',
-    title: 'Dental Checkup & Cleaning Summary',
-    category: 'other',
-    categoryName: 'Checkup / Other',
-    date: '2026-05-18',
-    doctor: 'Dr. Farhana Yasmin (Dental Surgeon)',
-    facility: 'Smile Care Dental Clinic',
-    fileType: 'pdf',
-    fileName: 'Dental_Prophylaxis_May2026.pdf',
-    fileSize: '450 KB',
-    fileData: '',
-    notes: 'Scaling and prophylaxis completed. Enamel condition healthy. Next routine review in 6 months.',
-    tags: ['Dental', 'Routine']
-  }
-];
+const HM_DEFAULT_DOCUMENTS = [];
 
-const HM_DEFAULT_APPOINTMENTS = [
-  {
-    id: 1,
-    memberId: 'owner',
-    doctorName: 'Dr. A. Chowdhury',
-    specialty: 'Cardiologist & Vascular Specialist',
-    hospital: 'Popular Diagnostic Centre, Dhanmondi, Dhaka',
-    phone: '+880 1711-889900',
-    date: '2026-09-22',
-    time: '06:30 PM',
-    status: 'upcoming',
-    reason: 'Routine 3-month cardiovascular evaluation & BP medication review',
-    preVisitChecklist: [
-      { id: 'chk-1', text: 'Log recent 7-day morning & evening BP readings', done: true },
-      { id: 'chk-2', text: 'Bring latest Fasting Lipid Profile & Blood Count report from Vault', done: true },
-      { id: 'chk-3', text: 'Ask doctor about mild ankle puffiness & dosage review for Telmisartan', done: false }
-    ],
-    notes: 'Doctor recommended fasting lipid profile check before this follow-up.',
-    followUpDate: ''
-  },
-  {
-    id: 2,
-    memberId: 'owner',
-    doctorName: 'Dr. Farhana Yasmin',
-    specialty: 'Dental Surgeon & Specialist',
-    hospital: 'Smile Care Dental Clinic, Banani, Dhaka',
-    phone: '+880 1819-445566',
-    date: '2026-10-05',
-    time: '11:00 AM',
-    status: 'upcoming',
-    reason: 'Semi-annual dental hygiene checkup & enamel inspection',
-    preVisitChecklist: [
-      { id: 'chk-d1', text: 'Note down any cold drink sensitivity areas', done: false },
-      { id: 'chk-d2', text: 'Verify previous prophylaxis cleaning date (May 2026)', done: true }
-    ],
-    notes: 'Routine 6-month checkup following May 2026 cleaning.',
-    followUpDate: ''
-  },
-  {
-    id: 3,
-    memberId: 'owner',
-    doctorName: 'Dr. M. Rahman',
-    specialty: 'Consultant, Internal Medicine',
-    hospital: 'Square Hospital, Panthapath, Dhaka',
-    phone: '+880 1912-334455',
-    date: '2026-08-15',
-    time: '04:00 PM',
-    status: 'completed',
-    reason: 'Seasonal allergy assessment & comprehensive wellness review',
-    preVisitChecklist: [
-      { id: 'chk-p1', text: 'Prepare symptom timeline log', done: true },
-      { id: 'chk-p2', text: 'Carry previous prescription list', done: true }
-    ],
-    notes: 'Prescribed Telmisartan 20mg and Vitamin D3 2000IU daily. Advised 3-month follow-up.',
-    followUpDate: '2026-09-22'
-  }
-];
+const HM_DEFAULT_APPOINTMENTS = [];
 
 const HM_DEFAULT_PREFERENCES = {
   medicineReminders: true,
@@ -481,42 +258,49 @@ const HMStore = {
           reminder: m.is_active !== false
         }));
         this._set('medicines', mappedMeds);
+        this._set('seeded_medicines', true);
       } else {
-        // Auto seed initial default medicines to cloud for this user
-        const defaultMeds = this.getMedicines();
-        const payloads = defaultMeds.map(m => {
-          const validId = hmToUUID(m.id);
-          return {
-            id: validId,
-            user_id: user.id,
-            name: m.name,
-            dosage: m.dosage || '1 tablet',
-            time: m.time || '08:00 AM',
-            period: m.frequency || 'Once daily',
-            condition: m.meal || 'After meal',
-            stock: typeof m.stock === 'number' ? m.stock : 20,
-            refill_alert: typeof m.refillThreshold === 'number' ? m.refillThreshold : 5,
-            unit: m.unit || 'tablets',
-            is_active: m.reminder !== false,
-            status: m.status || 'pending'
-          };
-        });
-        const { error: seedErr } = await window.hmSupabase.from('medicines').upsert(payloads);
-        if (!seedErr) {
-          this._set('medicines', payloads.map(p => ({
-            id: p.id,
-            name: p.name,
-            dosage: p.dosage,
-            time: p.time,
-            frequency: p.period,
-            meal: p.condition,
-            stock: p.stock,
-            refillThreshold: p.refill_alert,
-            unit: p.unit,
-            reminder: p.is_active,
-            status: p.status,
-            memberId: 'owner'
-          })));
+        const alreadySeeded = this._get('seeded_medicines', false);
+        if (alreadySeeded) {
+          this._set('medicines', []);
+        } else {
+          // Auto seed initial default medicines to cloud for this user (First time only)
+          const defaultMeds = this.getMedicines();
+          const payloads = defaultMeds.map(m => {
+            const validId = hmToUUID(m.id);
+            return {
+              id: validId,
+              user_id: user.id,
+              name: m.name,
+              dosage: m.dosage || '1 tablet',
+              time: m.time || '08:00 AM',
+              period: m.frequency || 'Once daily',
+              condition: m.meal || 'After meal',
+              stock: typeof m.stock === 'number' ? m.stock : 20,
+              refill_alert: typeof m.refillThreshold === 'number' ? m.refillThreshold : 5,
+              unit: m.unit || 'tablets',
+              is_active: m.reminder !== false,
+              status: m.status || 'pending'
+            };
+          });
+          const { error: seedErr } = await window.hmSupabase.from('medicines').upsert(payloads);
+          if (!seedErr) {
+            this._set('medicines', payloads.map(p => ({
+              id: p.id,
+              name: p.name,
+              dosage: p.dosage,
+              time: p.time,
+              frequency: p.period,
+              meal: p.condition,
+              stock: p.stock,
+              refillThreshold: p.refill_alert,
+              unit: p.unit,
+              reminder: p.is_active,
+              status: p.status,
+              memberId: 'owner'
+            })));
+          }
+          this._set('seeded_medicines', true);
         }
       }
 
@@ -567,33 +351,40 @@ const HMStore = {
           };
         });
         this._set('routines', mappedRoutines);
+        this._set('seeded_routines', true);
       } else {
-        // Auto seed initial default routines to cloud for this user
-        const defaultRoutines = this.getRoutines();
-        const payloads = defaultRoutines.map(r => {
-          const validId = hmToUUID(r.id);
-          return {
-            id: validId,
-            user_id: user.id,
-            name: r.name,
-            category: r.category || 'Health',
-            target: r.target || '',
-            frequency: r.frequency || 'Daily',
-            reminder: r.reminder !== false
-          };
-        });
-        const { error: seedRtErr } = await window.hmSupabase.from('routines').upsert(payloads);
-        if (!seedRtErr) {
-          this._set('routines', payloads.map((p, idx) => ({
-            id: p.id,
-            name: p.name,
-            category: p.category,
-            target: p.target,
-            frequency: p.frequency,
-            reminder: p.reminder,
-            memberId: 'owner',
-            week: defaultRoutines[idx] ? defaultRoutines[idx].week : [false, false, false, false, false, false, false]
-          })));
+        const alreadySeeded = this._get('seeded_routines', false);
+        if (alreadySeeded) {
+          this._set('routines', []);
+        } else {
+          // Auto seed initial default routines to cloud for this user (First time only)
+          const defaultRoutines = this.getRoutines();
+          const payloads = defaultRoutines.map(r => {
+            const validId = hmToUUID(r.id);
+            return {
+              id: validId,
+              user_id: user.id,
+              name: r.name,
+              category: r.category || 'Health',
+              target: r.target || '',
+              frequency: r.frequency || 'Daily',
+              reminder: r.reminder !== false
+            };
+          });
+          const { error: seedRtErr } = await window.hmSupabase.from('routines').upsert(payloads);
+          if (!seedRtErr) {
+            this._set('routines', payloads.map((p, idx) => ({
+              id: p.id,
+              name: p.name,
+              category: p.category,
+              target: p.target,
+              frequency: p.frequency,
+              reminder: p.reminder,
+              memberId: 'owner',
+              week: defaultRoutines[idx] ? defaultRoutines[idx].week : [false, false, false, false, false, false, false]
+            })));
+          }
+          this._set('seeded_routines', true);
         }
       }
 
@@ -650,33 +441,40 @@ const HMStore = {
           }
         });
         this._set('records', grouped);
+        this._set('seeded_records', true);
       } else {
-        // Auto seed default records to Supabase for this user
-        const defaultRecords = this.getRecords();
-        const payloads = [];
-        ['weight', 'bp', 'sugar', 'temp'].forEach(type => {
-          const list = defaultRecords[type] || [];
-          list.forEach(item => {
-            const id = hmToUUID(item.id);
-            item.id = id;
-            payloads.push({
-              id,
-              user_id: user.id,
-              type,
-              record_date: item.date || new Date().toISOString().slice(0, 10),
-              value: item.value !== undefined ? Number(item.value) : null,
-              systolic: item.systolic !== undefined ? Number(item.systolic) : null,
-              diastolic: item.diastolic !== undefined ? Number(item.diastolic) : null,
-              context: item.context || null,
-              note: item.note || ''
+        const alreadySeeded = this._get('seeded_records', false);
+        if (alreadySeeded) {
+          this._set('records', { weight: [], bp: [], sugar: [], temp: [] });
+        } else {
+          // Auto seed default records to Supabase for this user (First time only)
+          const defaultRecords = this.getRecords();
+          const payloads = [];
+          ['weight', 'bp', 'sugar', 'temp'].forEach(type => {
+            const list = defaultRecords[type] || [];
+            list.forEach(item => {
+              const id = hmToUUID(item.id);
+              item.id = id;
+              payloads.push({
+                id,
+                user_id: user.id,
+                type,
+                record_date: item.date || new Date().toISOString().slice(0, 10),
+                value: item.value !== undefined ? Number(item.value) : null,
+                systolic: item.systolic !== undefined ? Number(item.systolic) : null,
+                diastolic: item.diastolic !== undefined ? Number(item.diastolic) : null,
+                context: item.context || null,
+                note: item.note || ''
+              });
             });
           });
-        });
-        if (payloads.length > 0) {
-          const { error: seedRecErr } = await window.hmSupabase.from('health_records').upsert(payloads);
-          if (!seedRecErr) {
-            this._set('records', defaultRecords);
+          if (payloads.length > 0) {
+            const { error: seedRecErr } = await window.hmSupabase.from('health_records').upsert(payloads);
+            if (!seedRecErr) {
+              this._set('records', defaultRecords);
+            }
           }
+          this._set('seeded_records', true);
         }
       }
 
@@ -705,34 +503,41 @@ const HMStore = {
           tags: Array.isArray(d.tags) ? d.tags : []
         }));
         this._set('documents', mappedDocs);
+        this._set('seeded_documents', true);
       } else {
-        // Auto seed default documents to Supabase for this user
-        const defaultDocs = this.getDocuments();
-        const payloads = defaultDocs.map(d => {
-          const id = hmToUUID(d.id);
-          d.id = id;
-          return {
-            id,
-            user_id: user.id,
-            title: d.title,
-            category: d.category || 'other',
-            category_name: d.categoryName || 'Other',
-            record_date: d.date || new Date().toISOString().slice(0, 10),
-            doctor: d.doctor || '',
-            facility: d.facility || '',
-            file_type: d.fileType || 'pdf',
-            file_name: d.fileName || 'document.pdf',
-            file_size: d.fileSize || '1.0 MB',
-            file_data: d.fileData || '',
-            notes: d.notes || '',
-            tags: Array.isArray(d.tags) ? d.tags : []
-          };
-        });
-        if (payloads.length > 0) {
-          const { error: seedDocErr } = await window.hmSupabase.from('documents').upsert(payloads);
-          if (!seedDocErr) {
-            this._set('documents', defaultDocs);
+        const alreadySeeded = this._get('seeded_documents', false);
+        if (alreadySeeded) {
+          this._set('documents', []);
+        } else {
+          // Auto seed default documents to Supabase for this user (First time only)
+          const defaultDocs = this.getDocuments();
+          const payloads = defaultDocs.map(d => {
+            const id = hmToUUID(d.id);
+            d.id = id;
+            return {
+              id,
+              user_id: user.id,
+              title: d.title,
+              category: d.category || 'other',
+              category_name: d.categoryName || 'Other',
+              record_date: d.date || new Date().toISOString().slice(0, 10),
+              doctor: d.doctor || '',
+              facility: d.facility || '',
+              file_type: d.fileType || 'pdf',
+              file_name: d.fileName || 'document.pdf',
+              file_size: d.fileSize || '1.0 MB',
+              file_data: d.fileData || '',
+              notes: d.notes || '',
+              tags: Array.isArray(d.tags) ? d.tags : []
+            };
+          });
+          if (payloads.length > 0) {
+            const { error: seedDocErr } = await window.hmSupabase.from('documents').upsert(payloads);
+            if (!seedDocErr) {
+              this._set('documents', defaultDocs);
+            }
           }
+          this._set('seeded_documents', true);
         }
       }
 
@@ -772,33 +577,40 @@ const HMStore = {
           followUpDate: a.follow_up_date || ''
         }));
         this._set('appointments', mappedAppts);
+        this._set('seeded_appointments', true);
       } else {
-        // Auto-seed default appointments to Supabase for this user
-        const defaultAppts = this.getAppointments();
-        const payloads = defaultAppts.map(a => {
-          const id = hmToUUID(a.id);
-          a.id = id;
-          return {
-            id,
-            user_id: user.id,
-            doctor_name: a.doctorName,
-            specialty: a.specialty || 'General Physician',
-            hospital: a.hospital || '',
-            phone: a.phone || '',
-            appt_date: a.date || new Date().toISOString().slice(0, 10),
-            appt_time: a.time || '10:00 AM',
-            status: a.status || 'upcoming',
-            reason: a.reason || 'Consultation',
-            pre_visit_checklist: Array.isArray(a.preVisitChecklist) ? a.preVisitChecklist : [],
-            notes: a.notes || '',
-            follow_up_date: a.followUpDate || null
-          };
-        });
-        if (payloads.length > 0) {
-          const { error: seedErr } = await window.hmSupabase.from('appointments').upsert(payloads);
-          if (!seedErr) {
-            this._set('appointments', defaultAppts);
+        const alreadySeeded = this._get('seeded_appointments', false);
+        if (alreadySeeded) {
+          this._set('appointments', []);
+        } else {
+          // Auto-seed default appointments to Supabase for this user (First time only)
+          const defaultAppts = this.getAppointments();
+          const payloads = defaultAppts.map(a => {
+            const id = hmToUUID(a.id);
+            a.id = id;
+            return {
+              id,
+              user_id: user.id,
+              doctor_name: a.doctorName,
+              specialty: a.specialty || 'General Physician',
+              hospital: a.hospital || '',
+              phone: a.phone || '',
+              appt_date: a.date || new Date().toISOString().slice(0, 10),
+              appt_time: a.time || '10:00 AM',
+              status: a.status || 'upcoming',
+              reason: a.reason || 'Consultation',
+              pre_visit_checklist: Array.isArray(a.preVisitChecklist) ? a.preVisitChecklist : [],
+              notes: a.notes || '',
+              follow_up_date: a.followUpDate || null
+            };
+          });
+          if (payloads.length > 0) {
+            const { error: seedErr } = await window.hmSupabase.from('appointments').upsert(payloads);
+            if (!seedErr) {
+              this._set('appointments', defaultAppts);
+            }
           }
+          this._set('seeded_appointments', true);
         }
       }
 
@@ -1241,13 +1053,23 @@ const HMStore = {
   },
 
   async deleteMedicine(medId) {
+    const strId = String(medId);
+    const targetUUID = hmToUUID(medId);
     let meds = this.getMedicines();
-    meds = meds.filter(m => String(m.id) !== String(medId));
+    meds = meds.filter(m => String(m.id) !== strId && String(m.id) !== targetUUID);
     this._set('medicines', meds);
+    this._set('seeded_medicines', true);
 
     if (window.hmSupabase) {
       try {
-        await window.hmSupabase.from('medicines').delete().eq('id', medId);
+        const { data: { user } } = await window.hmSupabase.auth.getUser();
+        if (user) {
+          await window.hmSupabase.from('medicine_logs').delete().eq('user_id', user.id).eq('medicine_id', targetUUID).catch(() => {});
+          await window.hmSupabase.from('medicines').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
+          if (strId !== targetUUID && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(strId)) {
+            await window.hmSupabase.from('medicines').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+          }
+        }
       } catch (e) {
         console.warn('deleteMedicine cloud error:', e);
       }
@@ -1469,13 +1291,23 @@ const HMStore = {
   },
 
   async deleteRoutine(routineId) {
+    const strId = String(routineId);
+    const targetUUID = hmToUUID(routineId);
     let routines = this.getRoutines();
-    routines = routines.filter(r => String(r.id) !== String(routineId));
+    routines = routines.filter(r => String(r.id) !== strId && String(r.id) !== targetUUID);
     this._set('routines', routines);
+    this._set('seeded_routines', true);
 
     if (window.hmSupabase) {
       try {
-        await window.hmSupabase.from('routines').delete().eq('id', routineId);
+        const { data: { user } } = await window.hmSupabase.auth.getUser();
+        if (user) {
+          await window.hmSupabase.from('routine_logs').delete().eq('user_id', user.id).eq('routine_id', targetUUID).catch(() => {});
+          await window.hmSupabase.from('routines').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
+          if (strId !== targetUUID && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(strId)) {
+            await window.hmSupabase.from('routines').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+          }
+        }
       } catch (e) {
         console.warn('deleteRoutine cloud error:', e);
       }
@@ -1564,15 +1396,24 @@ const HMStore = {
   },
 
   async deleteHealthRecord(type, recordId) {
+    const strId = String(recordId);
+    const targetUUID = hmToUUID(recordId);
     const records = this.getRecords();
     if (records[type]) {
-      records[type] = records[type].filter(r => String(r.id) !== String(recordId));
+      records[type] = records[type].filter(r => String(r.id) !== strId && String(r.id) !== targetUUID);
       this._set('records', records);
+      this._set('seeded_records', true);
     }
 
     if (window.hmSupabase) {
       try {
-        await window.hmSupabase.from('health_records').delete().eq('id', recordId);
+        const { data: { user } } = await window.hmSupabase.auth.getUser();
+        if (user) {
+          await window.hmSupabase.from('health_records').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
+          if (strId !== targetUUID && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(strId)) {
+            await window.hmSupabase.from('health_records').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+          }
+        }
       } catch (err) {
         console.warn('deleteHealthRecord cloud error:', err);
       }
@@ -1672,13 +1513,22 @@ const HMStore = {
   },
 
   async deleteDocument(id) {
+    const strId = String(id);
+    const targetUUID = hmToUUID(id);
     let docs = this.getDocuments();
-    docs = docs.filter(d => String(d.id) !== String(id));
+    docs = docs.filter(d => String(d.id) !== strId && String(d.id) !== targetUUID);
     this._set('documents', docs);
+    this._set('seeded_documents', true);
 
     if (window.hmSupabase) {
       try {
-        await window.hmSupabase.from('documents').delete().eq('id', id);
+        const { data: { user } } = await window.hmSupabase.auth.getUser();
+        if (user) {
+          await window.hmSupabase.from('documents').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
+          if (strId !== targetUUID && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(strId)) {
+            await window.hmSupabase.from('documents').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+          }
+        }
       } catch (err) {
         console.warn('deleteDocument cloud error:', err);
       }
@@ -1778,13 +1628,22 @@ const HMStore = {
   },
 
   async deleteAppointment(id) {
+    const strId = String(id);
+    const targetUUID = hmToUUID(id);
     let appts = this.getAppointments();
-    appts = appts.filter(a => String(a.id) !== String(id));
+    appts = appts.filter(a => String(a.id) !== strId && String(a.id) !== targetUUID);
     this._set('appointments', appts);
+    this._set('seeded_appointments', true);
 
     if (window.hmSupabase) {
       try {
-        await window.hmSupabase.from('appointments').delete().eq('id', id);
+        const { data: { user } } = await window.hmSupabase.auth.getUser();
+        if (user) {
+          await window.hmSupabase.from('appointments').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
+          if (strId !== targetUUID && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(strId)) {
+            await window.hmSupabase.from('appointments').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+          }
+        }
       } catch (err) {
         console.warn('deleteAppointment cloud error:', err);
       }
@@ -2357,7 +2216,7 @@ const HMStore = {
     return insights;
   },
 
-  resetToDefaults() {
+  async resetToDefaults() {
     this._set('user', HM_DEFAULT_USER);
     this._set('members', HM_DEFAULT_MEMBERS);
     this._set('permissions', HM_DEFAULT_PERMISSIONS);
@@ -2367,6 +2226,116 @@ const HMStore = {
     this._set('documents', HM_DEFAULT_DOCUMENTS);
     this._set('appointments', HM_DEFAULT_APPOINTMENTS);
     this._set('preferences', HM_DEFAULT_PREFERENCES);
+    this._set('seeded_medicines', true);
+    this._set('seeded_routines', true);
+    this._set('seeded_records', true);
+    this._set('seeded_documents', true);
+    this._set('seeded_appointments', true);
+
+    if (window.hmSupabase) {
+      try {
+        const { data: { user } } = await window.hmSupabase.auth.getUser();
+        if (user) {
+          // 1. Reset user profile
+          await window.hmSupabase.from('profiles').upsert({
+            id: user.id,
+            full_name: HM_DEFAULT_USER.name,
+            blood_group: HM_DEFAULT_USER.blood,
+            age: HM_DEFAULT_USER.age,
+            emergency_contact: HM_DEFAULT_USER.emergency,
+            allergies: HM_DEFAULT_USER.allergies,
+            chronic_conditions: HM_DEFAULT_USER.conditions,
+            updated_at: new Date().toISOString()
+          }).catch(() => {});
+
+          // 2. Reset user settings
+          await window.hmSupabase.from('user_settings').upsert({
+            user_id: user.id,
+            medicine_reminders: true,
+            routine_reminders: true,
+            health_alerts: true,
+            daily_summary_time: '08:00',
+            active_modules: ['medicines', 'routines', 'vitals', 'appointments', 'vault'],
+            updated_at: new Date().toISOString()
+          }).catch(() => {});
+
+          // 3. Clear existing cloud records (respecting foreign keys)
+          await window.hmSupabase.from('medicine_logs').delete().eq('user_id', user.id).catch(() => {});
+          await window.hmSupabase.from('medicines').delete().eq('user_id', user.id).catch(() => {});
+          await window.hmSupabase.from('routine_logs').delete().eq('user_id', user.id).catch(() => {});
+          await window.hmSupabase.from('routines').delete().eq('user_id', user.id).catch(() => {});
+          await window.hmSupabase.from('health_records').delete().eq('user_id', user.id).catch(() => {});
+          await window.hmSupabase.from('documents').delete().eq('user_id', user.id).catch(() => {});
+          await window.hmSupabase.from('appointments').delete().eq('user_id', user.id).catch(() => {});
+
+          // 4. Re-seed default sample records to cloud
+          const medPayloads = HM_DEFAULT_MEDICINES.map(m => ({
+            id: hmToUUID(m.id),
+            user_id: user.id,
+            name: m.name,
+            dosage: m.dosage || '1 tablet',
+            time: m.time || '08:00 AM',
+            period: m.frequency || 'Once daily',
+            condition: m.meal || 'After meal',
+            stock: typeof m.stock === 'number' ? m.stock : 20,
+            refill_alert: typeof m.refillThreshold === 'number' ? m.refillThreshold : 5,
+            unit: m.unit || 'tablets',
+            is_active: m.reminder !== false,
+            status: m.status || 'pending'
+          }));
+          await window.hmSupabase.from('medicines').upsert(medPayloads).catch(() => {});
+
+          const rtPayloads = HM_DEFAULT_ROUTINES.map(r => ({
+            id: hmToUUID(r.id),
+            user_id: user.id,
+            name: r.name,
+            category: r.category || 'Health',
+            target: r.target || '',
+            frequency: r.frequency || 'Daily',
+            reminder: r.reminder !== false
+          }));
+          await window.hmSupabase.from('routines').upsert(rtPayloads).catch(() => {});
+
+          const apptPayloads = HM_DEFAULT_APPOINTMENTS.map(a => ({
+            id: hmToUUID(a.id),
+            user_id: user.id,
+            doctor_name: a.doctorName,
+            specialty: a.specialty || 'General Physician',
+            hospital: a.hospital || '',
+            phone: a.phone || '',
+            appt_date: a.date || new Date().toISOString().slice(0, 10),
+            appt_time: a.time || '10:00 AM',
+            status: a.status || 'upcoming',
+            reason: a.reason || 'Consultation',
+            pre_visit_checklist: Array.isArray(a.preVisitChecklist) ? a.preVisitChecklist : [],
+            notes: a.notes || '',
+            follow_up_date: a.followUpDate || null
+          }));
+          await window.hmSupabase.from('appointments').upsert(apptPayloads).catch(() => {});
+
+          const docPayloads = HM_DEFAULT_DOCUMENTS.map(d => ({
+            id: hmToUUID(d.id),
+            user_id: user.id,
+            title: d.title,
+            category: d.category || 'other',
+            category_name: d.categoryName || 'Other',
+            record_date: d.date || new Date().toISOString().slice(0, 10),
+            doctor: d.doctor || '',
+            facility: d.facility || '',
+            file_type: d.fileType || 'pdf',
+            file_name: d.fileName || 'document.pdf',
+            file_size: d.fileSize || '1.0 MB',
+            file_data: d.fileData || '',
+            notes: d.notes || '',
+            tags: Array.isArray(d.tags) ? d.tags : []
+          }));
+          await window.hmSupabase.from('documents').upsert(docPayloads).catch(() => {});
+        }
+      } catch (err) {
+        console.warn('resetToDefaults cloud sync error:', err);
+      }
+    }
+    return true;
   }
 };
 

@@ -10,7 +10,7 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
 <link href="/css/style.css" rel="stylesheet">
 </head>
@@ -25,6 +25,9 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
       </div>
       <span class="brand-name">Healthmate</span>
+      <button type="button" class="sidebar-close-btn" onclick="closeMobileSidebar()" aria-label="Close Navigation">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
 
     <ul class="nav-list">
@@ -61,14 +64,26 @@
         Settings
       </a></li>
     </ul>
+
+    <div class="sidebar-footer">
+      <button type="button" class="sidebar-emergency-btn" onclick="openEmergencyModal(); closeMobileSidebar();">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+        <span>Emergency Medical ID</span>
+      </button>
+    </div>
   </aside>
 
   <!-- ============ MAIN ============ -->
   <div class="main">
     <header class="topbar">
-      <div class="font-heading" style="font-size:1rem;font-weight:600;">Appointments & Follow-ups</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button type="button" class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Open Navigation Menu" title="Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="font-heading" style="font-size:1rem;font-weight:600;">ডাক্তার অ্যাপয়েন্টমেন্ট ও ফলো-আপ</div>
+      </div>
       <div class="topbar-actions" style="position:relative;">
-        <button class="icon-btn" onclick="openEmergencyModal()" title="Emergency Medical ID" aria-label="Emergency Medical ID" style="color:var(--color-error);background:#FEF2F2;">
+        <button class="icon-btn" onclick="openEmergencyModal()" title="ইমার্জেন্সি মেডিকেল আইডি" aria-label="Emergency Medical ID" style="color:var(--color-error);background:#FEF2F2;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
         </button>
         <button class="icon-btn" onclick="toggleNotifPanel()" aria-label="Notifications">
@@ -76,7 +91,7 @@
           <span class="notif-dot"></span>
         </button>
         <div class="notif-panel" id="notifPanel"></div>
-        <a href="settings.html" class="avatar" id="topbarAvatar" title="Personal Settings" style="text-decoration:none;">IA</a>
+        <a href="settings.html" class="avatar" id="topbarAvatar" title="ব্যক্তিগত সেটিংস" style="text-decoration:none;">IA</a>
       </div>
     </header>
 
@@ -85,37 +100,35 @@
       <!-- Header & Schedule Action -->
       <div class="page-header">
         <div>
-          <h1>Doctor Consultations & Follow-ups</h1>
+          <h1>ডাক্তার কনসালটেশন ও ফলো-আপ</h1>
           <p>ডাক্তারের অ্যাপয়েন্টমেন্ট শিডিউল করুন, ফলো-আপের তারিখ ট্র্যাক করুন এবং চেকলিস্ট তৈরি করে রাখুন যাতে কোনো গুরুত্বপূর্ণ প্রশ্ন বাদ না যায়।</p>
         </div>
         <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;">
           <button class="btn-hm btn-primary" onclick="openScheduleModal()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Schedule Consultation
+            + নতুন অ্যাপয়েন্টমেন্ট শিডিউল
           </button>
         </div>
       </div>
 
       <!-- Preparation Tip Banner -->
-      <div class="panel" style="background:linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);border:1px solid #A7F3D0;padding:14px 18px;margin-bottom:var(--space-4);border-radius:var(--radius-md);">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-          <div style="display:flex;align-items:flex-start;gap:12px;">
-            <div style="width:36px;height:36px;border-radius:8px;background:#10B981;color:#FFFFFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <div class="panel appt-guide-banner" style="background:linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);border:1px solid #A7F3D0;padding:12px 16px;margin-bottom:var(--space-4);border-radius:var(--radius-md);">
+        <div class="appt-guide-content">
+          <div class="appt-guide-left">
+            <div class="appt-guide-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
-            <div>
-              <b style="font-size:0.92rem;color:#065F46;">Pre-Consultation Preparation Guide</b>
-              <div style="font-size:0.8rem;color:#047857;margin-top:2px;">
-                ডাক্তার দেখানোর পূর্বে করণীয়: <b>১.</b> Health Records-এ সাম্প্রতিক BP ও Vitals দেখে নিন। <b>২.</b> সাম্প্রতিক ল্যাব রিপোর্ট Medical Vault-এ আপলোড রাখুন। <b>৩.</b> আপনার প্রশ্নগুলো নিচের চেকলিস্টে লিখে রাখুন।
-              </div>
+            <div class="appt-guide-text">
+              <b>ডাক্তার দেখানোর পূর্বপ্রস্তুতি নির্দেশিকা</b>
+              <p>ডাক্তার দেখানোর পূর্বে করণীয়: <b>১.</b> BP ও ভাইটালস চেক করুন। <b>২.</b> সাম্প্রতিক ল্যাব রিপোর্ট ভল্টে সাথে রাখুন। <b>৩.</b> চেকলিস্টে জরুরি প্রশ্ন লিখে রাখুন।</p>
             </div>
           </div>
-          <div style="display:flex;gap:8px;">
-            <a href="records.html" class="btn-hm btn-ghost" style="font-size:0.78rem;padding:5px 10px;background:#FFFFFF;text-decoration:none;border-color:#A7F3D0;color:#065F46;">
-              Review Vitals →
+          <div class="appt-guide-actions">
+            <a href="records.html" class="btn-hm btn-ghost">
+              ভাইটালস লগ দেখুন →
             </a>
-            <a href="documents.html" class="btn-hm btn-ghost" style="font-size:0.78rem;padding:5px 10px;background:#FFFFFF;text-decoration:none;border-color:#A7F3D0;color:#065F46;">
-              Vault Reports →
+            <a href="documents.html" class="btn-hm btn-ghost">
+              মেডিকেল ভল্ট রিপোর্ট →
             </a>
           </div>
         </div>
@@ -123,21 +136,22 @@
 
       <!-- Search & Filters -->
       <div class="appt-search-row">
-        <div class="vault-search-input-wrap">
+        <div class="vault-search-input-wrap appt-search-wrap">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="apptSearchInput" placeholder="Search by doctor name, specialty, hospital/chamber, or condition...">
+          <input type="text" id="apptSearchInput" placeholder="ডাক্তারের নাম, বিভাগ, হাসপাতাল বা কারণ খুঁজুন..." autocomplete="off">
+          <button type="button" id="apptSearchClearBtn" class="appt-search-clear" onclick="clearApptSearch()" aria-label="সার্চ ক্লিয়ার" title="সার্চ ক্লিয়ার" style="display:none;">✕</button>
         </div>
-        <div class="segmented-control" role="tablist" aria-label="Appointment view filter">
-          <button type="button" class="segmented-pill active" data-tab="upcoming" onclick="setApptTab('upcoming')" role="tab">
-            <span>Upcoming</span>
+        <div class="segmented-control appt-segmented-control" role="tablist" aria-label="Appointment view filter">
+          <button type="button" class="segmented-pill active" data-tab="upcoming" onclick="setApptTab('upcoming')" role="tab" id="tabUpcoming" aria-selected="true">
+            <span>আসন্ন ভিজিট</span>
             <span class="pill-count" id="countUpcoming">0</span>
           </button>
-          <button type="button" class="segmented-pill" data-tab="completed" onclick="setApptTab('completed')" role="tab">
-            <span>Completed</span>
+          <button type="button" class="segmented-pill" data-tab="completed" onclick="setApptTab('completed')" role="tab" id="tabCompleted" aria-selected="false">
+            <span>সম্পন্ন হয়েছে</span>
             <span class="pill-count" id="countCompleted">0</span>
           </button>
-          <button type="button" class="segmented-pill" data-tab="all" onclick="setApptTab('all')" role="tab">
-            <span>All Visits</span>
+          <button type="button" class="segmented-pill" data-tab="all" onclick="setApptTab('all')" role="tab" id="tabAll" aria-selected="false">
+            <span>সব অ্যাপয়েন্টমেন্ট</span>
             <span class="pill-count" id="countAll">0</span>
           </button>
         </div>
@@ -158,7 +172,7 @@
 <div class="modal-hm-backdrop" id="scheduleApptModal">
   <div class="modal-hm" style="max-width:540px;">
     <div class="modal-hm-header">
-      <h2 id="scheduleModalTitle">Schedule Medical Consultation</h2>
+      <h2 id="scheduleModalTitle">নতুন অ্যাপয়েন্টমেন্ট শিডিউল করুন</h2>
       <button type="button" class="modal-hm-close" onclick="closeModal('scheduleApptModal')" aria-label="Close">✕</button>
     </div>
     <form id="scheduleApptForm" onsubmit="handleSaveAppointment(event)">
@@ -166,90 +180,90 @@
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
           <div class="form-group-hm">
-            <label for="apptDoctorInput">Doctor Name *</label>
-            <input type="text" id="apptDoctorInput" placeholder="e.g. Dr. A. Chowdhury" required>
+            <label for="apptDoctorInput">ডাক্তারের নাম *</label>
+            <input type="text" id="apptDoctorInput" placeholder="যেমন: ডা. আতিকুর রহমান" required>
           </div>
           <div class="form-group-hm">
-            <label for="apptSpecialtyInput">Medical Specialty *</label>
-            <input type="text" id="apptSpecialtyInput" list="specialtySuggestions" placeholder="e.g. Cardiologist" required>
+            <label for="apptSpecialtyInput">চিকিৎসা বিশেষজ্ঞ / বিভাগ *</label>
+            <input type="text" id="apptSpecialtyInput" list="specialtySuggestions" placeholder="যেমন: কার্ডিওলজিস্ট" required>
             <datalist id="specialtySuggestions">
-              <option value="Cardiologist">
-              <option value="Internal Medicine / General Physician">
-              <option value="Endocrinologist / Diabetologist">
-              <option value="Dental Surgeon">
-              <option value="Dermatologist">
-              <option value="ENT Specialist">
-              <option value="Neurologist">
-              <option value="Ophthalmologist (Eye)">
-              <option value="Orthopedic Surgeon">
-              <option value="Pulmonologist (Chest & Lungs)">
-              <option value="Gastroenterologist">
-              <option value="Psychiatrist / Therapist">
+              <option value="মেডিসিন বিশেষজ্ঞ (General Physician)">
+              <option value="হৃদরোগ বিশেষজ্ঞ (Cardiologist)">
+              <option value="ডায়াবেটিস ও হরমোন বিশেষজ্ঞ (Endocrinologist)">
+              <option value="বক্ষব্যাধি ও ফুসফুস বিশেষজ্ঞ (Pulmonologist)">
+              <option value="দন্ত বিশেষজ্ঞ (Dental Surgeon)">
+              <option value="চর্ম ও যৌন রোগ বিশেষজ্ঞ (Dermatologist)">
+              <option value="নাক-কান-গলা বিশেষজ্ঞ (ENT)">
+              <option value="নিউরোলজি ও স্নায়ুরোগ বিশেষজ্ঞ">
+              <option value="চক্ষু বিশেষজ্ঞ (Ophthalmologist)">
+              <option value="অর্থোপেডিক ও হাড় বিশেষজ্ঞ">
+              <option value="গ্যাস্ট্রোএন্টারোলজিস্ট (লিভার ও পরিপাকতন্ত্র)">
+              <option value="মানসিক স্বাস্থ্য ও মনোরোগ বিশেষজ্ঞ">
             </datalist>
           </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:var(--space-3);">
           <div class="form-group-hm">
-            <label for="apptHospitalInput">Hospital / Chamber Location</label>
-            <input type="text" id="apptHospitalInput" placeholder="e.g. Popular Diagnostic Centre, Dhanmondi">
+            <label for="apptHospitalInput">হাসপাতাল / চেম্বারের ঠিকানা</label>
+            <input type="text" id="apptHospitalInput" placeholder="যেমন: পপুলার ডায়াগনস্টিক, ধানমন্ডি">
           </div>
           <div class="form-group-hm">
-            <label for="apptPhoneInput">Chamber / Serial Phone</label>
-            <input type="tel" id="apptPhoneInput" placeholder="e.g. +880 1711-889900">
+            <label for="apptPhoneInput">চেম্বার / সিরিয়াল বুকিং ফোন</label>
+            <input type="tel" id="apptPhoneInput" placeholder="যেমন: +880 1711-000000">
           </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
           <div class="form-group-hm">
-            <label for="apptDateInput">Appointment Date *</label>
+            <label for="apptDateInput">অ্যাপয়েন্টমেন্টের তারিখ *</label>
             <input type="date" id="apptDateInput" required>
           </div>
           <div class="form-group-hm">
-            <label for="apptTimeInput">Scheduled Time</label>
-            <input type="text" id="apptTimeInput" placeholder="e.g. 06:30 PM">
+            <label for="apptTimeInput">নির্ধারিত সময়</label>
+            <input type="text" id="apptTimeInput" placeholder="যেমন: 06:30 PM">
           </div>
         </div>
 
         <div class="form-group-hm">
-          <label for="apptReasonInput">Reason for Visit / Primary Concern</label>
-          <input type="text" id="apptReasonInput" placeholder="e.g. 3-Month BP checkup & cholesterol review">
+          <label for="apptReasonInput">দেখানোর প্রধান কারণ / সমস্যা</label>
+          <input type="text" id="apptReasonInput" placeholder="যেমন: ৩ মাসের প্রেসার ফলো-আপ ও রক্ত পরীক্ষা পর্যালোচনা">
         </div>
 
         <!-- Pre-visit preparation checklist items -->
         <div class="form-group-hm">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <label style="margin:0;">Pre-Visit Checklist & Questions to Ask</label>
+            <label style="margin:0;">পূর্বপ্রস্তুতি চেকলিস্ট ও প্রয়োজনীয় প্রশ্ন</label>
             <button type="button" class="btn-hm btn-ghost" onclick="addModalChecklistRow()" style="font-size:0.75rem;padding:2px 8px;">
-              + Add Item
+              + বিষয় যোগ করুন
             </button>
           </div>
           <div id="modalChecklistRows">
             <!-- Dynamic checklist items -->
           </div>
-          <div style="font-size:0.74rem;color:var(--color-text-muted);margin-top:4px;">
-            Add test reports to carry, symptom questions, or medications to discuss.
+          <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:4px;">
+            যেসব রিপোর্ট সাথে নিতে হবে, নতুন লক্ষণ বা ওষুধ সংক্রান্ত প্রশ্ন এখানে লিখে রাখুন।
           </div>
         </div>
 
         <div class="form-group-hm">
-          <label for="apptNotesInput">Clinical Guidance / Prior Doctor Advice</label>
-          <textarea id="apptNotesInput" rows="2" placeholder="e.g. Fasting 10 hours required before appointment; keep previous ECG report handy."></textarea>
+          <label for="apptNotesInput">ডাক্তারের পূর্ববর্তী নির্দেশনা / বিশেষ পরামর্শ</label>
+          <textarea id="apptNotesInput" rows="2" placeholder="যেমন: টেস্টের জন্য ১০ ঘণ্টা খালি পেটে থাকতে হবে; আগের ইসিজি সাথে রাখুন।"></textarea>
         </div>
 
         <div class="form-group-hm">
-          <label for="apptStatusInput">Status</label>
+          <label for="apptStatusInput">অবস্থা (Status)</label>
           <select id="apptStatusInput">
-            <option value="upcoming">Upcoming Consultation</option>
-            <option value="completed">Completed Visit</option>
+            <option value="upcoming">আসন্ন অ্যাপয়েন্টমেন্ট (Upcoming)</option>
+            <option value="completed">সম্পন্ন ভিজিট (Completed)</option>
           </select>
         </div>
 
       </div>
 
       <div class="modal-hm-footer">
-        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('scheduleApptModal')">Cancel</button>
-        <button type="submit" class="btn-hm btn-primary">Save Consultation</button>
+        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('scheduleApptModal')">বাতিল</button>
+        <button type="submit" class="btn-hm btn-primary">সংরক্ষণ করুন</button>
       </div>
     </form>
   </div>
@@ -259,39 +273,58 @@
 <div class="modal-hm-backdrop" id="followUpModal">
   <div class="modal-hm" style="max-width:440px;">
     <div class="modal-hm-header">
-      <h2>Schedule Next Follow-Up</h2>
+      <h2>পরবর্তী ফলো-আপ শিডিউল</h2>
       <button type="button" class="modal-hm-close" onclick="closeModal('followUpModal')" aria-label="Close">✕</button>
     </div>
     <form id="followUpForm" onsubmit="handleSaveFollowUp(event)">
       <input type="hidden" id="followUpParentId">
       <div class="modal-hm-body">
         <div style="background:var(--color-bg);padding:10px 12px;border-radius:var(--radius-sm);margin-bottom:var(--space-3);border:1px solid var(--color-border);">
-          <div style="font-size:0.75rem;color:var(--color-text-muted);text-transform:uppercase;font-weight:700;">Completed Consultation With</div>
-          <div id="followUpDocName" style="font-weight:700;font-size:0.95rem;color:var(--color-text);margin-top:2px;">Doctor</div>
-          <div id="followUpSpecialty" style="font-size:0.78rem;color:var(--color-primary-dark);">Specialty</div>
+          <div style="font-size:0.75rem;color:var(--color-text-muted);font-weight:700;">সম্পন্ন হওয়া পরামর্শ</div>
+          <div id="followUpDocName" style="font-weight:700;font-size:0.95rem;color:var(--color-text);margin-top:2px;">ডাক্তার</div>
+          <div id="followUpSpecialty" style="font-size:0.78rem;color:var(--color-primary-dark);">বিশেষজ্ঞ</div>
         </div>
 
         <div class="form-group-hm">
-          <label for="followUpDateInput">Follow-up Date *</label>
+          <label for="followUpDateInput">ফলো-আপের তারিখ *</label>
           <input type="date" id="followUpDateInput" required>
         </div>
 
         <div class="form-group-hm">
-          <label for="followUpTimeInput">Preferred Time</label>
+          <label for="followUpTimeInput">পছন্দের সময়</label>
           <input type="text" id="followUpTimeInput" value="10:00 AM">
         </div>
 
         <div class="form-group-hm">
-          <label for="followUpReasonInput">Follow-up Objective</label>
-          <input type="text" id="followUpReasonInput" placeholder="e.g. Review response to dosage adjustment">
+          <label for="followUpReasonInput">ফলো-আপের উদ্দেশ্য / করণীয়</label>
+          <input type="text" id="followUpReasonInput" placeholder="যেমন: নতুন ডোজের প্রভাব ও রক্তচাপ মূল্যায়ন">
         </div>
       </div>
 
       <div class="modal-hm-footer">
-        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('followUpModal')">Skip for Now</button>
-        <button type="submit" class="btn-hm btn-primary">Set Follow-Up Date</button>
+        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('followUpModal')">এখন থাক</button>
+        <button type="submit" class="btn-hm btn-primary">ফলো-আপ সেট করুন</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ============ CONFIRM DELETE APPOINTMENT MODAL ============ -->
+<div class="modal-hm-backdrop" id="deleteApptModal">
+  <div class="modal-hm" style="max-width:400px;">
+    <div class="modal-hm-header">
+      <h2 style="color:var(--color-error);">অ্যাপয়েন্টমেন্ট মুছে ফেলা</h2>
+      <button type="button" class="modal-hm-close" onclick="closeModal('deleteApptModal')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-hm-body">
+      <p style="color:var(--color-text-secondary);font-size:0.9rem;margin:0;">
+        আপনি কি নিশ্চিত যে আপনি এই ডাক্তারের অ্যাপয়েন্টমেন্ট মুছে ফেলতে চান? এতে ভিজিটের তথ্য ও প্রস্তুতি চেকলিস্ট মুছে যাবে।
+      </p>
+    </div>
+    <div class="modal-hm-footer">
+      <button type="button" class="btn-hm btn-ghost" onclick="closeModal('deleteApptModal')">বাতিল</button>
+      <button type="button" class="btn-hm btn-danger" id="confirmDeleteApptBtn" onclick="confirmDeleteAppt()">মুছে ফেলুন</button>
+    </div>
   </div>
 </div>
 
@@ -351,11 +384,10 @@
 
 <!-- Mobile Bottom Nav -->
 <nav class="bottom-nav no-print">
-  <a href="dashboard.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Dashboard</a>
-  <a href="medicines.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>Medicines</a>
-  <a href="routine.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Routine</a>
-  <a class="active" href="appointments.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Visits</a>
-  <a href="settings.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82"/></svg>Settings</a>
+  <a href="dashboard.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Dashboard</span></a>
+  <a href="medicines.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg><span>Medicines</span></a>
+  <a href="routine.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Routine</span></a>
+  <a href="records.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span>Records</span></a>
 </nav>
 
 <!-- Toast -->

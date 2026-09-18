@@ -18,7 +18,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
 <link href="/css/style.css" rel="stylesheet">
 
@@ -580,6 +580,185 @@
     margin-top: 1px;
   }
 
+  /* =========================================================
+     UPCOMING CONSULTATION / DOCTOR CHECKLIST TOP BANNER
+     Slim, responsive, elegant across Desktop, Tablet & Mobile
+  ========================================================= */
+  .dash-appt-alert-card {
+    background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);
+    border: 1px solid #A7F3D0;
+    border-radius: var(--radius-md);
+    padding: 10px 16px;
+    margin-bottom: var(--space-4);
+    box-shadow: 0 2px 8px -2px rgba(16, 185, 129, 0.10);
+    transition: all var(--transition-fast);
+  }
+  .dash-appt-alert-card:hover {
+    border-color: #6EE7B7;
+    box-shadow: 0 4px 12px -2px rgba(16, 185, 129, 0.16);
+  }
+  .dash-appt-alert-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+  }
+  .dash-appt-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+  }
+  .dash-appt-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    background: #10B981;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+  }
+  .dash-appt-meta {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .dash-appt-header-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  .dash-appt-doc-name {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dash-appt-sub {
+    font-size: 0.78rem;
+    color: #047857;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dash-appt-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .dash-appt-checklist-pill {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #065F46;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .dash-appt-action-btn {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    background: #059669;
+    color: #FFFFFF;
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all var(--transition-fast);
+    box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+  }
+  .dash-appt-action-btn:hover {
+    background: #047857;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(5, 150, 105, 0.30);
+  }
+  .dash-appt-action-btn .btn-arrow {
+    transition: transform var(--transition-fast);
+  }
+  .dash-appt-action-btn:hover .btn-arrow {
+    transform: translateX(2px);
+  }
+
+  /* Refill banner classes */
+  .dash-refill-alert-card {
+    background: rgba(217,119,6,0.08);
+    border: 1px solid rgba(217,119,6,0.3);
+    border-radius: var(--radius-md);
+    padding: 10px 16px;
+    margin-bottom: var(--space-4);
+  }
+  .dash-refill-alert-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+  }
+  .dash-refill-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+  }
+  .dash-refill-icon {
+    font-size: 1.15rem;
+    flex-shrink: 0;
+  }
+  .dash-refill-meta {
+    min-width: 0;
+  }
+  .dash-refill-title {
+    font-size: 0.88rem;
+    color: var(--color-text);
+  }
+  .dash-refill-text {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dash-refill-right {
+    flex-shrink: 0;
+  }
+  .dash-refill-action-btn {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    background: var(--color-warning, #D97706);
+    color: #FFFFFF;
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all var(--transition-fast);
+  }
+  .dash-refill-action-btn:hover {
+    background: #B45309;
+    transform: translateY(-1px);
+  }
+
   /* Smart Health Insights Styles */
   .smart-pulse-strip {
     padding: 0 !important;
@@ -787,6 +966,28 @@
       grid-template-columns: 1fr;
       gap: 14px;
     }
+    .dash-appt-alert-card {
+      padding: 9px 14px;
+      margin-bottom: 12px;
+    }
+    .dash-appt-icon {
+      width: 32px;
+      height: 32px;
+    }
+    .dash-appt-doc-name {
+      font-size: 0.88rem;
+    }
+    .dash-appt-sub {
+      font-size: 0.75rem;
+    }
+    .dash-appt-checklist-pill {
+      font-size: 0.72rem;
+      padding: 3px 8px;
+    }
+    .dash-appt-action-btn {
+      font-size: 0.75rem;
+      padding: 5px 12px;
+    }
   }
 
   @media (max-width: 767px) {
@@ -795,6 +996,74 @@
       grid-template-columns: 1fr;
       gap: 14px;
       margin-bottom: 14px;
+    }
+
+    /* Upcoming Consultation / Doctor Checklist banner on mobile */
+    .dash-appt-alert-card {
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      border-radius: 12px;
+    }
+    .dash-appt-alert-inner {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .dash-appt-left {
+      gap: 9px;
+      min-width: 0;
+      flex: 1;
+    }
+    .dash-appt-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+    }
+    .dash-appt-icon svg {
+      width: 15px;
+      height: 15px;
+    }
+    .dash-appt-header-row {
+      gap: 6px;
+    }
+    .dash-appt-doc-name {
+      font-size: 0.84rem;
+      max-width: 150px;
+    }
+    .dash-appt-sub {
+      font-size: 0.72rem;
+      max-width: 170px;
+    }
+    .dash-appt-right {
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .dash-appt-checklist-pill {
+      font-size: 0.68rem;
+      padding: 3px 7px;
+    }
+    .dash-appt-action-btn {
+      font-size: 0.74rem;
+      padding: 5px 10px;
+    }
+
+    /* Refill Alert on mobile */
+    .dash-refill-alert-card {
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      border-radius: 12px;
+    }
+    .dash-refill-alert-inner {
+      gap: 8px;
+    }
+    .dash-refill-text {
+      font-size: 0.72rem;
+      max-width: 170px;
+    }
+    .dash-refill-action-btn {
+      font-size: 0.74rem;
+      padding: 5px 10px;
     }
 
     /* Quick Actions: Compact 5-column side-by-side row on mobile */
@@ -1098,6 +1367,59 @@
     }
   }
 
+  @media (max-width: 480px) {
+    .dash-appt-alert-card {
+      padding: 9px 11px;
+    }
+    .dash-appt-alert-inner {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 7px;
+    }
+    .dash-appt-left {
+      width: 100%;
+      justify-content: flex-start;
+      gap: 8px;
+    }
+    .dash-appt-doc-name {
+      max-width: none;
+      font-size: 0.83rem;
+    }
+    .dash-appt-sub {
+      max-width: none;
+      font-size: 0.71rem;
+    }
+    .dash-appt-right {
+      width: 100%;
+      justify-content: space-between;
+      border-top: 1px dashed rgba(16, 185, 129, 0.25);
+      padding-top: 6px;
+      margin-top: 1px;
+    }
+    .dash-appt-checklist-pill {
+      font-size: 0.70rem;
+      padding: 2px 7px;
+    }
+    .dash-appt-action-btn {
+      font-size: 0.73rem;
+      padding: 4px 10px;
+    }
+
+    .dash-refill-alert-inner {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+    }
+    .dash-refill-right {
+      width: 100%;
+      justify-content: flex-end;
+      display: flex;
+    }
+    .dash-refill-text {
+      max-width: none;
+    }
+  }
+
   @media (max-width: 360px) {
     .quick-actions-row {
       grid-template-columns: repeat(5, 1fr);
@@ -1144,6 +1466,9 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/></svg>
       </div>
       <span class="brand-name">Healthmate</span>
+      <button type="button" class="sidebar-close-btn" onclick="closeMobileSidebar()" aria-label="Close Navigation">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
 
     <ul class="nav-list">
@@ -1176,16 +1501,28 @@
         Doctor Report
       </a></li>
       <li><a class="nav-item" href="settings.html">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Settings
       </a></li>
     </ul>
+
+    <div class="sidebar-footer">
+      <button type="button" class="sidebar-emergency-btn" onclick="openEmergencyModal(); closeMobileSidebar();">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+        <span>Emergency Medical ID</span>
+      </button>
+    </div>
   </aside>
 
   <!-- ============ MAIN ============ -->
   <div class="main">
     <header class="topbar">
-      <div class="font-heading" style="font-size:1rem;font-weight:600;">Personal Dashboard</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button type="button" class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Open Navigation Menu" title="Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="font-heading" style="font-size:1rem;font-weight:600;">Personal Dashboard</div>
+      </div>
       <div class="topbar-actions" style="position:relative;">
         <button class="icon-btn" onclick="openEmergencyModal()" title="Emergency Medical ID" aria-label="Emergency Medical ID" style="color:var(--color-error);background:#FEF2F2;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
@@ -1219,42 +1556,44 @@
       </div>
 
       <!-- Low Stock Refill Alert Banner (Shown dynamically when needed) -->
-      <div id="dashRefillAlert" class="panel" style="display:none;background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.3);padding:var(--space-3) var(--space-4);margin-bottom:var(--space-4);">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
-          <div style="display:flex;align-items:center;gap:var(--space-2);">
-            <span style="font-size:1.1rem;">⚠️</span>
-            <div>
-              <b style="font-size:0.9rem;color:var(--color-text);">Medicine Supply Attention Needed</b>
-              <div id="dashRefillAlertText" style="font-size:0.8rem;color:var(--color-text-muted);">One or more medicines have reached their low stock alert threshold.</div>
+      <div id="dashRefillAlert" class="dash-refill-alert-card" style="display:none;">
+        <div class="dash-refill-alert-inner">
+          <div class="dash-refill-left">
+            <div class="dash-refill-icon">⚠️</div>
+            <div class="dash-refill-meta">
+              <b class="dash-refill-title">Medicine Supply Attention Needed</b>
+              <div id="dashRefillAlertText" class="dash-refill-text">One or more medicines have reached their low stock alert threshold.</div>
             </div>
           </div>
-          <div style="display:flex;gap:var(--space-2);">
-            <a href="medicines.html" class="btn-hm btn-primary" style="font-size:0.8rem;padding:6px 12px;background:var(--color-warning,#D97706);border-color:var(--color-warning,#D97706);text-decoration:none;">
-              Manage Supplies →
+          <div class="dash-refill-right">
+            <a href="medicines.html" class="dash-refill-action-btn">
+              <span>Manage Supplies</span>
+              <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
             </a>
           </div>
         </div>
       </div>
 
       <!-- Upcoming Consultation Banner (Shown dynamically when an appointment is scheduled) -->
-      <div id="dashApptAlert" class="panel" style="display:none;background:linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);border:1px solid #A7F3D0;padding:var(--space-3) var(--space-4);margin-bottom:var(--space-4);border-radius:var(--radius-md);">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
-          <div style="display:flex;align-items:center;gap:var(--space-3);">
-            <div style="width:38px;height:38px;border-radius:var(--radius-sm);background:#10B981;color:#FFFFFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M10 14h4"/><path d="M12 12v4"/></svg>
+      <div id="dashApptAlert" class="dash-appt-alert-card" style="display:none;">
+        <div class="dash-appt-alert-inner">
+          <div class="dash-appt-left">
+            <div class="dash-appt-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M10 14h4"/><path d="M12 12v4"/></svg>
             </div>
-            <div>
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                <b id="dashApptDoc" style="font-size:0.92rem;color:var(--color-text);">Dr. A. Chowdhury</b>
-                <span id="dashApptBadge" class="appt-countdown-tag soon" style="font-size:0.72rem;padding:2px 8px;">⏳ Soon</span>
+            <div class="dash-appt-meta">
+              <div class="dash-appt-header-row">
+                <b id="dashApptDoc" class="dash-appt-doc-name">Dr. A. Chowdhury</b>
+                <span id="dashApptBadge" class="appt-countdown-tag soon">⏳ Soon</span>
               </div>
-              <div id="dashApptSub" style="font-size:0.8rem;color:#047857;margin-top:2px;">Chamber Details</div>
+              <div id="dashApptSub" class="dash-appt-sub">Chamber Details</div>
             </div>
           </div>
-          <div style="display:flex;align-items:center;gap:var(--space-2);">
-            <span id="dashApptCheckSummary" style="font-size:0.78rem;color:#065F46;font-weight:600;"></span>
-            <a href="appointments.html" class="btn-hm btn-primary" style="font-size:0.78rem;padding:6px 12px;background:#059669;border-color:#059669;text-decoration:none;">
-              View Checklist →
+          <div class="dash-appt-right">
+            <span id="dashApptCheckSummary" class="dash-appt-checklist-pill"></span>
+            <a href="appointments.html" class="dash-appt-action-btn">
+              <span>View Checklist</span>
+              <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
             </a>
           </div>
         </div>
@@ -1507,12 +1846,11 @@
 </div>
 
 <!-- Bottom nav (mobile) -->
-<nav class="bottom-nav">
-  <a class="active" href="dashboard.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Dashboard</a>
-  <a href="medicines.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>Medicines</a>
-  <a href="routine.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Routine</a>
-  <a href="appointments.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Visits</a>
-  <a href="settings.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82"/></svg>Settings</a>
+<nav class="bottom-nav no-print">
+  <a class="active" href="dashboard.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Dashboard</span></a>
+  <a href="medicines.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg><span>Medicines</span></a>
+  <a href="routine.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Routine</span></a>
+  <a href="records.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span>Records</span></a>
 </nav>
 
 <!-- Quick Vitals Modal -->
@@ -1720,45 +2058,54 @@
 
     // BP
     const bpList = records.bp || [];
+    const bpValEl = document.getElementById('vitalBpVal');
+    const bpSubEl = document.getElementById('vitalBpSub');
     if (bpList.length > 0) {
       const latest = bpList[bpList.length - 1];
       const cls = HMStore.getVitalClassification ? HMStore.getVitalClassification('bp', latest) : null;
-      const bpValEl = document.getElementById('vitalBpVal');
-      const bpSubEl = document.getElementById('vitalBpSub');
       if (bpValEl) bpValEl.textContent = `${latest.systolic}/${latest.diastolic}`;
       const badgeHtml = cls ? `<span style="display:inline-block;padding:1px 6px;border-radius:10px;background:${cls.bg};color:${cls.color};font-size:0.7rem;font-weight:600;margin-left:4px;">${cls.status}</span>` : '';
       if (bpSubEl) bpSubEl.innerHTML = `mmHg ${badgeHtml}`;
+    } else {
+      if (bpValEl) bpValEl.textContent = '--/--';
+      if (bpSubEl) bpSubEl.innerHTML = 'কোনো রিডিং নেই (No records)';
     }
 
     // Sugar
     const sugarList = records.sugar || [];
+    const sugarValEl = document.getElementById('vitalSugarVal');
+    const sugarSubEl = document.getElementById('vitalSugarSub');
     if (sugarList.length > 0) {
       const latest = sugarList[sugarList.length - 1];
       const cls = HMStore.getVitalClassification ? HMStore.getVitalClassification('sugar', latest) : null;
-      const sugarValEl = document.getElementById('vitalSugarVal');
-      const sugarSubEl = document.getElementById('vitalSugarSub');
       if (sugarValEl) sugarValEl.textContent = latest.value;
       const badgeHtml = cls ? `<span style="display:inline-block;padding:1px 6px;border-radius:10px;background:${cls.bg};color:${cls.color};font-size:0.7rem;font-weight:600;margin-left:4px;">${cls.status}</span>` : '';
       if (sugarSubEl) sugarSubEl.innerHTML = `mg/dL · ${latest.context || 'Fasting'} ${badgeHtml}`;
+    } else {
+      if (sugarValEl) sugarValEl.textContent = '--';
+      if (sugarSubEl) sugarSubEl.innerHTML = 'কোনো রিডিং নেই (No records)';
     }
 
     // Weight
     const weightList = records.weight || [];
+    const weightValEl = document.getElementById('vitalWeightVal');
+    const weightSubEl = document.getElementById('vitalWeightSub');
     if (weightList.length > 0) {
       const latest = weightList[weightList.length - 1];
       const cls = HMStore.getVitalClassification ? HMStore.getVitalClassification('weight', latest) : null;
-      const weightValEl = document.getElementById('vitalWeightVal');
-      const weightSubEl = document.getElementById('vitalWeightSub');
       if (weightValEl) weightValEl.textContent = latest.value;
       const badgeHtml = cls ? `<span style="display:inline-block;padding:1px 6px;border-radius:10px;background:${cls.bg};color:${cls.color};font-size:0.7rem;font-weight:600;margin-left:4px;">${cls.status}</span>` : '';
       if (weightSubEl) weightSubEl.innerHTML = `kg ${badgeHtml}`;
+    } else {
+      if (weightValEl) weightValEl.textContent = '--';
+      if (weightSubEl) weightSubEl.innerHTML = 'কোনো রিডিং নেই (No records)';
     }
 
     // Blood
     const bloodValEl = document.getElementById('vitalBloodVal');
     const bloodSubEl = document.getElementById('vitalBloodSub');
-    if (bloodValEl) bloodValEl.textContent = (user && user.blood) ? user.blood : 'B+';
-    if (bloodSubEl) bloodSubEl.textContent = 'Blood type recorded';
+    if (bloodValEl) bloodValEl.textContent = (user && user.blood) ? user.blood : 'Not set';
+    if (bloodSubEl) bloodSubEl.textContent = (user && user.blood) ? 'Blood type recorded' : 'গ্রুপ সেট করা হয়নি';
   }
 
   let isInsightsExpanded = false;
@@ -1888,10 +2235,16 @@
       subEl.textContent = `${nextAppt.date} at ${nextAppt.time || '10:00 AM'} · ${nextAppt.hospital || 'Chamber'}`;
     }
 
-    if (checkEl && Array.isArray(nextAppt.preVisitChecklist)) {
-      const done = nextAppt.preVisitChecklist.filter(c => c.done).length;
-      const total = nextAppt.preVisitChecklist.length;
-      checkEl.textContent = total > 0 ? `${done}/${total} Checklist Ready` : '';
+    if (checkEl) {
+      if (Array.isArray(nextAppt.preVisitChecklist) && nextAppt.preVisitChecklist.length > 0) {
+        const done = nextAppt.preVisitChecklist.filter(c => c.done).length;
+        const total = nextAppt.preVisitChecklist.length;
+        checkEl.innerHTML = `✓ ${done}/${total} Ready`;
+        checkEl.style.display = 'inline-flex';
+      } else {
+        checkEl.innerHTML = '';
+        checkEl.style.display = 'none';
+      }
     }
 
     alertBox.style.display = 'block';
