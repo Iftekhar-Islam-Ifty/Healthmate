@@ -1956,8 +1956,10 @@ a { color: inherit; }
   border-radius: var(--radius-md);
   padding: 32px 36px;
   max-width: 860px;
+  width: 100%;
   margin: 0 auto 32px;
   box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+  box-sizing: border-box;
 }
 .report-header {
   display: flex;
@@ -1966,6 +1968,8 @@ a { color: inherit; }
   padding-bottom: 18px;
   border-bottom: 2px solid var(--color-primary);
   margin-bottom: 20px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 .report-brand-name {
   font-family: var(--font-heading);
@@ -1977,11 +1981,57 @@ a { color: inherit; }
   font-size: 0.78rem;
   color: var(--color-text-muted);
 }
+.report-patient-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.report-patient-badges {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.report-patient-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+  background: var(--color-bg);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+}
+.report-vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.report-vital-box {
+  border: 1px solid var(--color-border);
+  padding: 10px;
+  border-radius: 6px;
+  background: var(--color-bg-subtle);
+  min-width: 0;
+  word-break: break-word;
+}
+.report-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #FFFFFF;
+}
 .report-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
   font-size: 0.85rem;
+  min-width: 560px;
 }
 .report-table th, .report-table td {
   padding: 8px 12px;
@@ -1992,6 +2042,7 @@ a { color: inherit; }
   background: var(--color-bg-subtle);
   font-weight: 600;
   color: var(--color-text);
+  white-space: nowrap;
 }
 .report-table tr:nth-child(even) td {
   background: #FAFAFA;
@@ -2003,6 +2054,8 @@ a { color: inherit; }
   margin-top: 36px;
   padding-top: 20px;
   border-top: 1px dashed var(--color-border);
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 /* =========================================================
@@ -2699,6 +2752,82 @@ a { color: inherit; }
   }
   .appt-card {
     padding: 12px !important;
+  }
+
+  /* Doctor Report Mobile Fixes */
+  .report-sheet {
+    padding: 18px 14px !important;
+    margin: 0 0 20px !important;
+    border-radius: var(--radius-sm) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .report-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 14px !important;
+  }
+  .report-header > div:last-child {
+    text-align: left !important;
+  }
+  .report-brand-name {
+    font-size: 1.2rem !important;
+  }
+  .report-patient-header {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .report-patient-badges {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+  }
+  .report-patient-details-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+    margin-top: 10px !important;
+  }
+  .report-vitals-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .report-vital-box {
+    padding: 8px 10px !important;
+  }
+  .report-table-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .report-signature-block {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 20px !important;
+    margin-top: 24px !important;
+  }
+  .report-signature-block > div:last-child {
+    text-align: left !important;
+    width: 100% !important;
+  }
+  .report-signature-block > div:last-child > div:first-child {
+    margin-left: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .report-sheet {
+    padding: 14px 10px !important;
+  }
+  .report-vitals-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+  }
+  .report-vital-box {
+    padding: 6px 8px !important;
   }
 }
 

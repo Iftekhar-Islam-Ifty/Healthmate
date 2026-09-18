@@ -146,14 +146,14 @@
 
         <!-- Patient Demographics Section -->
         <div style="margin-bottom:24px;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+          <div class="report-patient-header">
             <div>
               <h2 style="font-size:1.25rem;font-weight:700;margin:0;" id="repPatientName">Ifty Ahmed</h2>
               <div style="font-size:0.85rem;color:var(--color-text-muted);margin-top:2px;" id="repPatientMeta">
                 Age: 29 yrs &bull; Gender: Male &bull; Contact: ifty@example.com
               </div>
             </div>
-            <div style="display:flex;gap:10px;align-items:center;">
+            <div class="report-patient-badges">
               <div style="background:#FEF2F2;border:1px solid #FCA5A5;border-radius:6px;padding:6px 12px;text-align:center;">
                 <div style="font-size:0.68rem;text-transform:uppercase;color:#DC2626;font-weight:700;">Blood Group</div>
                 <div style="font-size:1.15rem;font-weight:800;color:#DC2626;" id="repPatientBlood">B+</div>
@@ -165,7 +165,7 @@
             </div>
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;background:var(--color-bg);padding:10px 14px;border-radius:var(--radius-sm);font-size:0.84rem;">
+          <div class="report-patient-details-grid">
             <div>
               <span style="font-weight:600;color:var(--color-text-secondary);">Known Allergies:</span>
               <span id="repPatientAllergies" style="color:#DC2626;font-weight:500;">Dust</span>
@@ -182,23 +182,23 @@
           <h3 style="font-size:1rem;font-weight:700;border-bottom:1px solid var(--color-border);padding-bottom:6px;margin-bottom:10px;color:var(--color-primary-dark);">
             1. Current Vital Signs (Latest Readings)
           </h3>
-          <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;" id="repVitalsGrid">
-            <div style="border:1px solid var(--color-border);padding:10px;border-radius:6px;">
+          <div class="report-vitals-grid" id="repVitalsGrid">
+            <div class="report-vital-box">
               <div style="font-size:0.72rem;color:var(--color-text-muted);">Blood Pressure</div>
               <div style="font-size:1.1rem;font-weight:700;color:var(--color-primary);margin:2px 0;" id="repBpVal">118/78</div>
               <div style="font-size:0.72rem;color:var(--color-text-muted);" id="repBpDate">14 Sep 2026</div>
             </div>
-            <div style="border:1px solid var(--color-border);padding:10px;border-radius:6px;">
+            <div class="report-vital-box">
               <div style="font-size:0.72rem;color:var(--color-text-muted);">Blood Sugar</div>
               <div style="font-size:1.1rem;font-weight:700;color:var(--color-primary);margin:2px 0;" id="repSugarVal">115 mg/dL</div>
               <div style="font-size:0.72rem;color:var(--color-text-muted);" id="repSugarDate">12 Sep 2026 (Post-meal)</div>
             </div>
-            <div style="border:1px solid var(--color-border);padding:10px;border-radius:6px;">
+            <div class="report-vital-box">
               <div style="font-size:0.72rem;color:var(--color-text-muted);">Body Weight</div>
               <div style="font-size:1.1rem;font-weight:700;color:var(--color-primary);margin:2px 0;" id="repWeightVal">70.5 kg</div>
               <div style="font-size:0.72rem;color:var(--color-text-muted);" id="repWeightDate">14 Sep 2026</div>
             </div>
-            <div style="border:1px solid var(--color-border);padding:10px;border-radius:6px;">
+            <div class="report-vital-box">
               <div style="font-size:0.72rem;color:var(--color-text-muted);">Body Temperature</div>
               <div style="font-size:1.1rem;font-weight:700;color:var(--color-primary);margin:2px 0;" id="repTempVal">98.4 °F</div>
               <div style="font-size:0.72rem;color:var(--color-text-muted);" id="repTempDate">14 Sep 2026</div>
@@ -211,21 +211,23 @@
           <h3 style="font-size:1rem;font-weight:700;border-bottom:1px solid var(--color-border);padding-bottom:6px;margin-bottom:10px;color:var(--color-primary-dark);">
             2. Active Prescribed Medications
           </h3>
-          <table class="report-table" id="repMedsTable">
-            <thead>
-              <tr>
-                <th>Medicine Name</th>
-                <th>Dosage</th>
-                <th>Schedule Time</th>
-                <th>Meal Instructions</th>
-                <th>Purpose / Directions</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="repMedsBody">
-              <!-- Populated by JS -->
-            </tbody>
-          </table>
+          <div class="report-table-wrap">
+            <table class="report-table" id="repMedsTable">
+              <thead>
+                <tr>
+                  <th>Medicine Name</th>
+                  <th>Dosage</th>
+                  <th>Schedule Time</th>
+                  <th>Meal Instructions</th>
+                  <th>Purpose / Directions</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="repMedsBody">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Lifestyle & Adherence Matrix -->
@@ -233,19 +235,21 @@
           <h3 style="font-size:1rem;font-weight:700;border-bottom:1px solid var(--color-border);padding-bottom:6px;margin-bottom:10px;color:var(--color-primary-dark);">
             3. Daily Wellness &amp; Habit Compliance
           </h3>
-          <table class="report-table">
-            <thead>
-              <tr>
-                <th>Habit / Routine</th>
-                <th>Target</th>
-                <th>Weekly Adherence</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="repRoutinesBody">
-              <!-- Populated by JS -->
-            </tbody>
-          </table>
+          <div class="report-table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Habit / Routine</th>
+                  <th>Target</th>
+                  <th>Weekly Adherence</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="repRoutinesBody">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Prescriptions & Lab Documents in Vault -->
@@ -253,20 +257,22 @@
           <h3 style="font-size:1rem;font-weight:700;border-bottom:1px solid var(--color-border);padding-bottom:6px;margin-bottom:10px;color:var(--color-primary-dark);">
             4. Recent Diagnostic Tests &amp; Prescriptions on File
           </h3>
-          <table class="report-table">
-            <thead>
-              <tr>
-                <th>Document / Test Name</th>
-                <th>Category</th>
-                <th>Date</th>
-                <th>Doctor / Clinic</th>
-                <th>Key Findings / Summary</th>
-              </tr>
-            </thead>
-            <tbody id="repDocsBody">
-              <!-- Populated by JS -->
-            </tbody>
-          </table>
+          <div class="report-table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Document / Test Name</th>
+                  <th>Category</th>
+                  <th>Date</th>
+                  <th>Doctor / Clinic</th>
+                  <th>Key Findings / Summary</th>
+                </tr>
+              </thead>
+              <tbody id="repDocsBody">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Doctor's Observations & Recommendations -->
@@ -510,16 +516,26 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Hind Siliguri', 'Anek Bangla', 'Noto Sans Bengali', 'Inter', system-ui, -apple-system, sans-serif; background: #FFFFFF; color: #1E293B; padding: 24px; line-height: 1.6; font-size: 14px; }
-  .report-sheet { max-width: 820px; margin: 0 auto; border: 1px solid #E2E8F0; border-radius: 8px; padding: 32px; background: #FFFFFF; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-  .report-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0D6E6E; padding-bottom: 16px; margin-bottom: 24px; }
+  .report-sheet { max-width: 820px; width: 100%; margin: 0 auto; border: 1px solid #E2E8F0; border-radius: 8px; padding: 32px; background: #FFFFFF; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+  .report-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0D6E6E; padding-bottom: 16px; margin-bottom: 24px; gap: 12px; flex-wrap: wrap; }
   .report-brand-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: #0D6E6E; }
   .report-meta-tag { font-size: 12px; color: #64748B; margin-top: 2px; }
-  .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
-  .report-metric-box { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 10px 12px; }
-  .report-table { width: 100%; border-collapse: collapse; margin-top: 8px; margin-bottom: 20px; font-size: 13px; }
-  .report-table th { background: #F1F5F9; color: #334155; font-weight: 600; text-align: left; padding: 8px 10px; border: 1px solid #E2E8F0; }
+  .report-patient-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+  .report-patient-badges { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .report-patient-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; background: #F8FAFC; padding: 10px 14px; border-radius: 6px; font-size: 13px; }
+  .report-vitals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .report-vital-box { border: 1px solid #E2E8F0; padding: 10px; border-radius: 6px; background: #F8FAFC; min-width: 0; word-break: break-word; }
+  .report-table-wrap { width: 100%; max-width: 100%; overflow-x: auto; margin-top: 8px; margin-bottom: 20px; border: 1px solid #E2E8F0; border-radius: 6px; }
+  .report-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 540px; }
+  .report-table th { background: #F1F5F9; color: #334155; font-weight: 600; text-align: left; padding: 8px 10px; border: 1px solid #E2E8F0; white-space: nowrap; }
   .report-table td { padding: 8px 10px; border: 1px solid #E2E8F0; color: #1E293B; }
-  .report-signature-block { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 32px; padding-top: 16px; border-top: 1px solid #E2E8F0; }
+  .report-signature-block { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 32px; padding-top: 16px; border-top: 1px solid #E2E8F0; gap: 16px; flex-wrap: wrap; }
+  @media (max-width: 768px) {
+    body { padding: 12px; }
+    .report-sheet { padding: 16px 12px; }
+    .report-vitals-grid { grid-template-columns: repeat(2, 1fr); }
+    .report-patient-details-grid { grid-template-columns: 1fr; }
+  }
   @media print {
     body { padding: 0; }
     .report-sheet { border: none; box-shadow: none; padding: 0; }
