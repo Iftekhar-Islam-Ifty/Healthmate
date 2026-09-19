@@ -312,6 +312,19 @@ app.get('/js/supabase.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'node_modules/@supabase/supabase-js/dist/umd/supabase.js'));
 });
 
+// Serve html2pdf bundle
+app.get('/js/html2pdf.bundle.min.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'node_modules/html2pdf.js/dist/html2pdf.bundle.min.js'));
+});
+
+// Serve jsPDF and html2canvas bundles
+app.get('/js/jspdf.umd.min.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'node_modules/jspdf/dist/jspdf.umd.min.js'));
+});
+app.get('/js/html2canvas.min.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'node_modules/html2canvas/dist/html2canvas.min.js'));
+});
+
 // Serve static assets with html extension support
 app.use(express.static(__dirname, {
   extensions: ['html']

@@ -302,6 +302,9 @@
     document.write('<script src="/js/supabase.js"><\/script>');
   }
 </script>
+<script src="/js/jspdf.umd.min.js"></script>
+<script src="/js/html2canvas.min.js"></script>
+<script src="/js/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="/js/supabase-config.js"></script>
 <script src="/js/store.js"></script>
@@ -475,88 +478,141 @@
   }
 
   function handlePrintReport() {
+    // Show instant toast feedback
+    if (typeof showToast === 'function') {
+      showToast('প্রিন্ট প্রস্তুত করা হচ্ছে...');
+    }
+
+    // Try Method 1: Direct native print
+    let nativeTriggered = false;
     try {
-      // 1. If running in an iframe, direct print via invisible child iframe to stay on same page
-      if (window.self !== window.top) {
-        printViaHiddenIframe();
-      } else {
+      if (window.self === window.top) {
+        window.focus();
         window.print();
+        nativeTriggered = true;
       }
     } catch (e) {
-      console.warn('Direct print trigger error:', e);
-      window.print();
-    }
-  }
-
-  function printViaHiddenIframe() {
-    const reportSheet = document.querySelector('.report-sheet');
-    if (!reportSheet) {
-      window.print();
-      return;
+      console.warn('Native window.print was restricted:', e);
     }
 
-    // Remove any existing print frame
-    let frame = document.getElementById('hmHiddenPrintFrame');
-    if (frame) frame.remove();
+    // Try Method 2: Hidden iframe printing (works in embedded contexts)
+    try {
+      let printFrame = document.getElementById('hmSilentPrintFrame');
+      if (printFrame) printFrame.remove();
 
-    frame = document.createElement('iframe');
-    frame.id = 'hmHiddenPrintFrame';
-    frame.style.position = 'fixed';
-    frame.style.right = '0';
-    frame.style.bottom = '0';
-    frame.style.width = '0';
-    frame.style.height = '0';
-    frame.style.border = '0';
-    document.body.appendChild(frame);
+      printFrame = document.createElement('iframe');
+      printFrame.id = 'hmSilentPrintFrame';
+      printFrame.style.position = 'fixed';
+      printFrame.style.right = '0';
+      printFrame.style.bottom = '0';
+      printFrame.style.width = '1px';
+      printFrame.style.height = '1px';
+      printFrame.style.border = '0';
+      printFrame.style.opacity = '0.01';
+      document.body.appendChild(printFrame);
 
-    const doc = frame.contentWindow.document;
-    doc.open();
-    doc.write(`<!DOCTYPE html>
+      const reportSheet = document.querySelector('.report-sheet');
+      const frameDoc = printFrame.contentWindow.document;
+      const todayStr = new Date().toISOString().slice(0, 10);
+
+      frameDoc.open();
+      frameDoc.write(`<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Healthmate Medical Report</title>
+<title>Healthmate Medical Report (${todayStr})</title>
 <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  @page { size: A4 portrait; margin: 10mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Hind Siliguri', 'Anek Bangla', 'Inter', system-ui, sans-serif; background: #FFFFFF; color: #0F172A; padding: 24px; line-height: 1.5; font-size: 13px; }
-  .report-sheet { width: 100%; max-width: 800px; margin: 0 auto; }
-  .report-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0D6E6E; padding-bottom: 14px; margin-bottom: 20px; }
-  .report-brand-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: #0D6E6E; }
-  .report-meta-tag { font-size: 12px; color: #64748B; margin-top: 2px; }
+  body { font-family: 'Hind Siliguri', 'Anek Bangla', 'Inter', system-ui, -apple-system, sans-serif; background: #FFFFFF; color: #0F172A; padding: 16px; line-height: 1.45; font-size: 13px; }
+  .report-sheet { width: 100%; max-width: 100%; margin: 0 auto; }
+  .report-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0D6E6E; padding-bottom: 12px; margin-bottom: 18px; }
+  .report-brand-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; color: #0D6E6E; }
+  .report-meta-tag { font-size: 11px; color: #64748B; margin-top: 2px; }
   .report-patient-header { display: flex; justify-content: space-between; align-items: flex-start; }
-  .report-patient-badges { display: flex; gap: 10px; align-items: center; }
-  .report-patient-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; background: #F8FAFC; padding: 10px 14px; border-radius: 6px; font-size: 13px; border: 1px solid #E2E8F0; }
-  .report-vitals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .report-vital-box { border: 1px solid #E2E8F0; padding: 10px; border-radius: 6px; background: #F8FAFC; text-align: center; }
-  .report-table-wrap { width: 100%; margin-top: 8px; margin-bottom: 16px; border: 1px solid #E2E8F0; border-radius: 6px; }
-  .report-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  .report-table th { background: #F1F5F9; color: #334155; font-weight: 600; text-align: left; padding: 7px 10px; border: 1px solid #E2E8F0; }
-  .report-table td { padding: 7px 10px; border: 1px solid #E2E8F0; color: #0F172A; }
-  .report-signature-block { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 32px; padding-top: 16px; border-top: 1px solid #E2E8F0; }
+  .report-patient-badges { display: flex; gap: 8px; align-items: center; }
+  .report-patient-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; background: #F8FAFC; padding: 8px 12px; border-radius: 6px; font-size: 12.5px; border: 1px solid #E2E8F0; }
+  .report-vitals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .report-vital-box { border: 1px solid #CBD5E1; padding: 8px; border-radius: 6px; background: #F8FAFC; text-align: center; }
+  .report-table-wrap { width: 100%; margin-top: 8px; margin-bottom: 16px; border: 1px solid #CBD5E1; border-radius: 6px; }
+  .report-table { width: 100%; border-collapse: collapse; font-size: 11.5px; table-layout: auto; word-break: break-word; }
+  .report-table th { background: #F1F5F9; color: #334155; font-weight: 700; text-align: left; padding: 6px 8px; border: 1px solid #CBD5E1; }
+  .report-table td { padding: 6px 8px; border: 1px solid #CBD5E1; color: #0F172A; }
+  .report-signature-block { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 28px; padding-top: 14px; border-top: 1px solid #CBD5E1; }
   @media print {
     body { padding: 0; }
-    .report-sheet { border: none !important; box-shadow: none !important; }
   }
 </style>
 </head>
 <body>
   <div class="report-sheet">
-    ${reportSheet.innerHTML}
+    ${reportSheet ? reportSheet.innerHTML : ''}
   </div>
 </body>
 </html>`);
-    doc.close();
+      frameDoc.close();
 
-    setTimeout(() => {
-      try {
-        frame.contentWindow.focus();
-        frame.contentWindow.print();
-      } catch (err) {
-        console.warn('Iframe print blocked, falling back to window.print():', err);
-        window.print();
-      }
-    }, 400);
+      setTimeout(() => {
+        try {
+          printFrame.contentWindow.focus();
+          printFrame.contentWindow.print();
+        } catch (err) {
+          console.warn('Iframe print execution restricted:', err);
+        }
+      }, 300);
+    } catch (err) {
+      console.warn('Iframe print creation error:', err);
+    }
+
+    // Method 3: Show Print & Export Action Hub Modal so user has 100% control regardless of sandbox
+    showPrintActionModal();
+  }
+
+  function showPrintActionModal() {
+    let modal = document.getElementById('hmPrintActionModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'hmPrintActionModal';
+      modal.innerHTML = `
+        <div style="position:fixed;inset:0;background:rgba(15,23,42,0.65);backdrop-filter:blur(4px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;">
+          <div style="background:#FFFFFF;border-radius:14px;padding:24px;max-width:460px;width:100%;box-shadow:0 25px 35px -5px rgba(0,0,0,0.25);border:1px solid #E2E8F0;text-align:center;">
+            <div style="width:52px;height:52px;border-radius:50%;background:#F0FDFA;color:#0D6E6E;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;border:1px solid #CCFBF1;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            </div>
+            <h3 style="font-size:1.2rem;font-weight:700;color:#0F172A;margin-bottom:6px;">ডক্টর রিপোর্ট প্রিন্ট ও সেভ অপশন</h3>
+            <p style="font-size:0.88rem;color:#64748B;line-height:1.5;margin-bottom:20px;">
+              নিচের অপশনগুলো ব্যবহার করে সরাসরি প্রিন্টার ডায়ালগ চালু করতে পারেন অথবা এক ক্লিকে নিখুঁত A4 PDF ও প্রিন্ট ফাইল ডাউনলোড করতে পারেন।
+            </p>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <button type="button" class="btn-hm btn-primary" onclick="window.print(); closePrintActionModal();" style="width:100%;justify-content:center;padding:10px 16px;font-size:0.92rem;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                সরাসরি প্রিন্ট ডায়ালগ ওপেন করুন
+              </button>
+              <button type="button" class="btn-hm btn-secondary" onclick="exportDirectPDF(); closePrintActionModal();" style="width:100%;justify-content:center;padding:10px 16px;font-size:0.92rem;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                A4 সাইজ PDF ডাউনলোড করুন
+              </button>
+              <button type="button" class="btn-hm btn-ghost" onclick="downloadStandaloneReport(); closePrintActionModal();" style="width:100%;justify-content:center;padding:10px 16px;font-size:0.92rem;border:1px solid #E2E8F0;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                প্রিন্ট-রেডি HTML রিপোর্ট সেভ করুন
+              </button>
+              <button type="button" class="btn-hm btn-ghost" onclick="closePrintActionModal()" style="width:100%;justify-content:center;margin-top:4px;color:#64748B;">
+                বন্ধ করুন
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    } else {
+      modal.style.display = 'block';
+    }
+  }
+
+  function closePrintActionModal() {
+    const modal = document.getElementById('hmPrintActionModal');
+    if (modal) modal.style.display = 'none';
   }
 
   async function exportDirectPDF() {
@@ -575,106 +631,70 @@
     const sanitizedName = (user.name || 'Patient').toLowerCase().replace(/[^a-z0-9]/g, '-');
     const filename = `healthmate-doctor-report-${sanitizedName}-${todayStr}.pdf`;
 
-    // Clone element to a standalone pristine container with fixed A4 dimensions
-    // This prevents CSS clipping, responsive wraps, and viewport-dependent sizing issues.
-    const cloneWrapper = document.createElement('div');
-    cloneWrapper.style.position = 'fixed';
-    cloneWrapper.style.left = '-9999px';
-    cloneWrapper.style.top = '0';
-    cloneWrapper.style.width = '794px'; // Standard A4 width at 96 DPI
-    cloneWrapper.style.background = '#FFFFFF';
-    cloneWrapper.style.color = '#0F172A';
-    cloneWrapper.style.padding = '32px 36px';
-    cloneWrapper.style.boxSizing = 'border-box';
-    cloneWrapper.style.fontFamily = "'Hind Siliguri', 'Anek Bangla', 'Inter', system-ui, sans-serif";
-    cloneWrapper.innerHTML = reportSheet.innerHTML;
+    try {
+      // Method A: Try html2pdf on the visible report-sheet
+      if (typeof window.html2pdf === 'function') {
+        const opt = {
+          margin: [8, 8, 8, 8],
+          filename: filename,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            scrollY: 0
+          },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        };
 
-    // Apply explicit clean styles to inner elements inside clone
-    const tables = cloneWrapper.querySelectorAll('table');
-    tables.forEach(t => {
-      t.style.width = '100%';
-      t.style.borderCollapse = 'collapse';
-      t.style.fontSize = '12px';
-    });
-    const cells = cloneWrapper.querySelectorAll('th, td');
-    cells.forEach(c => {
-      c.style.border = '1px solid #CBD5E1';
-      c.style.padding = '6px 8px';
-      c.style.color = '#0F172A';
-    });
-    const headers = cloneWrapper.querySelectorAll('th');
-    headers.forEach(h => {
-      h.style.background = '#F1F5F9';
-      h.style.color = '#1E293B';
-      h.style.fontWeight = '700';
-    });
-    const vitalsGrid = cloneWrapper.querySelector('#repVitalsGrid') || cloneWrapper.querySelector('.report-vitals-grid');
-    if (vitalsGrid) {
-      vitalsGrid.style.display = 'grid';
-      vitalsGrid.style.gridTemplateColumns = 'repeat(4, 1fr)';
-      vitalsGrid.style.gap = '10px';
-    }
-    const detailsGrid = cloneWrapper.querySelector('.report-patient-details-grid');
-    if (detailsGrid) {
-      detailsGrid.style.display = 'grid';
-      detailsGrid.style.gridTemplateColumns = '1fr 1fr';
-      detailsGrid.style.gap = '12px';
-      detailsGrid.style.background = '#F8FAFC';
-      detailsGrid.style.border = '1px solid #E2E8F0';
-      detailsGrid.style.padding = '10px 14px';
-      detailsGrid.style.borderRadius = '6px';
-    }
-    const patientHeader = cloneWrapper.querySelector('.report-patient-header');
-    if (patientHeader) {
-      patientHeader.style.display = 'flex';
-      patientHeader.style.justifyContent = 'space-between';
-      patientHeader.style.alignItems = 'flex-start';
-    }
-    const sigBlock = cloneWrapper.querySelector('.report-signature-block');
-    if (sigBlock) {
-      sigBlock.style.display = 'flex';
-      sigBlock.style.justifyContent = 'space-between';
-      sigBlock.style.alignItems = 'flex-end';
-      sigBlock.style.marginTop = '28px';
-      sigBlock.style.paddingTop = '14px';
-      sigBlock.style.borderTop = '1px solid #E2E8F0';
-    }
-
-    document.body.appendChild(cloneWrapper);
-
-    if (window.html2pdf) {
-      const opt = {
-        margin: [8, 8, 8, 8], // mm
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          letterRendering: true,
-          windowWidth: 794
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      try {
-        await window.html2pdf().set(opt).from(cloneWrapper).save();
+        await window.html2pdf().set(opt).from(reportSheet).save();
         if (typeof showToast === 'function') {
           showToast('ডক্টর রিপোর্ট PDF সফলভাবে ডাউনলোড হয়েছে');
         }
-      } catch (err) {
-        console.error('html2pdf generation error, falling back:', err);
-        downloadStandaloneReport();
-      } finally {
-        cloneWrapper.remove();
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = originalHtml;
-        }
+        return;
       }
-    } else {
-      cloneWrapper.remove();
+
+      // Method B: Try html2canvas + jspdf directly
+      if (window.html2canvas && (window.jspdf || window.jsPDF)) {
+        const jsPDFConstructor = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+        const canvas = await window.html2canvas(reportSheet, {
+          scale: 2,
+          useCORS: true,
+          logging: false
+        });
+        const imgData = canvas.toDataURL('image/jpeg', 0.98);
+        const pdf = new jsPDFConstructor('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        let position = 0;
+        let heightLeft = pdfHeight;
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+          position = heightLeft - pdfHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
+          heightLeft -= pageHeight;
+        }
+
+        pdf.save(filename);
+        if (typeof showToast === 'function') {
+          showToast('ডক্টর রিপোর্ট PDF সফলভাবে ডাউনলোড হয়েছে');
+        }
+        return;
+      }
+
+      // Method C: Fallback to standalone print/save HTML document
       downloadStandaloneReport();
+    } catch (err) {
+      console.error('PDF export error:', err);
+      downloadStandaloneReport();
+    } finally {
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = originalHtml;
