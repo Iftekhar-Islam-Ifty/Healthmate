@@ -34,9 +34,17 @@ function getGenAI() {
 const SYSTEM_INSTRUCTION = `You are "HealthMate AI", an intelligent, caring, and strictly bounded personal health and medical assistant for the HealthMate application.
 
 YOUR MISSION & ROLE:
-1. Provide personalized answers, summaries, reminders, and insights regarding the patient's medicines, daily health routines, clinical vitals (blood pressure, blood sugar, weight, temperature), medical documents/prescriptions, and doctor appointments.
-2. If the user tells you to add, log, record, or schedule a medicine, health vital, routine, appointment, or document, you MUST invoke the appropriate function/tool to execute it immediately and provide a warm confirmation.
-3. If the user asks questions about their health data, review the supplied patient context (provided in the prompt) and give accurate, empathetic, and clear advice in the same language the user uses (Bangla or English).
+1. Provide personalized answers, summaries, reminders, and clinical insights regarding the patient's medicines, daily health routines, clinical vitals (blood pressure, blood sugar, weight, temperature), medical documents/prescriptions, and doctor appointments.
+2. PRESCRIPTION & MEDICAL DOCUMENT ANALYSIS (PRIMARY CAPABILITY):
+   - You can read, scan, and extract all data from prescriptions and medical reports in the patient's Medical Vault (including document titles, clinical notes, diagnosis, attending doctors, and uploaded prescription images).
+   - When the user asks you to scan, read, analyze, or apply a specific prescription or medical document (or when given a document image/text):
+     a) Carefully inspect the prescription details (Doctor name, hospital, date, diagnoses/conditions, clinical notes, and medicines list).
+     b) Extract every medicine with its dosage (e.g., 500mg, 20mg), timing (e.g., 08:00 AM, Night), frequency (e.g., Once daily, Twice daily, 3 times daily), and relation to meals (Before meal, After meal).
+     c) If the user commands you to add/apply the prescription, invoke the "addMedicinesBatch" or "addMedicine" tool to automatically save all extracted medicines into the patient's active medicine schedule.
+     d) Provide structured medical advice and actionable health suggestions (e.g. lifestyle modifications, hydration, dietary cautions, when to follow up, warning signs) based on the prescribed diagnosis and instructions.
+     e) If relevant, offer to schedule follow-up appointments or health routines using the available tools.
+3. If the user tells you to add, log, record, or schedule a medicine, health vital, routine, appointment, or document, you MUST invoke the appropriate function/tool to execute it immediately and provide a warm confirmation.
+4. If the user asks questions about their health data, review the supplied patient context (provided in the prompt) and give accurate, empathetic, and clear advice in the same language the user uses (Bangla or English).
 
 STRICT GUARDRAIL & BOUNDARY ENFORCEMENT (CRITICAL):
 - You are ONLY allowed to discuss personal health, medicines, symptoms, healthy lifestyle, medical records, doctors, and data within HealthMate.
@@ -60,7 +68,7 @@ const tools = [
     functionDeclarations: [
       {
         name: 'addMedicine',
-        description: 'Add or schedule a new medication/medicine into the patient\'s medicine list.',
+        description: 'Add or schedule a single medication/medicine into the patient\'s medicine list.',
         parameters: {
           type: Type.OBJECT,
           properties: {
@@ -98,6 +106,58 @@ const tools = [
             }
           },
           required: ['name']
+        }
+      },
+      {
+        name: 'addMedicinesBatch',
+        description: 'Add multiple prescribed medicines at once extracted from a prescription or doctor consultation into the patient medicine list.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            medicines: {
+              type: Type.ARRAY,
+              description: 'List of medicines extracted from the prescription to add',
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  name: {
+                    type: Type.STRING,
+                    description: 'Name of the medicine'
+                  },
+                  dosage: {
+                    type: Type.STRING,
+                    description: 'Dosage (e.g. 500mg, 20mg, 1 tablet)'
+                  },
+                  time: {
+                    type: Type.STRING,
+                    description: 'Time of intake (e.g. 08:00 AM, 02:00 PM, 09:00 PM, Morning, Night)'
+                  },
+                  frequency: {
+                    type: Type.STRING,
+                    description: 'Frequency (e.g. Once daily, Twice daily, 3 times daily)'
+                  },
+                  meal: {
+                    type: Type.STRING,
+                    description: 'Meal relation (e.g. Before meal, After meal)'
+                  },
+                  stock: {
+                    type: Type.INTEGER,
+                    description: 'Stock count if known'
+                  },
+                  instructions: {
+                    type: Type.STRING,
+                    description: 'Specific doctor advice or instructions for this medicine'
+                  }
+                },
+                required: ['name']
+              }
+            },
+            prescriptionTitle: {
+              type: Type.STRING,
+              description: 'Title of the source prescription or doctor note'
+            }
+          },
+          required: ['medicines']
         }
       },
       {
@@ -209,7 +269,7 @@ const tools = [
 // Health AI API Endpoint
 app.post('/api/health-ai', async (req, res) => {
   try {
-    const { message, conversationHistory, patientContext } = req.body;
+    const { message, conversationHistory, patientContext, image } = req.body;
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'Message text is required.' });
@@ -239,25 +299,65 @@ app.post('/api/health-ai', async (req, res) => {
       });
     }
 
+    // Build user parts (with optional prescription image)
+    const userParts = [];
+    if (image && typeof image === 'object' && image.data) {
+      userParts.push({
+        inlineData: {
+          mimeType: image.mimeType || 'image/jpeg',
+          data: image.data
+        }
+      });
+    }
+    userParts.push({
+      text: `${contextPrompt}User Question/Request:\n"${message}"`
+    });
+
     // Add current user prompt with injected context
     contents.push({
       role: 'user',
-      parts: [
-        {
-          text: `${contextPrompt}User Question/Request:\n"${message}"`
-        }
-      ]
+      parts: userParts
     });
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: contents,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.7,
-        tools: tools,
+    // Handle high-demand spikes (503 / UNAVAILABLE) with resilient candidates
+    const candidateModels = [
+      'gemini-3.1-flash-lite',
+      'gemini-3.8-flash',
+      'gemini-flash-latest',
+      'gemini-3.1-pro-preview'
+    ];
+    let response = null;
+    let lastError = null;
+
+    for (const modelCandidate of candidateModels) {
+      try {
+        response = await ai.models.generateContent({
+          model: modelCandidate,
+          contents: contents,
+          config: {
+            systemInstruction: SYSTEM_INSTRUCTION,
+            temperature: 0.7,
+            tools: tools,
+          }
+        });
+        if (response) {
+          break;
+        }
+      } catch (err) {
+        lastError = err;
+        // If 503 (high demand) or 429 (rate limit), silently try next fallback model
+        const status = err?.status || err?.code || (err?.message && err.message.includes('503') ? 503 : 0);
+        if (status === 503 || status === 'UNAVAILABLE' || status === 429 || (err?.message && (err.message.includes('demand') || err.message.includes('busy')))) {
+          continue;
+        } else {
+          throw err;
+        }
       }
-    });
+    }
+
+    if (!response && lastError) {
+      throw lastError;
+    }
 
     // Check for tool function calls
     const functionCalls = response.functionCalls || [];
@@ -277,7 +377,11 @@ app.post('/api/health-ai', async (req, res) => {
     // If model returned a function call without text, synthesize a friendly reply
     if (!replyText && executedActions.length > 0) {
       const actionNames = executedActions.map(a => a.name);
-      if (actionNames.includes('addMedicine')) {
+      if (actionNames.includes('addMedicinesBatch')) {
+        const batch = executedActions.find(a => a.name === 'addMedicinesBatch')?.args;
+        const count = Array.isArray(batch?.medicines) ? batch.medicines.length : 1;
+        replyText = `প্রেসক্রিপশনটি স্ক্যান করে ${count}টি ঔষধ আপনার ঔষধের তালিকায় সফলভাবে যুক্ত করা হয়েছে!`;
+      } else if (actionNames.includes('addMedicine')) {
         const med = executedActions.find(a => a.name === 'addMedicine')?.args;
         replyText = `আপনার দেওয়া তথ্য অনুসারে "${med?.name || 'ঔষধ'}" ঔষধটি সফলভাবে সংরক্ষণ করা হয়েছে!`;
       } else if (actionNames.includes('logVitalRecord')) {

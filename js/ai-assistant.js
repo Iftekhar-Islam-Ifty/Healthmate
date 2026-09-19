@@ -154,7 +154,22 @@
         time: a.time,
         reason: a.reason
       })),
-      vaultDocumentsCount: documents.length
+      vaultDocumentsCount: documents.length,
+      // Full document and prescription details so AI can read, scan, and extract prescriptions
+      medicalVaultDocuments: documents.map(d => ({
+        id: d.id,
+        title: d.title,
+        category: d.category,
+        categoryName: d.categoryName,
+        date: d.date,
+        doctor: d.doctor,
+        facility: d.facility,
+        fileType: d.fileType,
+        fileName: d.fileName,
+        notes: d.notes,
+        tags: d.tags || [],
+        hasImage: !!(d.fileData && d.fileData.startsWith('data:image/'))
+      }))
     };
   }
 
@@ -181,6 +196,29 @@
         if (typeof renderMedicinesList === 'function') renderMedicinesList();
         showToast(`ঔষধ যোগ করা হয়েছে: ${newMed.name}`);
         return `Successfully added medication: ${newMed.name}`;
+      } else if (name === 'addMedicinesBatch') {
+        const list = Array.isArray(args.medicines) ? args.medicines : [];
+        let addedCount = 0;
+        for (const item of list) {
+          if (!item || !item.name) continue;
+          const newMed = {
+            name: item.name,
+            dosage: item.dosage || '1 tablet',
+            time: item.time || '08:00 AM',
+            frequency: item.frequency || 'Once daily',
+            meal: item.meal || 'After meal',
+            stock: typeof item.stock === 'number' ? item.stock : 14,
+            refillThreshold: 5,
+            unit: 'tablets',
+            status: 'upcoming'
+          };
+          await HMStore.saveMedicine(newMed);
+          addedCount++;
+        }
+        if (typeof renderDashboard === 'function') renderDashboard();
+        if (typeof renderMedicinesList === 'function') renderMedicinesList();
+        showToast(`প্রেসক্রিপশন থেকে ${addedCount}টি ঔষধ সফলভাবে যুক্ত করা হয়েছে!`);
+        return `Successfully added ${addedCount} medications from prescription`;
       } else if (name === 'logVitalRecord') {
         const type = args.vitalType || 'bp';
         const entry = {
@@ -311,13 +349,14 @@
     if (typing) typing.remove();
   }
 
-  async function sendAiMessage() {
+  async function sendAiMessage(customText = null, attachedImage = null) {
     const input = document.getElementById('hmAiInput');
-    if (!input) return;
-    const text = input.value.trim();
+    const text = (customText !== null ? customText : (input ? input.value : '')).trim();
     if (!text) return;
 
-    input.value = '';
+    if (input && customText === null) {
+      input.value = '';
+    }
     appendAiChatMessage('user', text);
     aiConversationHistory.push({ role: 'user', content: text });
 
@@ -326,14 +365,19 @@
     const patientContext = getPatientSnapshot();
 
     try {
+      const payload = {
+        message: text,
+        conversationHistory: aiConversationHistory,
+        patientContext: patientContext
+      };
+      if (attachedImage) {
+        payload.image = attachedImage;
+      }
+
       const response = await fetch('/api/health-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: text,
-          conversationHistory: aiConversationHistory,
-          patientContext: patientContext
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
@@ -440,6 +484,7 @@
 
       <!-- Quick prompts row -->
       <div class="hm-ai-quick-prompts">
+        <button type="button" class="hm-ai-chip" data-prompt="আমার মেডিকেল ভল্টের প্রেসক্রিপশনগুলো বিশ্লেষণ করো এবং ঔষধের নিয়মগুলো বলো">📑 প্রেসক্রিপশন স্ক্যান</button>
         <button type="button" class="hm-ai-chip" data-prompt="আজকের ঔষধের তালিকা দেখাও">💊 আজকের ঔষধ</button>
         <button type="button" class="hm-ai-chip" data-prompt="আমার সাম্প্রতিক ব্লাড প্রেশার কেমন আছে?">🩺 ব্লাড প্রেশার</button>
         <button type="button" class="hm-ai-chip" data-prompt="আগামী ডাক্তারের অ্যাপয়েন্টমেন্ট কবে?">🗓️ অ্যাপয়েন্টমেন্ট</button>
@@ -500,15 +545,15 @@
     });
   }
 
-  // Global helper to open AI modal with a specific prompt
-  window.openHealthAiWithPrompt = function (promptText) {
+  // Global helper to open AI modal with a specific prompt (and optional image)
+  window.openHealthAiWithPrompt = function (promptText, attachedImage = null) {
     if (!isAiWidgetOpen) {
       toggleAiWidget();
     }
     const input = document.getElementById('hmAiInput');
     if (input && promptText) {
-      input.value = promptText;
-      sendAiMessage();
+      input.value = '';
+      sendAiMessage(promptText, attachedImage);
     }
   };
 

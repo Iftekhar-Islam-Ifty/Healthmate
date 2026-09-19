@@ -378,6 +378,9 @@ function renderDocumentsList() {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 View
               </button>
+              <button class="btn-hm btn-sm" onclick="aiScanDocument('${doc.id}')" title="Scan with AI Assistant" style="background:#E6F4F1;color:#0D6E6E;border:1px solid #BFE3DC;">
+                🤖 Scan AI
+              </button>
               <button class="btn-hm btn-secondary btn-sm" onclick="downloadDocument('${doc.id}')" title="Download">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               </button>
@@ -511,7 +514,39 @@ function previewDocument(id) {
     dlBtn.onclick = () => downloadDocument(doc.id);
   }
 
+  // Setup AI Scan button in preview modal
+  const scanBtn = document.getElementById('viewDocAiScanBtn');
+  if (scanBtn) {
+    scanBtn.onclick = () => {
+      closeModal('viewDocModal');
+      aiScanDocument(doc.id);
+    };
+  }
+
   openModal('viewDocModal');
+}
+
+function aiScanDocument(id) {
+  const docs = HMStore.getDocuments();
+  const doc = docs.find(d => String(d.id) === String(id));
+  if (!doc) return;
+
+  const prompt = `আমার মেডিকেল ভল্টের প্রেসক্রিপশন/ডকুমেন্ট "${doc.title}" (তারিখ: ${doc.date}, ডাক্তার: ${doc.doctor || 'N/A'}, ক্লিনিক: ${doc.facility || 'N/A'}) টি স্ক্যান ও পর্যালোচনা করো। প্রেসক্রিপশনে উল্লেখিত সমস্ত ঔষধ তাদের ডোজ, খাওয়ার সময় ও খাবারের নিয়মসহ বের করো এবং আমার রুটিন ঔষধ তালিকায় যুক্ত করার পরামর্শ বা কমান্ড দাও। সেই সাথে প্রয়োজনীয় স্বাস্থ্য পরামর্শ ও নির্দেশনা দাও।`;
+
+  if (typeof window.openHealthAiWithPrompt === 'function') {
+    // Check if doc has an image to send
+    let imageObj = null;
+    if (doc.fileData && doc.fileData.startsWith('data:image/')) {
+      const parts = doc.fileData.split(',');
+      const mimeMatch = parts[0].match(/:(.*?);/);
+      const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+      const base64Data = parts[1];
+      imageObj = { mimeType, data: base64Data };
+    }
+    window.openHealthAiWithPrompt(prompt, imageObj);
+  } else if (typeof showToast === 'function') {
+    showToast('AI Assistant খুলতে সমস্যা হচ্ছে');
+  }
 }
 
 function downloadDocument(id) {
@@ -648,6 +683,7 @@ window.confirmDeleteDoc = confirmDeleteDoc;
 window.deleteDoc = deleteDoc;
 window.previewDocument = previewDocument;
 window.downloadDocument = downloadDocument;
+window.aiScanDocument = aiScanDocument;
 window.handleSaveDocument = handleSaveDocument;
 window.openUploadDocModal = openUploadDocModal;
 window.openUploadModal = openUploadDocModal;
