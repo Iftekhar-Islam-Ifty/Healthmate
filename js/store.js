@@ -171,21 +171,22 @@ const HMStore = {
         .eq('id', user.id)
         .maybeSingle();
 
-      if (profile) {
-        const cleanName = profile.full_name || (user.email ? user.email.split('@')[0] : 'User');
+      const userMeta = user.user_metadata || {};
+      if (profile || user) {
+        const cleanName = (profile && profile.full_name) || userMeta.full_name || (user.email ? user.email.split('@')[0] : 'User');
         const initials = cleanName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'U';
         const currentLocal = this.getUser();
         const updatedUser = {
           ...currentLocal,
-          id: profile.id,
+          id: (profile && profile.id) || user.id,
           name: cleanName,
-          email: profile.email || user.email || '',
-          age: (profile.age !== undefined && profile.age !== null) ? profile.age : null,
-          blood: profile.blood_group || '',
-          emergency: profile.emergency_contact || '',
-          allergies: Array.isArray(profile.allergies) ? profile.allergies : [],
-          conditions: Array.isArray(profile.chronic_conditions) ? profile.chronic_conditions : [],
-          avatar: profile.avatar_url || profile.avatar || currentLocal.avatar || '',
+          email: (profile && profile.email) || user.email || '',
+          age: (profile && profile.age !== undefined && profile.age !== null) ? profile.age : currentLocal.age,
+          blood: (profile && profile.blood_group) || currentLocal.blood || '',
+          emergency: (profile && profile.emergency_contact) || currentLocal.emergency || '',
+          allergies: (profile && Array.isArray(profile.allergies)) ? profile.allergies : currentLocal.allergies || [],
+          conditions: (profile && Array.isArray(profile.chronic_conditions)) ? profile.chronic_conditions : currentLocal.conditions || [],
+          avatar: (profile && (profile.avatar_url || profile.avatar)) || userMeta.avatar || currentLocal.avatar || '',
           initials
         };
         this._set('user', updatedUser);
@@ -808,11 +809,21 @@ const HMStore = {
       this.saveMembers(members);
     }
 
-    // Persist to Supabase profiles table if authenticated
+    // Persist to Supabase profiles and user_metadata if authenticated
     if (window.hmSupabase) {
       try {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
+          // Update Supabase Auth user metadata so avatar travels across devices
+          if (updated.avatar !== undefined || updated.name) {
+            window.hmSupabase.auth.updateUser({
+              data: {
+                avatar: updated.avatar || '',
+                full_name: updated.name || user.user_metadata?.full_name || ''
+              }
+            }).catch(e => console.warn('[Healthmate] updateUser avatar sync note:', e));
+          }
+
           const payload = {
             id: user.id,
             full_name: updated.name || '',
@@ -1854,6 +1865,13 @@ const HMStore = {
   },
 
   importFullBackup(backup) {
+    if (typeof backup === 'string') {
+      try {
+        backup = JSON.parse(backup);
+      } catch (e) {
+        throw new Error('Invalid JSON backup file');
+      }
+    }
     if (!backup || typeof backup !== 'object') {
       throw new Error('Invalid backup file structure.');
     }

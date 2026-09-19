@@ -148,9 +148,22 @@
       <section class="section">
         <div class="section-head">
           <h2>Data &amp; Portability</h2>
-          <p>আপনার Healthmate ডেটা সুরক্ষিতভাবে সংরক্ষিত থাকে। যেকোনো সময় ব্যাকআপ ডাউনলোড বা রিস্টোর করুন।</p>
+          <p>আপনার Healthmate ডেটা ও প্রোফাইল সুরক্ষিত থাকে। কম্পিউটার ও মোবাইলের মধ্যে ডেটা নিতে নিচে এক্সপোর্ট/ইমপোর্ট ব্যবহার করুন।</p>
         </div>
         <div class="panel" style="padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);">
+
+          <!-- PC to Mobile Sync Tip Box -->
+          <div style="background:#F0FDFA;border:1px solid #99F6E4;border-radius:8px;padding:12px 14px;font-size:0.83rem;line-height:1.45;color:#0F766E;">
+            <div style="font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:0.88rem;">
+              <span>📲 কম্পিউটার থেকে মোবাইলে ডেটা সিঙ্ক করার নিয়ম:</span>
+            </div>
+            <div>GitHub-এ শুধু অ্যাপের <b>কোড</b> যায়, আপনার তৈরি করা ওষুধ বা প্রোফাইল ছবি ডিভাইসের মেমরিতে থাকে। কম্পিউটার থেকে মোবাইলে নিতে:</div>
+            <ol style="margin:6px 0 0 18px;padding:0;">
+              <li>কম্পিউটারে নিচে <b>"Export JSON"</b> চাপুন।</li>
+              <li>ফাইলটি মোবাইলে পাঠিয়ে নিন (WhatsApp/Drive/Email)।</li>
+              <li>মোবাইলের অ্যাপে এসে নিচে <b>"Restore JSON"</b> চেপে ফাইলটি লোড করুন। সাথে সাথে সব ওষুধ ও প্রোফাইল ছবি মোবাইলে চলে আসবে!</li>
+            </ol>
+          </div>
           
           <!-- Doctor Report Link -->
           <div class="control-row" style="justify-content:space-between;align-items:center;padding-bottom:var(--space-3);border-bottom:1px solid var(--color-border);">
@@ -171,7 +184,7 @@
             <div>
               <div style="font-weight:600;font-size:0.92rem;">Export Full Backup</div>
               <div style="font-size:0.82rem;color:var(--color-text-muted);margin-top:2px;">
-                ওষুধ, রুটিন ও স্বাস্থ্য রেকর্ডের সম্পূর্ণ ব্যাকআপ JSON ফাইল হিসেবে ডাউনলোড করুন।
+                ওষুধ, প্রোফাইল ছবি, রুটিন ও স্বাস্থ্য রেকর্ডের সম্পূর্ণ ব্যাকআপ JSON ফাইল হিসেবে ডাউনলোড করুন।
               </div>
             </div>
             <button type="button" class="btn-hm btn-secondary" onclick="downloadBackupFile()">
@@ -185,7 +198,7 @@
             <div>
               <div style="font-weight:600;font-size:0.92rem;">Restore from Backup</div>
               <div style="font-size:0.82rem;color:var(--color-text-muted);margin-top:2px;">
-                Upload a previously exported Healthmate JSON file to restore your full data.
+                Upload a previously exported Healthmate JSON file to restore all medicines and profile data.
               </div>
             </div>
             <div>
@@ -340,18 +353,24 @@
   }
 
   function downloadBackupFile() {
-    const jsonStr = HMStore.exportFullBackup();
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const dateStr = new Date().toISOString().slice(0, 10);
-    a.href = url;
-    a.download = `healthmate-backup-${dateStr}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast('Backup downloaded');
+    try {
+      const data = HMStore.exportFullBackup();
+      const jsonStr = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const dateStr = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `healthmate-backup-${dateStr}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('ব্যাকআপ ফাইল সফলভাবে ডাউনলোড হয়েছে!');
+    } catch (e) {
+      console.error('Export error:', e);
+      showToast('ব্যাকআপ তৈরিতে সমস্যা হয়েছে');
+    }
   }
 
   function handleImportBackup(e) {
@@ -360,13 +379,20 @@
 
     const reader = new FileReader();
     reader.onload = function (evt) {
-      const content = evt.target.result;
-      const success = HMStore.importFullBackup(content);
-      if (success) {
-        showToast('Health data successfully restored!');
-        renderSettings();
-      } else {
-        showToast('Invalid backup file. Restoration failed.', 4000);
+      try {
+        const content = evt.target.result;
+        const success = HMStore.importFullBackup(content);
+        if (success) {
+          showToast('সব ডেটা ও প্রোফাইল ছবি সফলভাবে রিস্টোর হয়েছে!');
+          setTimeout(() => {
+            window.location.reload();
+          }, 800);
+        } else {
+          showToast('Invalid backup file. Restoration failed.', 4000);
+        }
+      } catch (err) {
+        console.error('Import error:', err);
+        showToast('ত্রুটি: ব্যাকআপ ফাইলটি সঠিক নয়', 4000);
       }
       e.target.value = '';
     };
