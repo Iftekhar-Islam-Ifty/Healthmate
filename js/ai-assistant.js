@@ -111,10 +111,10 @@
   function shouldSpeakReply(userText) {
     if (!userText || typeof userText !== 'string') return false;
     const t = userText.toLowerCase().trim();
-    // Bengali phrases requesting spoken or voice reply
-    const bnSpeakPattern = /(মুখে\s*(বল|বলো|বলুন|শোনাও|শোনান)|পড়ে\s*(শোনাও|শোনান|বলো|বলুন)|ভয়েসে?\s*(বল|বলো|বলুন|রিপ্লাই|উত্তর|দাও|দেও)|আওয়াজ\s*করে|কথা\s*(বল|বলো|বলুন)|উচ্চস্বরে|শব্দ\s*করে)/i;
-    // English phrases requesting spoken or voice reply
-    const enSpeakPattern = /\b(speak(\s+(it|out|to|the))?|read\s*(it\s*|this\s*)?(out|aloud)|talk\s*(to\s*me|aloud)|(say|tell)\s*(it\s*|me\s*)?(out\s*loud|aloud)|voice\s*(reply|response|answer)|audio\s*reply|out\s*loud)\b/i;
+    // Strictly match explicit commands requesting spoken / voice audio output
+    // Must NOT match conversational words like "বলো", "কথা বলো", "উত্তর দাও", "speak", or "tell me"
+    const bnSpeakPattern = /(মুখে\s*(বলো?|বলুন|শোনাও|শোনান)|পড়ে\s*(শোনাও|শোনান)|ভয়েসে\s*(বলো?|বলুন)|ভয়েস\s*(রিপ্লাই|মেসেজ|উত্তর|দাও|দেও)|আওয়াজ\s*করে\s*(বলো?|বলুন|পড়ো?|পড়ুন)|উচ্চস্বরে\s*(পড়ো?|পড়ুন|বলো?|বলুন))/i;
+    const enSpeakPattern = /\b((speak|read|say)\s+(it\s+|this\s+)?(out\s*loud|aloud)|voice\s+(reply|response|note|message)|audio\s+(reply|response)|in\s+voice)\b/i;
 
     return bnSpeakPattern.test(t) || enSpeakPattern.test(t);
   }

@@ -364,8 +364,9 @@ function renderDocumentsList() {
           <div class="vault-doc-date">${doc.date}</div>
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px;">
             <h3 class="vault-doc-title" onclick="previewDocument('${doc.id}')" title="${escapeHtml(doc.title)}" style="margin-bottom:0;flex:1;">${escapeHtml(doc.title)}</h3>
-            <button type="button" class="btn-vault-quick-edit" onclick="event.stopPropagation(); openEditDocModal('${doc.id}')" title="Edit Prescription / Document Name" style="background:none;border:none;cursor:pointer;color:var(--color-text-muted);padding:3px;display:inline-flex;align-items:center;border-radius:4px;flex-shrink:0;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <button type="button" class="btn-vault-quick-edit" onclick="event.stopPropagation(); openEditDocModal('${doc.id}')" title="Edit Prescription / Document Name (প্রেসক্রিপশনের নাম পরিবর্তন)" style="background:#F1F5F9;border:1px solid #CBD5E1;cursor:pointer;color:var(--color-primary-dark);padding:4px 6px;display:inline-flex;align-items:center;gap:4px;border-radius:4px;flex-shrink:0;font-size:0.72rem;font-weight:600;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>Edit</span>
             </button>
           </div>
           

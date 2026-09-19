@@ -242,14 +242,18 @@ const HMStore = {
         .order('created_at', { ascending: true });
 
       if (cloudMeds && cloudMeds.length > 0) {
-        // Fetch today's medicine logs
+        // Fetch all medicine logs for history tracking
         const { data: logs } = await window.hmSupabase
           .from('medicine_logs')
           .select('*')
-          .eq('user_id', user.id)
-          .eq('log_date', todayStr);
+          .eq('user_id', user.id);
 
-        const loggedTakenIds = new Set((logs || []).filter(l => l.status === 'taken').map(l => l.medicine_id));
+        const historyByMedId = {};
+        (logs || []).forEach(l => {
+          if (!historyByMedId[l.medicine_id]) historyByMedId[l.medicine_id] = {};
+          historyByMedId[l.medicine_id][l.log_date] = l.status;
+        });
+
         const idsToDeleteFromCloud = [];
 
         const validMeds = cloudMeds.filter(m => {
@@ -266,20 +270,33 @@ const HMStore = {
           window.hmSupabase.from('medicines').delete().in('id', idsToDeleteFromCloud).catch(() => {});
         }
 
-        const mappedMeds = validMeds.map(m => ({
-          id: m.id,
-          memberId: 'owner',
-          name: m.name,
-          dosage: m.dosage || '1 tablet',
-          time: m.time || '08:00 AM',
-          frequency: m.period || 'Once daily',
-          meal: m.condition || 'After meal',
-          status: loggedTakenIds.has(m.id) ? 'taken' : (m.status || 'pending'),
-          stock: typeof m.stock === 'number' ? m.stock : 0,
-          refillThreshold: typeof m.refill_alert === 'number' ? m.refill_alert : 5,
-          unit: m.unit || 'tablets',
-          reminder: m.is_active !== false
-        }));
+        const localList = this._get('medicines', []);
+        const mappedMeds = validMeds.map(m => {
+          const localItem = localList.find(lm => String(lm.id) === String(m.id));
+          const localHistory = (localItem && localItem.history) || {};
+          const mergedHistory = { ...localHistory, ...(historyByMedId[m.id] || {}) };
+          const isTakenToday = mergedHistory[todayStr] === 'taken';
+
+          return {
+            id: m.id,
+            memberId: 'owner',
+            name: m.name,
+            dosage: m.dosage || '1 tablet',
+            time: m.time || '08:00 AM',
+            frequency: m.period || 'Once daily',
+            meal: m.condition || 'After meal',
+            status: isTakenToday ? 'taken' : (m.status || 'pending'),
+            stock: typeof m.stock === 'number' ? m.stock : 0,
+            refillThreshold: typeof m.refill_alert === 'number' ? m.refill_alert : 5,
+            unit: m.unit || 'tablets',
+            reminder: m.is_active !== false,
+            start: m.start || m.start_date || (localItem && localItem.start) || '',
+            end: m.end || m.end_date || (localItem && localItem.end) || '',
+            instructions: m.instructions || (localItem && localItem.instructions) || '',
+            description: m.description || (localItem && localItem.description) || '',
+            history: mergedHistory
+          };
+        });
         this._set('medicines', mappedMeds);
       } else {
         this._set('medicines', []);
@@ -889,7 +906,6 @@ const HMStore = {
 
   getMedicines() {
     const list = this._get('medicines', HM_DEFAULT_MEDICINES);
-    // Ensure all items have memberId, stock, and refillThreshold
     let changed = false;
     const normalized = list.map((m) => {
       let updated = false;
@@ -898,13 +914,12 @@ const HMStore = {
         copy.memberId = 'owner';
         updated = true;
       }
-      if (typeof copy.stock !== 'number') {
-        copy.stock = 0;
+      if (!copy.history || typeof copy.history !== 'object') {
+        copy.history = {};
         updated = true;
       }
-      if (typeof copy.refillThreshold !== 'number') {
-        copy.refillThreshold = 5;
-        updated = true;
+      if (typeof copy.description !== 'string') {
+        copy.description = copy.description || '';
       }
       if (!copy.unit) {
         copy.unit = 'tablets';
@@ -1028,14 +1043,19 @@ const HMStore = {
     return meds;
   },
 
-  async markMedicineTaken(medId) {
+  async markMedicineTaken(medId, dateStr = null) {
     const meds = this.getMedicines();
     const med = meds.find(m => String(m.id) === String(medId));
     if (!med) return null;
 
-    med.status = 'taken';
-    if (typeof med.stock === 'number' && med.stock > 0) {
-      med.stock = Math.max(0, med.stock - 1);
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const targetDate = dateStr || todayStr;
+
+    if (!med.history) med.history = {};
+    med.history[targetDate] = 'taken';
+
+    if (targetDate === todayStr) {
+      med.status = 'taken';
     }
     this._set('medicines', meds);
 
@@ -1043,18 +1063,18 @@ const HMStore = {
       try {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
-          const todayStr = new Date().toISOString().slice(0, 10);
-          await window.hmSupabase.from('medicines').update({
-            status: 'taken',
-            stock: med.stock
-          }).eq('id', med.id);
+          if (targetDate === todayStr) {
+            await window.hmSupabase.from('medicines').update({
+              status: 'taken'
+            }).eq('id', med.id).catch(() => {});
+          }
 
           await window.hmSupabase.from('medicine_logs').upsert({
             user_id: user.id,
             medicine_id: med.id,
-            log_date: todayStr,
+            log_date: targetDate,
             status: 'taken'
-          });
+          }).catch(() => {});
         }
       } catch (e) {
         console.warn('markMedicineTaken error:', e);
@@ -1063,14 +1083,19 @@ const HMStore = {
     return med;
   },
 
-  async markMedicinePending(medId) {
+  async markMedicinePending(medId, dateStr = null) {
     const meds = this.getMedicines();
     const med = meds.find(m => String(m.id) === String(medId));
     if (!med) return null;
 
-    med.status = 'upcoming';
-    if (typeof med.stock === 'number') {
-      med.stock += 1;
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const targetDate = dateStr || todayStr;
+
+    if (med.history) {
+      delete med.history[targetDate];
+    }
+    if (targetDate === todayStr) {
+      med.status = 'upcoming';
     }
     this._set('medicines', meds);
 
@@ -1078,19 +1103,69 @@ const HMStore = {
       try {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
-          const todayStr = new Date().toISOString().slice(0, 10);
-          await window.hmSupabase.from('medicines').update({
-            status: 'upcoming',
-            stock: med.stock
-          }).eq('id', med.id);
+          if (targetDate === todayStr) {
+            await window.hmSupabase.from('medicines').update({
+              status: 'upcoming'
+            }).eq('id', med.id).catch(() => {});
+          }
 
           await window.hmSupabase.from('medicine_logs').delete()
             .eq('user_id', user.id)
             .eq('medicine_id', med.id)
-            .eq('log_date', todayStr);
+            .eq('log_date', targetDate).catch(() => {});
         }
       } catch (e) {
         console.warn('markMedicinePending error:', e);
+      }
+    }
+    return med;
+  },
+
+  async setMedicineHistoryStatus(medId, dateStr, status) {
+    const meds = this.getMedicines();
+    const med = meds.find(m => String(m.id) === String(medId));
+    if (!med) return null;
+
+    if (!med.history) med.history = {};
+    if (status === 'unrecorded' || !status) {
+      delete med.history[dateStr];
+    } else {
+      med.history[dateStr] = status; // 'taken' or 'missed'
+    }
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    if (dateStr === todayStr) {
+      med.status = status === 'taken' ? 'taken' : (status === 'missed' ? 'missed' : 'upcoming');
+    }
+
+    this._set('medicines', meds);
+
+    if (window.hmSupabase) {
+      try {
+        const { data: { user } } = await window.hmSupabase.auth.getUser();
+        if (user) {
+          if (dateStr === todayStr) {
+            await window.hmSupabase.from('medicines').update({
+              status: med.status
+            }).eq('id', med.id).catch(() => {});
+          }
+
+          if (status === 'taken' || status === 'missed') {
+            await window.hmSupabase.from('medicine_logs').upsert({
+              user_id: user.id,
+              medicine_id: med.id,
+              log_date: dateStr,
+              status: status
+            }).catch(() => {});
+          } else {
+            await window.hmSupabase.from('medicine_logs').delete()
+              .eq('user_id', user.id)
+              .eq('medicine_id', med.id)
+              .eq('log_date', dateStr).catch(() => {});
+          }
+        }
+      } catch (e) {
+        console.warn('setMedicineHistoryStatus sync note:', e);
       }
     }
     return med;
@@ -1135,22 +1210,11 @@ const HMStore = {
   },
 
   getRefillAlerts() {
-    const meds = this.getMedicines();
-    return meds.filter(m => typeof m.stock === 'number' && m.stock <= (m.refillThreshold || 5));
+    return [];
   },
 
   getDynamicNotifications() {
     const notifs = [];
-    const refillAlerts = this.getRefillAlerts();
-
-    refillAlerts.forEach(m => {
-      notifs.push({
-        type: 'refill',
-        title: `${m.name} refill needed — ${m.stock} ${m.unit || 'pills'} left`,
-        time: 'Low Stock Alert',
-        isWarning: true
-      });
-    });
 
     const pendingMeds = this.getMedicines().filter(m => m.status === 'pending');
     pendingMeds.forEach(m => {
@@ -2216,42 +2280,25 @@ const HMStore = {
       }
     }
 
-    // 4. Medication Compliance & Stock Alert
-    const refillAlerts = this.getAllRefillAlerts();
-    if (refillAlerts.length > 0) {
-      const names = refillAlerts.map(m => m.name).join(', ');
+    // 4. Medication Adherence Insight
+    const totalMeds = meds.length;
+    const takenMeds = meds.filter(m => m.status === 'taken').length;
+    const adherence = totalMeds > 0 ? Math.round((takenMeds / totalMeds) * 100) : 100;
+    if (totalMeds > 0) {
       insights.push({
-        id: 'insight-refill',
-        category: 'Medication Alert',
-        title: `Low Medicine Stock: ${names}`,
-        description: `ওষুধের স্টক নির্ধারিত রিফিল লিমিটের নিচে নেমে গেছে (${refillAlerts[0].stock} টি বাকি)। ডোজ বাদ পড়া এড়াতে দ্রুত সংগ্রহ করুন।`,
-        level: 'warning',
-        badgeBg: '#FEF3C7',
-        badgeColor: '#B45309',
-        badgeText: 'Low Stock',
-        actionText: 'Manage Supplies',
+        id: 'insight-meds',
+        category: 'Prescriptions',
+        title: `Daily Dose Adherence: ${adherence}%`,
+        description: adherence === 100
+          ? 'আজকের জন্য নির্ধারিত সব ডোজ নেওয়া সম্পন্ন হয়েছে। অসাধারণ নিয়মনিষ্ঠতা!'
+          : `আজকের ${totalMeds} টির মধ্যে ${takenMeds} টি ডোজ সম্পন্ন হয়েছে। বাকি ওষুধগুলো সঠিক সময়ে গ্রহণ করতে ভুলবেন না।`,
+        level: adherence === 100 ? 'good' : 'info',
+        badgeBg: adherence === 100 ? '#ECFDF5' : '#EFF6FF',
+        badgeColor: adherence === 100 ? '#047857' : '#1E40AF',
+        badgeText: adherence === 100 ? '100% On Track' : `${takenMeds}/${totalMeds} Doses`,
+        actionText: 'Open Prescriptions',
         actionUrl: 'medicines.html'
       });
-    } else {
-      const totalMeds = meds.length;
-      const takenMeds = meds.filter(m => m.status === 'taken').length;
-      const adherence = totalMeds > 0 ? Math.round((takenMeds / totalMeds) * 100) : 100;
-      if (totalMeds > 0) {
-        insights.push({
-          id: 'insight-meds',
-          category: 'Prescriptions',
-          title: `Daily Dose Adherence: ${adherence}%`,
-          description: adherence === 100
-            ? 'আজকের জন্য নির্ধারিত সব ডোজ নেওয়া সম্পন্ন হয়েছে। অসাধারণ নিয়মনিষ্ঠতা!'
-            : `আজকের ${totalMeds} টির মধ্যে ${takenMeds} টি ডোজ সম্পন্ন হয়েছে। বাকি ওষুধগুলো সঠিক সময়ে গ্রহণ করতে ভুলবেন না।`,
-          level: adherence === 100 ? 'good' : 'info',
-          badgeBg: adherence === 100 ? '#ECFDF5' : '#EFF6FF',
-          badgeColor: adherence === 100 ? '#047857' : '#1E40AF',
-          badgeText: adherence === 100 ? '100% On Track' : `${takenMeds}/${totalMeds} Doses`,
-          actionText: 'Open Prescriptions',
-          actionUrl: 'medicines.html'
-        });
-      }
     }
 
     // 5. Hydration / Routine Streak

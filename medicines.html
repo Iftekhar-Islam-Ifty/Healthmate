@@ -88,7 +88,7 @@
           <span class="notif-dot"></span>
         </button>
         <div class="notif-panel" id="notifPanel">
-          <div class="notif-panel-item"><div class="t">Medicine B refill needed in 3 days</div><div class="s">Yesterday</div></div>
+          <div class="notif-panel-item"><div class="t">All daily medicines and routines are on track.</div><div class="s">Today</div></div>
         </div>
         <div class="avatar">IF</div>
       </div>
@@ -104,20 +104,6 @@
         <button class="btn-hm btn-primary" onclick="openAddMedicine()">
           + Add medicine
         </button>
-      </div>
-
-      <!-- Refill Alert Banner (Shown when any medicine is low on stock) -->
-      <div id="medsRefillBanner" class="panel hm-card-alert" style="display:none;background:#FFFBEB;border:1px solid #FCD34D;border-left:4px solid var(--color-warning);padding:var(--space-3) var(--space-4);margin-bottom:var(--space-4);">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-2);">
-          <div style="display:flex;align-items:center;gap:var(--space-2);">
-            <span style="font-size:1.2rem;">⚠️</span>
-            <div>
-              <b style="font-size:0.92rem;color:#92400E;">Medicine Refill Alert</b>
-              <div id="medsRefillBannerText" style="font-size:0.82rem;color:#78350F;margin-top:2px;">কিছু ওষুধের স্টক নির্ধারিত রিফিল লিমিটের নিচে নেমে গেছে।</div>
-            </div>
-          </div>
-          <div id="medsRefillBannerActions" style="display:flex;gap:var(--space-2);flex-wrap:wrap;"></div>
-        </div>
       </div>
 
       <!-- ============ TODAY'S SCHEDULE (Major Action Area) ============ -->
@@ -169,7 +155,7 @@
 
 <!-- Add / Edit medicine modal -->
 <div class="modal-hm-backdrop" id="medicineModal">
-  <div class="modal-hm" style="max-width:480px;">
+  <div class="modal-hm" style="max-width:500px;max-height:92vh;overflow-y:auto;">
     <h3 id="medicineModalTitle">Add a medicine</h3>
     <form id="medicineForm">
       <input type="hidden" id="medId">
@@ -186,16 +172,6 @@
           <div class="field" style="flex:1;min-width:120px;">
             <label for="medTime">Time</label>
             <input type="text" id="medTime" placeholder="e.g. 9:00 PM">
-          </div>
-        </div>
-        <div class="control-row" style="gap:var(--space-3);">
-          <div class="field" style="flex:1;min-width:120px;">
-            <label for="medStock">Current stock</label>
-            <input type="number" id="medStock" min="0" placeholder="e.g. 20" value="20">
-          </div>
-          <div class="field" style="flex:1;min-width:120px;">
-            <label for="medRefillThreshold">Refill alert at</label>
-            <input type="number" id="medRefillThreshold" min="1" placeholder="e.g. 5" value="5">
           </div>
         </div>
         <div class="control-row" style="gap:var(--space-3);">
@@ -220,18 +196,48 @@
         </div>
         <div class="control-row" style="gap:var(--space-3);">
           <div class="field" style="flex:1;min-width:120px;">
-            <label for="medStart">Start date</label>
-            <input type="text" id="medStart" placeholder="e.g. 1 Sep 2026">
+            <label for="medStart">Starting date (শুরুর তারিখ)</label>
+            <input type="date" id="medStart">
           </div>
           <div class="field" style="flex:1;min-width:120px;">
-            <label for="medEnd">End date</label>
-            <input type="text" id="medEnd" placeholder="Optional">
+            <label for="medEnd">End date (শেষের তারিখ)</label>
+            <input type="date" id="medEnd">
           </div>
         </div>
         <div class="field">
           <label for="medInstructions">Instructions</label>
           <textarea id="medInstructions" rows="2" placeholder="e.g. Take with a full glass of water"></textarea>
         </div>
+        <div class="field">
+          <label for="medDescription">Description / বিবরণ</label>
+          <textarea id="medDescription" rows="2" placeholder="ওষুধটি কী কারণে বা ডাক্তারের পরামর্শ (e.g. For fever and headaches, doctor advised 5 days)"></textarea>
+        </div>
+
+        <!-- Inline Past History Manager in Modal (for editing start-to-today days) -->
+        <div id="medModalHistoryContainer" style="display:none;background:#F8FAFC;border:1px solid var(--color-border);border-radius:8px;padding:12px 14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+            <div>
+              <div style="font-weight:700;font-size:0.86rem;color:var(--color-text);display:flex;align-items:center;gap:6px;">
+                <span>📅 Past Dose History / অতীত দিনগুলোর লগ</span>
+              </div>
+              <div style="font-size:0.76rem;color:var(--color-text-muted);">
+                শুরুর দিন থেকে আজ পর্যন্ত স্ট্যাটাস পরিবর্তন করুন:
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button type="button" class="btn-hm btn-ghost" style="font-size:0.75rem;padding:3px 8px;border:1px solid #CBD5E1;color:var(--color-success-dark);background:#FFFFFF;" onclick="markAllHistoryInModal('taken')">
+                ✓ All Taken
+              </button>
+              <button type="button" class="btn-hm btn-ghost" style="font-size:0.75rem;padding:3px 8px;border:1px solid #CBD5E1;color:var(--color-error);background:#FFFFFF;" onclick="markAllHistoryInModal('missed')">
+                ✗ All Missed
+              </button>
+            </div>
+          </div>
+          <div id="medModalHistoryList" style="display:flex;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto;padding-right:2px;">
+            <!-- Rendered by renderModalHistory() -->
+          </div>
+        </div>
+
         <div class="control-row" style="justify-content:space-between;">
           <span style="font-size:0.85rem;color:var(--color-text-muted);">Reminder</span>
           <label class="toggle">
@@ -245,6 +251,56 @@
         <button type="submit" class="btn-hm btn-primary">Save medicine</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Standalone Dose History Modal (For quick 1-click day-by-day status editing) -->
+<div class="modal-hm-backdrop" id="doseHistoryModal">
+  <div class="modal-hm" style="max-width:520px;max-height:90vh;display:flex;flex-direction:column;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;">
+      <div>
+        <h3 id="doseHistoryModalTitle" style="margin:0;font-size:1.15rem;">Dose History</h3>
+        <p id="doseHistoryModalSub" style="font-size:0.82rem;color:var(--color-text-muted);margin:4px 0 0;">
+          শুরুর তারিখ থেকে আজ পর্যন্ত প্রতিদিনের ডোজ গ্রহণের তথ্য ম্যানুয়ালি এডিট করুন।
+        </p>
+      </div>
+      <button type="button" class="icon-action" onclick="closeModal('doseHistoryModal')" style="font-size:1.25rem;line-height:1;">&times;</button>
+    </div>
+
+    <!-- Quick action bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:#F1F5F9;padding:9px 12px;border-radius:8px;margin-bottom:12px;">
+      <div style="font-size:0.78rem;color:var(--color-text-secondary);font-weight:600;">
+        Quick Actions:
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button type="button" class="btn-hm btn-ghost" style="background:#FFFFFF;font-size:0.75rem;padding:4px 10px;border:1px solid #CBD5E1;color:var(--color-success-dark);font-weight:600;" onclick="quickMarkAllHistory('taken')">
+          ✓ Mark All Taken
+        </button>
+        <button type="button" class="btn-hm btn-ghost" style="background:#FFFFFF;font-size:0.75rem;padding:4px 10px;border:1px solid #CBD5E1;color:var(--color-error);font-weight:600;" onclick="quickMarkAllHistory('missed')">
+          ✗ Mark All Missed
+        </button>
+      </div>
+    </div>
+
+    <!-- Day by day items list -->
+    <div id="doseHistoryItemsContainer" style="display:flex;flex-direction:column;gap:7px;overflow-y:auto;flex:1;min-height:120px;max-height:340px;padding-right:4px;">
+      <!-- Generated items -->
+    </div>
+
+    <!-- Custom date entry -->
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <label for="customLogDate" style="font-size:0.78rem;color:var(--color-text-muted);">অন্য কোনো তারিখ:</label>
+        <input type="date" id="customLogDate" style="font-size:0.8rem;padding:4px 8px;border-radius:6px;border:1px solid var(--color-border);">
+      </div>
+      <button type="button" class="btn-hm btn-secondary" style="font-size:0.78rem;padding:5px 10px;" onclick="addCustomLogDate()">
+        + Add date to log
+      </button>
+    </div>
+
+    <div class="modal-hm-actions" style="margin-top:14px;padding-top:10px;border-top:1px solid var(--color-border);">
+      <button type="button" class="btn-hm btn-primary" onclick="closeModal('doseHistoryModal')" style="width:100%;">Done</button>
+    </div>
   </div>
 </div>
 
