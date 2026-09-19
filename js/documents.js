@@ -362,7 +362,12 @@ function renderDocumentsList() {
 
         <div class="vault-card-body">
           <div class="vault-doc-date">${doc.date}</div>
-          <h3 class="vault-doc-title" onclick="previewDocument(${doc.id})" title="${doc.title}">${doc.title}</h3>
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px;">
+            <h3 class="vault-doc-title" onclick="previewDocument('${doc.id}')" title="${escapeHtml(doc.title)}" style="margin-bottom:0;flex:1;">${escapeHtml(doc.title)}</h3>
+            <button type="button" class="btn-vault-quick-edit" onclick="event.stopPropagation(); openEditDocModal('${doc.id}')" title="Edit Prescription / Document Name" style="background:none;border:none;cursor:pointer;color:var(--color-text-muted);padding:3px;display:inline-flex;align-items:center;border-radius:4px;flex-shrink:0;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+          </div>
           
           <div class="vault-meta-row">
             ${doc.doctor ? `<span class="vault-meta-item"><b>Dr:</b> ${doc.doctor}</span>` : ''}
@@ -377,6 +382,10 @@ function renderDocumentsList() {
               <button class="btn-hm btn-ghost btn-sm" onclick="previewDocument('${doc.id}')" title="Preview Document">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 View
+              </button>
+              <button class="btn-hm btn-ghost btn-sm" onclick="openEditDocModal('${doc.id}')" title="Edit Prescription Name & Details" style="color:var(--color-primary-dark);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit
               </button>
               <button class="btn-hm btn-sm" onclick="aiScanDocument('${doc.id}')" title="Scan with AI Assistant" style="background:#E6F4F1;color:#0D6E6E;border:1px solid #BFE3DC;">
                 🤖 Scan AI
@@ -523,7 +532,84 @@ function previewDocument(id) {
     };
   }
 
+  // Setup Edit button in preview modal
+  const editBtn = document.getElementById('viewDocEditBtn');
+  if (editBtn) {
+    editBtn.onclick = () => {
+      closeModal('viewDocModal');
+      openEditDocModal(doc.id);
+    };
+  }
+
   openModal('viewDocModal');
+}
+
+function openEditDocModal(id) {
+  const docs = HMStore.getDocuments();
+  const doc = docs.find(d => String(d.id) === String(id));
+  if (!doc) return;
+
+  const idInput = document.getElementById('editDocId');
+  const titleInput = document.getElementById('editDocTitle');
+  const catInput = document.getElementById('editDocCategory');
+  const dateInput = document.getElementById('editDocDate');
+  const docInput = document.getElementById('editDocDoctor');
+  const facInput = document.getElementById('editDocFacility');
+  const notesInput = document.getElementById('editDocNotes');
+
+  if (idInput) idInput.value = doc.id;
+  if (titleInput) titleInput.value = doc.title || '';
+  if (catInput) catInput.value = doc.category || 'prescription';
+  if (dateInput) dateInput.value = doc.date || '';
+  if (docInput) docInput.value = doc.doctor || '';
+  if (facInput) facInput.value = doc.facility || '';
+  if (notesInput) notesInput.value = doc.notes || '';
+
+  openModal('editDocModal');
+  if (titleInput) {
+    setTimeout(() => {
+      titleInput.focus();
+      titleInput.select();
+    }, 150);
+  }
+}
+
+async function handleUpdateDocument(e) {
+  if (e && e.preventDefault) e.preventDefault();
+
+  const id = document.getElementById('editDocId')?.value;
+  const title = document.getElementById('editDocTitle')?.value.trim();
+  if (!title) {
+    if (typeof showToast === 'function') {
+      showToast('Please enter a prescription / document title');
+    }
+    return;
+  }
+
+  const categoryEl = document.getElementById('editDocCategory');
+  const category = categoryEl ? categoryEl.value : 'prescription';
+  const categoryName = categoryEl && categoryEl.selectedIndex >= 0 ? categoryEl.options[categoryEl.selectedIndex].text : 'Prescription';
+  const date = document.getElementById('editDocDate')?.value || new Date().toISOString().slice(0, 10);
+  const doctor = document.getElementById('editDocDoctor')?.value.trim() || '';
+  const facility = document.getElementById('editDocFacility')?.value.trim() || '';
+  const notes = document.getElementById('editDocNotes')?.value.trim() || '';
+
+  const updates = {
+    title,
+    category,
+    categoryName,
+    date,
+    doctor,
+    facility,
+    notes
+  };
+
+  await HMStore.updateDocument(id, updates);
+  closeModal('editDocModal');
+  renderDocumentsList();
+  if (typeof showToast === 'function') {
+    showToast(`ডকুমেন্টের নাম ও তথ্য আপডেট হয়েছে: "${title}"`);
+  }
 }
 
 function aiScanDocument(id) {
@@ -685,5 +771,7 @@ window.previewDocument = previewDocument;
 window.downloadDocument = downloadDocument;
 window.aiScanDocument = aiScanDocument;
 window.handleSaveDocument = handleSaveDocument;
+window.openEditDocModal = openEditDocModal;
+window.handleUpdateDocument = handleUpdateDocument;
 window.openUploadDocModal = openUploadDocModal;
 window.openUploadModal = openUploadDocModal;

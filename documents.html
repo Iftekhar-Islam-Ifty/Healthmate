@@ -283,6 +283,63 @@
   </div>
 </div>
 
+<!-- ============ MODAL: EDIT PRESCRIPTION / DOCUMENT ============ -->
+<div class="modal-hm-backdrop" id="editDocModal">
+  <div class="modal-hm" style="max-width:540px;">
+    <div class="modal-hm-header">
+      <h2>Edit Prescription / Document</h2>
+      <button type="button" class="modal-hm-close" onclick="closeModal('editDocModal')" aria-label="Close">✕</button>
+    </div>
+    <form id="editDocForm" onsubmit="handleUpdateDocument(event)">
+      <input type="hidden" id="editDocId">
+      <div class="modal-hm-body">
+
+        <div class="form-group-hm">
+          <label for="editDocTitle">Document / Prescription Name *</label>
+          <input type="text" id="editDocTitle" required placeholder="e.g. Cardiology Prescription & Follow-up">
+        </div>
+
+        <div class="form-row-hm">
+          <div class="form-group-hm">
+            <label for="editDocCategory">Category</label>
+            <select id="editDocCategory">
+              <option value="prescription">Prescription</option>
+              <option value="lab">Lab / Blood Test</option>
+              <option value="radiology">Radiology / X-Ray / Scan</option>
+              <option value="other">Clinical Checkup / Other</option>
+            </select>
+          </div>
+          <div class="form-group-hm">
+            <label for="editDocDate">Date Recorded</label>
+            <input type="date" id="editDocDate">
+          </div>
+        </div>
+
+        <div class="form-row-hm">
+          <div class="form-group-hm">
+            <label for="editDocDoctor">Doctor / Physician Name</label>
+            <input type="text" id="editDocDoctor" placeholder="e.g. Dr. A. Rahman">
+          </div>
+          <div class="form-group-hm">
+            <label for="editDocFacility">Hospital / Diagnostic Center</label>
+            <input type="text" id="editDocFacility" placeholder="e.g. Popular Diagnostic Centre">
+          </div>
+        </div>
+
+        <div class="form-group-hm">
+          <label for="editDocNotes">Key Findings / Notes</label>
+          <textarea id="editDocNotes" rows="2" placeholder="e.g. Dosage instructions, lifestyle precautions, follow-up advice"></textarea>
+        </div>
+
+      </div>
+      <div class="modal-hm-actions">
+        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('editDocModal')">Cancel</button>
+        <button type="submit" class="btn-hm btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- ============ MODAL: VIEW DOCUMENT ============ -->
 <div class="modal-hm-backdrop" id="viewDocModal">
   <div class="modal-hm" style="max-width:640px;">
@@ -314,6 +371,10 @@
     </div>
     <div class="modal-hm-actions">
       <button type="button" class="btn-hm btn-ghost" onclick="closeModal('viewDocModal')">Close</button>
+      <button type="button" class="btn-hm btn-secondary" id="viewDocEditBtn" style="display:inline-flex;align-items:center;gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit Name
+      </button>
       <button type="button" class="btn-hm" id="viewDocAiScanBtn" style="background:#0D6E6E;color:#FFFFFF;border:none;display:inline-flex;align-items:center;gap:6px;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
         🤖 Scan with AI

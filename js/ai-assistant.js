@@ -32,8 +32,8 @@
         const input = document.getElementById('hmAiInput');
         if (input) {
           input.value = transcript;
-          sendAiMessage();
         }
+        sendAiMessage(transcript, null, true);
       };
 
       speechRecognition.onerror = function (event) {
@@ -106,6 +106,17 @@
     } catch (e) {
       console.warn('TTS error:', e);
     }
+  }
+
+  function shouldSpeakReply(userText) {
+    if (!userText || typeof userText !== 'string') return false;
+    const t = userText.toLowerCase().trim();
+    // Bengali phrases requesting spoken or voice reply
+    const bnSpeakPattern = /(মুখে\s*(বল|বলো|বলুন|শোনাও|শোনান)|পড়ে\s*(শোনাও|শোনান|বলো|বলুন)|ভয়েসে?\s*(বল|বলো|বলুন|রিপ্লাই|উত্তর|দাও|দেও)|আওয়াজ\s*করে|কথা\s*(বল|বলো|বলুন)|উচ্চস্বরে|শব্দ\s*করে)/i;
+    // English phrases requesting spoken or voice reply
+    const enSpeakPattern = /\b(speak(\s+(it|out|to|the))?|read\s*(it\s*|this\s*)?(out|aloud)|talk\s*(to\s*me|aloud)|(say|tell)\s*(it\s*|me\s*)?(out\s*loud|aloud)|voice\s*(reply|response|answer)|audio\s*reply|out\s*loud)\b/i;
+
+    return bnSpeakPattern.test(t) || enSpeakPattern.test(t);
   }
 
   function getPatientSnapshot() {
@@ -310,8 +321,24 @@
         <div class="hm-ai-bubble ai-bubble">
           <div class="hm-ai-bubble-content">${formattedText}</div>
           ${actionBadges}
+          <div class="hm-ai-bubble-actions" style="display:flex;justify-content:flex-end;margin-top:6px;">
+            <button type="button" class="hm-ai-play-voice-btn" title="কথা শুনুন (Listen response)" style="background:transparent;border:none;cursor:pointer;color:var(--color-text-muted);font-size:0.72rem;display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+              <span>শুনুন</span>
+            </button>
+          </div>
         </div>
       `;
+      const playBtn = msgRow.querySelector('.hm-ai-play-voice-btn');
+      if (playBtn) {
+        playBtn.onclick = () => {
+          if ('speechSynthesis' in window && window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+          } else {
+            speakText(text);
+          }
+        };
+      }
     }
 
     list.appendChild(msgRow);
@@ -349,16 +376,23 @@
     if (typing) typing.remove();
   }
 
-  async function sendAiMessage(customText = null, attachedImage = null) {
+  async function sendAiMessage(customText = null, attachedImage = null, isFromVoice = false) {
+    const isTextString = typeof customText === 'string';
     const input = document.getElementById('hmAiInput');
-    const text = (customText !== null ? customText : (input ? input.value : '')).trim();
+    const text = (isTextString ? customText : (input ? input.value : '')).trim();
     if (!text) return;
 
-    if (input && customText === null) {
+    if (input && !isTextString) {
       input.value = '';
     }
     appendAiChatMessage('user', text);
     aiConversationHistory.push({ role: 'user', content: text });
+
+    // Voice response condition:
+    // Only speak aloud if:
+    // 1. The input came via microphone/voice (isFromVoice === true), OR
+    // 2. The user explicitly requested in their prompt to speak aloud ("মুখে বলো", "পড়ে শোনাও", "speak aloud", etc.)
+    const wantsVoiceReply = isFromVoice || shouldSpeakReply(text);
 
     showAiTypingIndicator();
 
@@ -394,7 +428,11 @@
         const reply = data.reply || 'আপনার অনুরোধ সম্পন্ন হয়েছে।';
         appendAiChatMessage('assistant', reply, data.actions);
         aiConversationHistory.push({ role: 'assistant', content: reply });
-        speakText(reply);
+
+        // Only reply with voice when voice input was used or explicitly asked
+        if (wantsVoiceReply) {
+          speakText(reply);
+        }
       } else {
         const errMsg = data.error || 'একটি অপ্রত্যাশিত সমস্যা হয়েছে।';
         appendAiChatMessage('assistant', errMsg);
@@ -509,7 +547,7 @@
 
     // Event listeners
     document.getElementById('hmAiCloseBtn')?.addEventListener('click', toggleAiWidget);
-    document.getElementById('hmAiSendBtn')?.addEventListener('click', sendAiMessage);
+    document.getElementById('hmAiSendBtn')?.addEventListener('click', () => sendAiMessage());
     document.getElementById('hmAiMicBtn')?.addEventListener('click', toggleVoiceInput);
     document.getElementById('hmAiInput')?.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
@@ -538,8 +576,8 @@
         const prompt = this.getAttribute('data-prompt');
         const input = document.getElementById('hmAiInput');
         if (input && prompt) {
-          input.value = prompt;
-          sendAiMessage();
+          input.value = '';
+          sendAiMessage(prompt, null, false);
         }
       });
     });
@@ -553,7 +591,7 @@
     const input = document.getElementById('hmAiInput');
     if (input && promptText) {
       input.value = '';
-      sendAiMessage(promptText, attachedImage);
+      sendAiMessage(promptText, attachedImage, false);
     }
   };
 

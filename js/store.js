@@ -1514,6 +1514,44 @@ const HMStore = {
     return newDoc;
   },
 
+  async updateDocument(id, updates) {
+    const docs = this.getDocuments();
+    const strId = String(id);
+    const targetUUID = hmToUUID(id);
+    const idx = docs.findIndex(d => String(d.id) === strId || String(d.id) === targetUUID);
+    if (idx !== -1) {
+      docs[idx] = { ...docs[idx], ...updates };
+      this._set('documents', docs);
+
+      if (window.hmSupabase) {
+        try {
+          const d = docs[idx];
+          const payload = {
+            title: d.title,
+            category: d.category,
+            category_name: d.categoryName,
+            record_date: d.date,
+            doctor: d.doctor,
+            facility: d.facility,
+            notes: d.notes,
+            tags: d.tags || [],
+            updated_at: new Date().toISOString()
+          };
+          if (d.fileType) payload.file_type = d.fileType;
+          if (d.fileName) payload.file_name = d.fileName;
+          if (d.fileSize) payload.file_size = d.fileSize;
+          if (d.fileData) payload.file_data = d.fileData;
+
+          await window.hmSupabase.from('documents').update(payload).eq('id', d.id);
+        } catch (err) {
+          console.warn('updateDocument cloud error:', err);
+        }
+      }
+      return docs[idx];
+    }
+    return null;
+  },
+
   async deleteDocument(id) {
     const strId = String(id);
     const targetUUID = hmToUUID(id);
