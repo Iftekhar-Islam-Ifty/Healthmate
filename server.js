@@ -411,6 +411,14 @@ app.post('/api/health-ai', async (req, res) => {
   }
 });
 
+// Serve Service Worker with strict no-cache headers for immediate PWA updates
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.sendFile(path.join(__dirname, 'sw.js'));
+});
+
 // Serve Supabase UMD client bundle
 app.get('/js/supabase.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'node_modules/@supabase/supabase-js/dist/umd/supabase.js'));

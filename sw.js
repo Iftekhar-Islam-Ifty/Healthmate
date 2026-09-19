@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healthmate-v7';
+const CACHE_NAME = 'healthmate-v8-latest';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -21,19 +21,20 @@ const STATIC_ASSETS = [
   '/js/routine.js',
   '/js/appointments.js',
   '/js/documents.js',
+  '/js/ai-assistant.js',
   '/icon.svg',
   '/manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch(() => {
-        // Continue even if some individual assets fail to cache
+      return cache.addAll(STATIC_ASSETS).catch((err) => {
+        console.warn('SW cache prefetch note:', err);
       });
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -47,14 +48,23 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING' || (event.data && event.data.type === 'SKIP_WAITING')) {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('fetch', (event) => {
-  // Only cache GET requests, avoid intercepting Supabase API calls
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
+  // Don't intercept API endpoints
+  if (url.pathname.startsWith('/api/')) return;
+
+  // Network-First with cache fallback
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: 'no-cache' })
       .then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
           const responseClone = networkResponse.clone();

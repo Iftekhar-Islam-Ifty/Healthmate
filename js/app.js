@@ -1150,9 +1150,163 @@ function injectHealthAiAssistantScript() {
   }
 }
 
+// =========================================================
+// PWA SERVICE WORKER & LIVE AUTO-UPDATE SYSTEM
+// =========================================================
+let pwaRegistration = null;
+
+function initPwaUpdateManager() {
+  if (!('serviceWorker' in navigator)) return;
+
+  // Auto-reload when new service worker takes control
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+
+  const registerSw = () => {
+    navigator.serviceWorker.register('/sw.js').then((reg) => {
+      pwaRegistration = reg;
+
+      // Force an immediate update check against server
+      reg.update().catch(() => {});
+
+      // Periodically check for new updates every 10 minutes
+      setInterval(() => {
+        reg.update().catch(() => {});
+      }, 10 * 60 * 1000);
+
+      // Check for update whenever user returns to the app
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          reg.update().catch(() => {});
+        }
+      });
+
+      // If an update is already waiting (installed in background)
+      if (reg.waiting) {
+        showPwaUpdateToast(reg.waiting);
+      }
+
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            showPwaUpdateToast(newWorker);
+          }
+        });
+      });
+    }).catch((err) => {
+      console.log('SW registration note:', err);
+    });
+  };
+
+  if (document.readyState === 'complete') {
+    registerSw();
+  } else {
+    window.addEventListener('load', registerSw);
+  }
+}
+
+function showPwaUpdateToast(worker) {
+  if (document.getElementById('pwaUpdateBanner')) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'pwaUpdateBanner';
+  banner.className = 'pwa-update-banner';
+  banner.innerHTML = `
+    <div class="pwa-update-content">
+      <span class="pwa-update-icon">✨</span>
+      <div>
+        <div class="pwa-update-title">নতুন ভার্সন তৈরি আছে! (Update Available)</div>
+        <div class="pwa-update-desc">নতুন ফিচার ও ফিক্স চালু করতে রিলোড করুন।</div>
+      </div>
+    </div>
+    <div class="pwa-update-actions">
+      <button type="button" class="btn-pwa-refresh" id="pwaRefreshBtn">আপডেট করুন</button>
+      <button type="button" class="btn-pwa-dismiss" id="pwaDismissBtn" title="Dismiss">✕</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+
+  document.getElementById('pwaRefreshBtn')?.addEventListener('click', () => {
+    if (worker) {
+      worker.postMessage({ type: 'SKIP_WAITING' });
+      worker.postMessage('SKIP_WAITING');
+    }
+    banner.remove();
+    setTimeout(() => {
+      window.location.reload();
+    }, 250);
+  });
+
+  document.getElementById('pwaDismissBtn')?.addEventListener('click', () => {
+    banner.remove();
+  });
+}
+
+// User-triggered manual check for update
+async function checkForAppUpdate() {
+  if (typeof showToast === 'function') {
+    showToast('নতুন আপডেট চেক করা হচ্ছে...');
+  }
+  if (!('serviceWorker' in navigator) || !pwaRegistration) {
+    setTimeout(() => {
+      if (typeof showToast === 'function') showToast('আপনি সর্বশেষ সংস্করণে আছেন (Up to date)');
+    }, 1000);
+    return;
+  }
+  try {
+    await pwaRegistration.update();
+    if (pwaRegistration.waiting) {
+      showPwaUpdateToast(pwaRegistration.waiting);
+    } else {
+      setTimeout(() => {
+        if (typeof showToast === 'function') showToast('কোনো নতুন আপডেট নেই, আপনি লেটেস্ট ভার্সনে আছেন!');
+      }, 1000);
+    }
+  } catch (e) {
+    console.warn('Update check note:', e);
+    if (typeof showToast === 'function') showToast('আপডেট চেক সম্পন্ন হয়েছে');
+  }
+}
+
+// Force-clear service worker caches and hard reload for mobile PWA
+async function forceAppUpdate() {
+  if (typeof showToast === 'function') {
+    showToast('ক্যাশ মুছে নতুন ভার্সন লোড করা হচ্ছে...');
+  }
+  try {
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const reg of registrations) {
+        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        await reg.unregister();
+      }
+    }
+  } catch (err) {
+    console.warn('Cache clear note:', err);
+  }
+  // Hard reload with cache-busting timestamp
+  const sep = window.location.href.includes('?') ? '&' : '?';
+  window.location.href = window.location.href.split('#')[0] + sep + '_update=' + Date.now();
+}
+
+window.checkForAppUpdate = checkForAppUpdate;
+window.forceAppUpdate = forceAppUpdate;
+
 document.addEventListener('DOMContentLoaded', () => {
   initAppShell();
   injectHealthAiAssistantScript();
+  initPwaUpdateManager();
 });
 
 
