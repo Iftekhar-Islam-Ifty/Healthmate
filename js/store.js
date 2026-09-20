@@ -222,7 +222,14 @@ const HMStore = {
   },
 
   getUser() {
-    return this._get('user', HM_DEFAULT_USER);
+    const user = this._get('user', HM_DEFAULT_USER);
+    // Purge legacy dummy ifty account if present in cached storage
+    if (user && user.email && user.email.toLowerCase() === 'ifty@example.com') {
+      this._set('user', HM_DEFAULT_USER);
+      this._set('auth', false);
+      return HM_DEFAULT_USER;
+    }
+    return user;
   },
 
   getProfile() {
@@ -916,26 +923,6 @@ const HMStore = {
         return { user };
       }
 
-      // Demo account seamless fallback
-      if (cleanEmail.toLowerCase() === 'ifty@example.com') {
-        const demoUser = {
-          id: '00000000-0000-0000-0000-000000000001',
-          name: 'Ifty Ahmed',
-          email: cleanEmail,
-          accountType: 'single',
-          role: 'Personal',
-          initials: 'IA',
-          age: 29,
-          blood: 'B+',
-          emergency: '+8801700000000',
-          conditions: [],
-          allergies: []
-        };
-        this._set('user', demoUser);
-        this._set('auth', true);
-        return { user: demoUser };
-      }
-
       if (authResult && authResult.error) {
         throw authResult.error;
       }
@@ -953,31 +940,7 @@ const HMStore = {
       return { user: matched.user };
     }
 
-    if (cleanEmail.toLowerCase() === 'ifty@example.com') {
-      const demoUser = {
-        id: '00000000-0000-0000-0000-000000000001',
-        name: 'Ifty Ahmed',
-        email: cleanEmail,
-        accountType: 'single',
-        role: 'Personal',
-        initials: 'IA',
-        age: 29,
-        blood: 'B+',
-        emergency: '+8801700000000',
-        conditions: [],
-        allergies: []
-      };
-      this._set('user', demoUser);
-      this._set('auth', true);
-      return { user: demoUser };
-    }
-
-    this._set('auth', true);
-    return { user: this.getUser() };
-  },
-
-  async quickDemoLogin() {
-    return this.login('ifty@example.com', 'password123');
+    throw new Error('User not found. Please register or check your email/password.');
   },
 
   async logout() {

@@ -539,7 +539,7 @@ function previewDocument(id) {
           </div>
           <div style="margin-top:14px;display:flex;justify-content:space-between;font-size:0.75rem;color:var(--color-text-muted);">
             <span>File: <b>${doc.fileName || 'document.pdf'}</b> (${doc.fileSize || '1.0 MB'})</span>
-            <span>Verified Patient: <b>Ifty (IA)</b></span>
+            <span>Verified Patient: <b>${(window.HMStore && HMStore.getUser() && HMStore.getUser().name) || 'Patient'}</b></span>
           </div>
         </div>
       `;

@@ -133,9 +133,9 @@
         <div style="margin-bottom:24px;">
           <div class="report-patient-header">
             <div>
-              <h2 style="font-size:1.25rem;font-weight:700;margin:0;" id="repPatientName">Ifty Ahmed</h2>
+              <h2 style="font-size:1.25rem;font-weight:700;margin:0;" id="repPatientName">User</h2>
               <div style="font-size:0.85rem;color:var(--color-text-muted);margin-top:2px;" id="repPatientMeta">
-                Age: 29 yrs &bull; Gender: Male &bull; Contact: ifty@example.com
+                Age: — yrs &bull; Gender: — &bull; Contact: —
               </div>
             </div>
             <div class="report-patient-badges">
@@ -329,10 +329,10 @@
     document.getElementById('reportGenDate').textContent = `Date: ${dateStr}`;
 
     // Demographics
-    document.getElementById('repPatientName').textContent = user.name || 'Ifty Ahmed';
-    document.getElementById('repPatientMeta').textContent = `Age: ${user.age || 29} yrs • Email: ${user.email || 'ifty@example.com'}`;
-    document.getElementById('repPatientBlood').textContent = user.blood || 'B+';
-    document.getElementById('repPatientEmergency').textContent = user.emergency || '+8801700000000';
+    document.getElementById('repPatientName').textContent = user.name || 'User';
+    document.getElementById('repPatientMeta').textContent = `Age: ${user.age ? user.age + ' yrs' : '—'} • Email: ${user.email || '—'}`;
+    document.getElementById('repPatientBlood').textContent = user.blood || '—';
+    document.getElementById('repPatientEmergency').textContent = user.emergency || '—';
     document.getElementById('repPatientAllergies').textContent = (user.allergies && user.allergies.length) ? user.allergies.join(', ') : 'None recorded';
     document.getElementById('repPatientConditions').textContent = (user.conditions && user.conditions.length) ? user.conditions.join(', ') : 'None';
 
