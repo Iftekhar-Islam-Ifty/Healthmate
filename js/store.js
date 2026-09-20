@@ -229,7 +229,7 @@ const HMStore = {
       this._set('auth', false);
       return HM_DEFAULT_USER;
     }
-    return user;
+    return user || HM_DEFAULT_USER;
   },
 
   getProfile() {
@@ -248,7 +248,14 @@ const HMStore = {
   },
 
   isAuthenticated() {
-    return this._get('auth', false);
+    const isAuth = this._get('auth', false);
+    if (!isAuth) return false;
+    const user = this._get('user', null);
+    if (!user || !user.email || user.email.trim() === '' || user.email.toLowerCase() === 'ifty@example.com') {
+      this._set('auth', false);
+      return false;
+    }
+    return true;
   },
 
   async ensureAuthenticated() {
@@ -906,6 +913,7 @@ const HMStore = {
         };
         this._set('user', user);
         this._set('auth', true);
+        this._set('explicit_logged_out', false);
         await this.fetchProfileAndSettings();
         return authResult.data;
       }
@@ -920,6 +928,7 @@ const HMStore = {
         const user = matched.user || this.getUser();
         this._set('user', user);
         this._set('auth', true);
+        this._set('explicit_logged_out', false);
         return { user };
       }
 
@@ -937,6 +946,7 @@ const HMStore = {
       }
       this._set('user', matched.user);
       this._set('auth', true);
+      this._set('explicit_logged_out', false);
       return { user: matched.user };
     }
 
@@ -952,6 +962,8 @@ const HMStore = {
       }
     }
     this._set('auth', false);
+    this._set('user', HM_DEFAULT_USER);
+    this._set('explicit_logged_out', true);
   },
 
   async registerAccount({ name, email, password = '', emergency = '', blood = '', age = null, conditions = [] }) {
@@ -1023,6 +1035,7 @@ const HMStore = {
 
     this._set('user', user);
     this._set('auth', true);
+    this._set('explicit_logged_out', false);
 
     const ownerMember = {
       id: 'owner',

@@ -2,7 +2,7 @@
   "name": "Healthmate — Health & Medicine Manager",
   "short_name": "Healthmate",
   "description": "Your personal health management space — track medicines, daily routines, clinical vitals, doctor appointments, and medical vault.",
-  "start_url": "/dashboard.html",
+  "start_url": "/index.html",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#F8FAFC",

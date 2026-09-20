@@ -104,38 +104,39 @@ async function logoutUser() {
   }, 400);
 }
 
-// Session Guard: Checks Supabase session on protected pages
+// Session Guard: Checks authentication on protected pages
 async function checkAuthSession() {
   const path = window.location.pathname.toLowerCase();
   const isAuthPage = path.endsWith('index.html') || path.endsWith('register.html') || path === '/' || path === '' || path.endsWith('/');
 
+  // On Login and Register pages, NEVER auto-redirect to dashboard
+  if (isAuthPage) {
+    return;
+  }
+
+  // On protected pages, verify active authenticated user session
+  let isAuthenticated = false;
   if (window.hmSupabase) {
     try {
       const { data: { session } } = await window.hmSupabase.auth.getSession();
       const isExplicitOut = window.HMStore ? HMStore._get('explicit_logged_out', false) : false;
-      const isAuthenticated = !!(session && session.user && !isExplicitOut);
-
-      if (isAuthenticated) {
-        if (window.HMStore) HMStore._set('auth', true);
-        if (isAuthPage) {
-          window.location.href = 'dashboard.html';
-        }
-      } else {
-        if (window.HMStore) HMStore._set('auth', false);
-        if (!isAuthPage) {
-          window.location.href = 'index.html';
-        }
-      }
+      isAuthenticated = !!(session && session.user && session.user.email && !isExplicitOut);
     } catch (e) {
       console.warn('[Healthmate] Session check error:', e);
     }
-  } else {
-    const isAuth = window.HMStore ? HMStore.isAuthenticated() : false;
-    if (isAuth && isAuthPage) {
-      window.location.href = 'dashboard.html';
-    } else if (!isAuth && !isAuthPage) {
-      window.location.href = 'index.html';
-    }
+  }
+
+  if (!isAuthenticated && window.HMStore && typeof HMStore.isAuthenticated === 'function') {
+    isAuthenticated = HMStore.isAuthenticated();
+  }
+
+  if (window.HMStore) {
+    HMStore._set('auth', isAuthenticated);
+  }
+
+  // Redirect unauthenticated user to login page immediately
+  if (!isAuthenticated) {
+    window.location.href = 'index.html';
   }
 }
 
