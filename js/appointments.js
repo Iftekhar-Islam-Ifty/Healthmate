@@ -35,6 +35,11 @@ function initAppointments() {
       renderAppointmentsList();
     });
   }
+
+  // Auto-refresh when cloud sync completes
+  window.addEventListener('hm:cloud-synced', () => {
+    renderAppointmentsList();
+  });
 }
 
 function setApptTab(tab) {

@@ -31,6 +31,12 @@ function initDocumentVault() {
       renderDocumentsList();
     });
   }
+
+  // Auto-refresh when cloud synchronization finishes
+  window.addEventListener('hm:cloud-synced', () => {
+    updateCategoryPillCounters();
+    renderDocumentsList();
+  });
 }
 
 function setupVaultListeners() {
@@ -104,20 +110,41 @@ function handleFileSelection(file) {
   if (!file) return;
 
   stagedFileName = file.name;
-  const isImage = file.type.startsWith('image/');
+  const isImage = file.type && file.type.startsWith('image/');
   stagedFileType = isImage ? 'image' : 'pdf';
 
-  // Format file size
-  const sizeKb = Math.round(file.size / 1024);
-  stagedFileSize = sizeKb > 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
+  if (isImage && window.HMStore && typeof HMStore.compressImageFile === 'function') {
+    HMStore.compressImageFile(file, 1600, 1600, 0.82)
+      .then(res => {
+        stagedFileData = res.dataUrl;
+        const sizeKb = Math.round(res.sizeBytes / 1024);
+        stagedFileSize = sizeKb > 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
+        showFileStagedPreview();
+      })
+      .catch(() => {
+        // Fallback to standard reader
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          stagedFileData = e.target.result;
+          const sizeKb = Math.round(file.size / 1024);
+          stagedFileSize = sizeKb > 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
+          showFileStagedPreview();
+        };
+        reader.readAsDataURL(file);
+      });
+  } else {
+    // Format file size
+    const sizeKb = Math.round(file.size / 1024);
+    stagedFileSize = sizeKb > 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
 
-  // Read data URL
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    stagedFileData = e.target.result;
-    showFileStagedPreview();
-  };
-  reader.readAsDataURL(file);
+    // Read data URL
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      stagedFileData = e.target.result;
+      showFileStagedPreview();
+    };
+    reader.readAsDataURL(file);
+  }
 }
 
 function showFileStagedPreview() {
@@ -346,7 +373,7 @@ function renderDocumentsList() {
 
     return `
       <div class="vault-card" id="doc-card-${doc.id}">
-        <div class="vault-card-thumb" onclick="previewDocument(${doc.id})">
+        <div class="vault-card-thumb" onclick="previewDocument('${doc.id}')">
           ${isImage ? `
             <img src="${doc.fileData}" alt="${doc.title}" class="vault-thumb-img">
           ` : `
@@ -484,10 +511,11 @@ function previewDocument(id) {
 
   const previewStage = document.getElementById('viewDocStage');
   if (previewStage) {
-    if (doc.fileData && doc.fileType === 'image') {
+    const isDocImg = doc.fileData && (doc.fileType === 'image' || doc.fileData.startsWith('data:image/') || /\.(jpe?g|png|webp|gif)($|\?)/i.test(doc.fileData));
+    if (isDocImg) {
       previewStage.innerHTML = `
         <div style="max-height:420px;overflow:auto;text-align:center;background:#0F172A;border-radius:6px;padding:12px;">
-          <img src="${doc.fileData}" alt="${doc.title}" style="max-width:100%;max-height:380px;object-fit:contain;border-radius:4px;">
+          <img src="${doc.fileData}" alt="${escapeHtml(doc.title)}" style="max-width:100%;max-height:380px;object-fit:contain;border-radius:4px;">
         </div>
       `;
     } else {
@@ -613,7 +641,7 @@ async function handleUpdateDocument(e) {
   }
 }
 
-function aiScanDocument(id) {
+async function aiScanDocument(id) {
   const docs = HMStore.getDocuments();
   const doc = docs.find(d => String(d.id) === String(id));
   if (!doc) return;
@@ -621,14 +649,34 @@ function aiScanDocument(id) {
   const prompt = `আমার মেডিকেল ভল্টের প্রেসক্রিপশন/ডকুমেন্ট "${doc.title}" (তারিখ: ${doc.date}, ডাক্তার: ${doc.doctor || 'N/A'}, ক্লিনিক: ${doc.facility || 'N/A'}) টি স্ক্যান ও পর্যালোচনা করো। প্রেসক্রিপশনে উল্লেখিত সমস্ত ঔষধ তাদের ডোজ, খাওয়ার সময় ও খাবারের নিয়মসহ বের করো এবং আমার রুটিন ঔষধ তালিকায় যুক্ত করার পরামর্শ বা কমান্ড দাও। সেই সাথে প্রয়োজনীয় স্বাস্থ্য পরামর্শ ও নির্দেশনা দাও।`;
 
   if (typeof window.openHealthAiWithPrompt === 'function') {
-    // Check if doc has an image to send
     let imageObj = null;
-    if (doc.fileData && doc.fileData.startsWith('data:image/')) {
-      const parts = doc.fileData.split(',');
-      const mimeMatch = parts[0].match(/:(.*?);/);
-      const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
-      const base64Data = parts[1];
-      imageObj = { mimeType, data: base64Data };
+    if (doc.fileData) {
+      if (doc.fileData.startsWith('data:image/')) {
+        const parts = doc.fileData.split(',');
+        const mimeMatch = parts[0].match(/:(.*?);/);
+        const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+        const base64Data = parts[1];
+        imageObj = { mimeType, data: base64Data };
+      } else if (doc.fileData.startsWith('http://') || doc.fileData.startsWith('https://')) {
+        try {
+          const res = await fetch(doc.fileData);
+          const blob = await res.blob();
+          const reader = new FileReader();
+          const b64Promise = new Promise((resolve) => {
+            reader.onloadend = () => resolve(reader.result);
+          });
+          reader.readAsDataURL(blob);
+          const fullDataUrl = await b64Promise;
+          const parts = fullDataUrl.split(',');
+          const mimeMatch = parts[0].match(/:(.*?);/);
+          imageObj = {
+            mimeType: mimeMatch ? mimeMatch[1] : 'image/jpeg',
+            data: parts[1]
+          };
+        } catch (e) {
+          console.warn('Error fetching image for AI scan:', e);
+        }
+      }
     }
     window.openHealthAiWithPrompt(prompt, imageObj);
   } else if (typeof showToast === 'function') {
@@ -636,12 +684,31 @@ function aiScanDocument(id) {
   }
 }
 
-function downloadDocument(id) {
+async function downloadDocument(id) {
   const docs = HMStore.getDocuments();
   const doc = docs.find(d => String(d.id) === String(id));
   if (!doc) return;
 
   if (doc.fileData) {
+    if (doc.fileData.startsWith('http://') || doc.fileData.startsWith('https://')) {
+      try {
+        const res = await fetch(doc.fileData);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = doc.fileName || `${doc.title.replace(/\s+/g, '_')}.${doc.fileType === 'image' ? 'jpg' : 'pdf'}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+        return;
+      } catch (e) {
+        window.open(doc.fileData, '_blank');
+        return;
+      }
+    }
+
     const a = document.createElement('a');
     a.href = doc.fileData;
     a.download = doc.fileName || `${doc.title.replace(/\s+/g, '_')}.${doc.fileType === 'image' ? 'jpg' : 'pdf'}`;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healthmate-v9-history-fix';
+const CACHE_NAME = 'healthmate-v10-cloud-sync';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

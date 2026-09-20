@@ -240,3 +240,12 @@ if (window.HMStore && typeof HMStore.fetchMedicinesAndRoutines === 'function') {
     renderWeekly();
   });
 }
+
+// Auto-refresh when cloud sync completes
+window.addEventListener('hm:cloud-synced', () => {
+  if (window.HMStore) {
+    routines = HMStore.getRoutines();
+    renderToday();
+    renderWeekly();
+  }
+});

@@ -23,6 +23,110 @@ function hmToUUID(id) {
   });
 }
 
+// Client-side high-quality image compressor for mobile & desktop uploads
+async function compressImageFile(file, maxWidth = 1600, maxHeight = 1600, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    if (!file) return reject(new Error('No file provided'));
+    if (!file.type || !file.type.startsWith('image/')) {
+      return reject(new Error('Not an image file'));
+    }
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        const outputMime = 'image/jpeg';
+        const dataUrl = canvas.toDataURL(outputMime, quality);
+        resolve({
+          dataUrl,
+          width,
+          height,
+          sizeBytes: Math.round(dataUrl.length * 0.75),
+          mimeType: outputMime
+        });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// Uploads binary image/file to Supabase Storage bucket with public URL generation
+async function uploadToSupabaseStorage(dataUrlOrFile, folder = 'documents') {
+  if (!window.hmSupabase) return null;
+  try {
+    const { data: { user } } = await window.hmSupabase.auth.getUser();
+    if (!user) return null;
+
+    let blob = null;
+    let ext = 'jpg';
+    let mime = 'image/jpeg';
+
+    if (typeof dataUrlOrFile === 'string' && dataUrlOrFile.startsWith('data:')) {
+      const parts = dataUrlOrFile.split(',');
+      const match = parts[0].match(/:(.*?);/);
+      mime = match ? match[1] : 'image/jpeg';
+      ext = mime.includes('png') ? 'png' : (mime.includes('pdf') ? 'pdf' : (mime.includes('webp') ? 'webp' : 'jpg'));
+      const binStr = atob(parts[1]);
+      const len = binStr.length;
+      const u8arr = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        u8arr[i] = binStr.charCodeAt(i);
+      }
+      blob = new Blob([u8arr], { type: mime });
+    } else if (dataUrlOrFile instanceof Blob || dataUrlOrFile instanceof File) {
+      blob = dataUrlOrFile;
+      mime = blob.type || 'image/jpeg';
+      ext = mime.includes('png') ? 'png' : (mime.includes('pdf') ? 'pdf' : (mime.includes('webp') ? 'webp' : 'jpg'));
+    } else {
+      return null;
+    }
+
+    const fileName = `${user.id}/${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const bucketsToTry = [folder, 'documents', 'medical-vault', 'vault', 'avatars', 'healthmate', 'public'];
+    
+    for (const b of bucketsToTry) {
+      try {
+        const { data, error } = await window.hmSupabase.storage
+          .from(b)
+          .upload(fileName, blob, { contentType: mime, upsert: true });
+
+        if (!error && data) {
+          const { data: pubData } = window.hmSupabase.storage.from(b).getPublicUrl(fileName);
+          if (pubData && pubData.publicUrl) {
+            console.log(`[Healthmate] Uploaded to Supabase Storage (${b}):`, pubData.publicUrl);
+            return pubData.publicUrl;
+          }
+        }
+      } catch (bucketErr) {
+        // Continue to next bucket candidate
+      }
+    }
+  } catch (err) {
+    console.warn('[Healthmate] Supabase storage upload attempt note:', err);
+  }
+  return null;
+}
+
 const HM_DEFAULT_USER = {
   name: 'User',
   email: '',
@@ -831,11 +935,28 @@ const HMStore = {
       try {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
+          let cloudAvatarUrl = updated.avatar || '';
+
+          // If avatar is a base64 data URL, try uploading to Supabase Storage
+          if (cloudAvatarUrl && cloudAvatarUrl.startsWith('data:image/')) {
+            try {
+              const storageUrl = await uploadToSupabaseStorage(cloudAvatarUrl, 'avatars');
+              if (storageUrl) {
+                cloudAvatarUrl = storageUrl;
+                updated.avatar = storageUrl;
+                this._set('user', updated);
+              }
+            } catch (storErr) {
+              console.warn('[Healthmate] Avatar storage upload note:', storErr);
+            }
+          }
+
           // Update Supabase Auth user metadata so avatar travels across devices
           if (updated.avatar !== undefined || updated.name) {
             window.hmSupabase.auth.updateUser({
               data: {
-                avatar: updated.avatar || '',
+                avatar: cloudAvatarUrl,
+                avatar_url: cloudAvatarUrl,
                 full_name: updated.name || user.user_metadata?.full_name || ''
               }
             }).catch(e => console.warn('[Healthmate] updateUser avatar sync note:', e));
@@ -850,6 +971,8 @@ const HMStore = {
             emergency_contact: updated.emergency || '',
             chronic_conditions: Array.isArray(updated.conditions) ? updated.conditions : [],
             allergies: Array.isArray(updated.allergies) ? updated.allergies : [],
+            avatar_url: cloudAvatarUrl,
+            avatar: cloudAvatarUrl,
             updated_at: new Date().toISOString()
           };
           const { error } = await window.hmSupabase.from('profiles').upsert(payload);
@@ -955,6 +1078,10 @@ const HMStore = {
           time: m.time || '08:00 AM',
           period: m.frequency || 'Once daily',
           condition: m.meal || 'After meal',
+          start_date: m.start || null,
+          end_date: m.end || null,
+          instructions: m.instructions || '',
+          description: m.description || '',
           stock: Number(m.stock) || 0,
           refill_alert: Number(m.refillThreshold) || 5,
           unit: m.unit || 'tablets',
@@ -983,19 +1110,24 @@ const HMStore = {
       try {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
+          const targetMed = idx !== -1 ? meds[idx] : med;
           await window.hmSupabase.from('medicines').upsert({
-            id: med.id,
+            id: targetMed.id,
             user_id: user.id,
-            name: med.name,
-            dosage: med.dosage || '1 tablet',
-            time: med.time || '08:00 AM',
-            period: med.frequency || 'Once daily',
-            condition: med.meal || 'After meal',
-            stock: Number(med.stock) || 0,
-            refill_alert: Number(med.refillThreshold) || 5,
-            unit: med.unit || 'tablets',
-            is_active: med.reminder !== false,
-            status: med.status || 'pending'
+            name: targetMed.name,
+            dosage: targetMed.dosage || '1 tablet',
+            time: targetMed.time || '08:00 AM',
+            period: targetMed.frequency || 'Once daily',
+            condition: targetMed.meal || 'After meal',
+            start_date: targetMed.start || null,
+            end_date: targetMed.end || null,
+            instructions: targetMed.instructions || '',
+            description: targetMed.description || '',
+            stock: Number(targetMed.stock) || 0,
+            refill_alert: Number(targetMed.refillThreshold) || 5,
+            unit: targetMed.unit || 'tablets',
+            is_active: targetMed.reminder !== false,
+            status: targetMed.status || 'pending'
           });
         }
       } catch (e) {
@@ -1557,6 +1689,19 @@ const HMStore = {
       notes: (doc.notes || '').trim(),
       tags: Array.isArray(doc.tags) ? doc.tags : []
     };
+
+    // If fileData is a base64 data URL, try uploading to Supabase Storage bucket first
+    if (newDoc.fileData && (newDoc.fileData.startsWith('data:image/') || newDoc.fileData.startsWith('data:application/pdf'))) {
+      try {
+        const storageUrl = await uploadToSupabaseStorage(newDoc.fileData, 'documents');
+        if (storageUrl) {
+          newDoc.fileData = storageUrl;
+        }
+      } catch (stErr) {
+        console.warn('[Healthmate] Document storage upload note:', stErr);
+      }
+    }
+
     docs.unshift(newDoc);
     this._set('documents', docs);
 
@@ -1595,6 +1740,18 @@ const HMStore = {
     const targetUUID = hmToUUID(id);
     const idx = docs.findIndex(d => String(d.id) === strId || String(d.id) === targetUUID);
     if (idx !== -1) {
+      // If updates contain new base64 fileData, upload to Supabase Storage
+      if (updates.fileData && (updates.fileData.startsWith('data:image/') || updates.fileData.startsWith('data:application/pdf'))) {
+        try {
+          const storageUrl = await uploadToSupabaseStorage(updates.fileData, 'documents');
+          if (storageUrl) {
+            updates.fileData = storageUrl;
+          }
+        } catch (stErr) {
+          console.warn('[Healthmate] Document update storage upload note:', stErr);
+        }
+      }
+
       docs[idx] = { ...docs[idx], ...updates };
       this._set('documents', docs);
 
@@ -2465,7 +2622,50 @@ const HMStore = {
       }
     }
     return true;
+  },
+
+  async syncAllFromCloud() {
+    if (!window.hmSupabase) return false;
+    try {
+      const { data: { session } } = await window.hmSupabase.auth.getSession();
+      if (!session || !session.user) return false;
+
+      await Promise.allSettled([
+        this.fetchProfileAndSettings(),
+        this.fetchMedicinesAndRoutines(),
+        this.fetchRecordsAndDocuments(),
+        this.fetchAppointments()
+      ]);
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('hm:cloud-synced', {
+          detail: { timestamp: Date.now() }
+        }));
+      }
+      return true;
+    } catch (err) {
+      console.warn('[Healthmate] syncAllFromCloud error:', err);
+      return false;
+    }
   }
 };
+
+HMStore.compressImageFile = compressImageFile;
+HMStore.uploadToSupabaseStorage = uploadToSupabaseStorage;
+
+// Auto-sync from cloud when returning to tab/app on mobile or reconnecting
+if (typeof window !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && window.HMStore && typeof HMStore.syncAllFromCloud === 'function') {
+      HMStore.syncAllFromCloud();
+    }
+  });
+
+  window.addEventListener('online', () => {
+    if (window.HMStore && typeof HMStore.syncAllFromCloud === 'function') {
+      HMStore.syncAllFromCloud();
+    }
+  });
+}
 
 window.HMStore = HMStore;

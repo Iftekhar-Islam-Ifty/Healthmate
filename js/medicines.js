@@ -632,3 +632,12 @@ if (window.HMStore && typeof HMStore.fetchMedicinesAndRoutines === 'function') {
     if (window.initAppShell) initAppShell();
   });
 }
+
+// Auto-refresh when cloud sync completes
+window.addEventListener('hm:cloud-synced', () => {
+  if (window.HMStore) {
+    medicines = HMStore.getMedicines();
+    renderSchedule();
+    renderMedicineList();
+  }
+});

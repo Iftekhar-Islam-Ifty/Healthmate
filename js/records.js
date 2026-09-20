@@ -387,3 +387,13 @@ if (window.HMStore && typeof HMStore.fetchRecordsAndDocuments === 'function') {
     renderHistory();
   });
 }
+
+// Auto-refresh when cloud sync completes
+window.addEventListener('hm:cloud-synced', () => {
+  if (window.HMStore) {
+    records = HMStore.getRecords();
+    renderHero();
+    renderChart();
+    renderHistory();
+  }
+});

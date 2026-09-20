@@ -2517,6 +2517,12 @@
       if (typeof initAppShell === 'function') initAppShell();
     });
   }
+
+  // Auto-refresh dashboard when Supabase background sync finishes
+  window.addEventListener('hm:cloud-synced', () => {
+    renderDashboard();
+    if (typeof initAppShell === 'function') initAppShell();
+  });
 </script>
 
 <!-- Emergency Medical ID Modal -->
