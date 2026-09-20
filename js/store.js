@@ -6,21 +6,35 @@
 ========================================================= */
 
 function hmToUUID(id) {
+  if (!id) return 'a0000000-0000-4000-8000-000000000001';
   if (typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
-    return id;
+    return id.toLowerCase();
   }
-  const num = parseInt(id, 10);
-  if (!isNaN(num) && num > 0 && num < 1000000) {
+  const str = String(id).trim();
+  const digits = str.replace(/\D/g, '');
+  if (digits.length > 0 && digits.length <= 10) {
+    const num = parseInt(digits, 10);
     const hex = num.toString(16).padStart(12, '0');
-    return `a0000000-0000-4000-8000-${hex}`;
+    let prefix = 'a0000000';
+    if (str.startsWith('rt') || str.includes('rout')) prefix = 'b0000000';
+    else if (str.startsWith('appt') || str.includes('appoint')) prefix = 'c0000000';
+    else if (str.startsWith('doc') || str.includes('document')) prefix = 'd0000000';
+    else if (str.startsWith('rec') || str.includes('record')) prefix = 'f0000000';
+    return `${prefix}-0000-4000-8000-${hex}`;
   }
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
+  // Deterministic 32-bit FNV-like hash for string keys to guarantee cross-device consistency
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
   }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  const part1 = (h1 >>> 0).toString(16).padStart(8, '0');
+  const part2 = (h2 >>> 0).toString(16).padStart(8, '0');
+  const combined = (part1 + part2).slice(0, 12).padStart(12, '0');
+  return `e0000000-0000-4000-8000-${combined}`;
 }
 
 // Client-side high-quality image compressor for mobile & desktop uploads
@@ -236,25 +250,56 @@ const HMStore = {
       const { data: { session } } = await window.hmSupabase.auth.getSession();
       if (session && session.user) {
         this._set('auth', true);
+        if (!this._realtimeSubscribed) {
+          this.initRealtimeSync(session.user.id);
+        }
         return session.user;
-      }
-      // If user explicitly logged out, do not auto-sign in
-      if (this._get('explicit_logged_out', false)) {
-        return null;
-      }
-      // Auto-connect to primary cloud account so mobile and desktop share the exact same database
-      const { data, error } = await window.hmSupabase.auth.signInWithPassword({
-        email: 'ifty@example.com',
-        password: 'password123'
-      });
-      if (data && data.user) {
-        this._set('auth', true);
-        return data.user;
       }
     } catch (e) {
       console.warn('[Healthmate] ensureAuthenticated notice:', e);
     }
     return null;
+  },
+
+  initRealtimeSync(userId) {
+    if (!window.hmSupabase || !userId || this._realtimeSubscribed) return;
+    this._realtimeSubscribed = true;
+    try {
+      this._realtimeChannel = window.hmSupabase.channel(`hm_user_${userId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'medicines', filter: `user_id=eq.${userId}` }, () => this.scheduleCloudSync(250))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'medicine_logs', filter: `user_id=eq.${userId}` }, () => this.scheduleCloudSync(250))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'routines', filter: `user_id=eq.${userId}` }, () => this.scheduleCloudSync(250))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'routine_logs', filter: `user_id=eq.${userId}` }, () => this.scheduleCloudSync(250))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'health_records', filter: `user_id=eq.${userId}` }, () => this.scheduleCloudSync(250))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'documents', filter: `user_id=eq.${userId}` }, () => this.scheduleCloudSync(250))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: `user_id=eq.${userId}` }, () => this.scheduleCloudSync(250))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` }, () => this.scheduleCloudSync(250))
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('[Healthmate Realtime] Connected to cloud live sync');
+          }
+        });
+    } catch (err) {
+      console.warn('[Healthmate Realtime] Channel setup note:', err);
+    }
+  },
+
+  scheduleCloudSync(delayMs = 300) {
+    clearTimeout(this._syncDebounceTimer);
+    this._syncDebounceTimer = setTimeout(async () => {
+      await this.syncAllFromCloud();
+    }, delayMs);
+  },
+
+  notifySynced() {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hm:cloud-synced', { detail: { timestamp: Date.now() } }));
+      if (this._broadcastChannel) {
+        try {
+          this._broadcastChannel.postMessage({ type: 'cloud-synced', timestamp: Date.now() });
+        } catch (e) {}
+      }
+    }
   },
 
   async checkSession() {
@@ -425,8 +470,12 @@ const HMStore = {
 
         const historyByMedId = {};
         (logs || []).forEach(l => {
-          if (!historyByMedId[l.medicine_id]) historyByMedId[l.medicine_id] = {};
-          historyByMedId[l.medicine_id][l.log_date] = l.status;
+          const rawId = String(l.medicine_id || '');
+          const uuidId = hmToUUID(l.medicine_id);
+          if (!historyByMedId[rawId]) historyByMedId[rawId] = {};
+          if (!historyByMedId[uuidId]) historyByMedId[uuidId] = {};
+          historyByMedId[rawId][l.log_date] = l.status;
+          historyByMedId[uuidId][l.log_date] = l.status;
         });
 
         const idsToDeleteFromCloud = [];
@@ -441,16 +490,24 @@ const HMStore = {
         });
 
         if (idsToDeleteFromCloud.length > 0) {
-          window.hmSupabase.from('medicine_logs').delete().in('medicine_id', idsToDeleteFromCloud).catch(() => {});
-          window.hmSupabase.from('medicines').delete().in('id', idsToDeleteFromCloud).catch(() => {});
+          try {
+            await window.hmSupabase.from('medicine_logs').delete().in('medicine_id', idsToDeleteFromCloud);
+            await window.hmSupabase.from('medicines').delete().in('id', idsToDeleteFromCloud);
+          } catch (delErr) {
+            console.warn('Medicine cloud cleanup note:', delErr);
+          }
         }
 
         const localList = this._get('medicines', []);
         const mappedMeds = validMeds.map(m => {
-          const localItem = localList.find(lm => String(lm.id) === String(m.id));
-          const localHistory = (localItem && localItem.history) || {};
-          const mergedHistory = { ...localHistory, ...(historyByMedId[m.id] || {}) };
-          const isTakenToday = mergedHistory[todayStr] === 'taken';
+          const rawId = String(m.id);
+          const uuidId = hmToUUID(m.id);
+          const localItem = localList.find(lm => String(lm.id) === rawId || String(lm.id) === uuidId);
+          // Cloud logs are the authoritative ground truth for historical and today's dose logs
+          const cloudHistory = historyByMedId[rawId] || historyByMedId[uuidId] || {};
+          const isTakenToday = cloudHistory[todayStr] === 'taken';
+          const isMissedToday = cloudHistory[todayStr] === 'missed';
+          const resolvedStatus = isTakenToday ? 'taken' : (isMissedToday ? 'missed' : (m.status || 'upcoming'));
 
           return {
             id: m.id,
@@ -460,7 +517,7 @@ const HMStore = {
             time: m.time || '08:00 AM',
             frequency: m.period || 'Once daily',
             meal: m.condition || 'After meal',
-            status: isTakenToday ? 'taken' : (m.status || 'pending'),
+            status: resolvedStatus,
             stock: typeof m.stock === 'number' ? m.stock : 0,
             refillThreshold: typeof m.refill_alert === 'number' ? m.refill_alert : 5,
             unit: m.unit || 'tablets',
@@ -469,7 +526,7 @@ const HMStore = {
             end: m.end || m.end_date || (localItem && localItem.end) || '',
             instructions: m.instructions || (localItem && localItem.instructions) || '',
             description: m.description || (localItem && localItem.description) || '',
-            history: mergedHistory
+            history: cloudHistory
           };
         });
         this._set('medicines', mappedMeds);
@@ -507,8 +564,12 @@ const HMStore = {
 
         const logMap = {};
         (rtLogs || []).forEach(l => {
-          if (!logMap[l.routine_id]) logMap[l.routine_id] = {};
-          logMap[l.routine_id][l.log_date] = !!l.completed;
+          const rawRtId = String(l.routine_id || '');
+          const uuidRtId = hmToUUID(l.routine_id);
+          if (!logMap[rawRtId]) logMap[rawRtId] = {};
+          if (!logMap[uuidRtId]) logMap[uuidRtId] = {};
+          logMap[rawRtId][l.log_date] = !!l.completed;
+          logMap[uuidRtId][l.log_date] = !!l.completed;
         });
 
         const rtIdsToDelete = [];
@@ -522,12 +583,19 @@ const HMStore = {
         });
 
         if (rtIdsToDelete.length > 0) {
-          window.hmSupabase.from('routine_logs').delete().in('routine_id', rtIdsToDelete).catch(() => {});
-          window.hmSupabase.from('routines').delete().in('id', rtIdsToDelete).catch(() => {});
+          try {
+            await window.hmSupabase.from('routine_logs').delete().in('routine_id', rtIdsToDelete);
+            await window.hmSupabase.from('routines').delete().in('id', rtIdsToDelete);
+          } catch (delErr) {
+            console.warn('Routine cloud cleanup note:', delErr);
+          }
         }
 
         const mappedRoutines = validRoutines.map(r => {
-          const week = weekDates.map(dStr => !!(logMap[r.id] && logMap[r.id][dStr]));
+          const rawRtId = String(r.id);
+          const uuidRtId = hmToUUID(r.id);
+          const rLog = logMap[rawRtId] || logMap[uuidRtId] || {};
+          const week = weekDates.map(dStr => !!rLog[dStr]);
           return {
             id: r.id,
             memberId: 'owner',
@@ -621,7 +689,11 @@ const HMStore = {
         });
 
         if (idsToDeleteFromCloud.length > 0) {
-          window.hmSupabase.from('health_records').delete().in('id', idsToDeleteFromCloud).catch(() => {});
+          try {
+            await window.hmSupabase.from('health_records').delete().in('id', idsToDeleteFromCloud);
+          } catch (delErr) {
+            console.warn('Health records cleanup note:', delErr);
+          }
         }
 
         this._set('records', grouped);
@@ -667,7 +739,11 @@ const HMStore = {
         });
 
         if (docIdsToDelete.length > 0) {
-          window.hmSupabase.from('documents').delete().in('id', docIdsToDelete).catch(() => {});
+          try {
+            await window.hmSupabase.from('documents').delete().in('id', docIdsToDelete);
+          } catch (delDocErr) {
+            console.warn('Document cleanup note:', delDocErr);
+          }
         }
 
         const mappedDocs = validDocs.map(d => ({
@@ -709,7 +785,11 @@ const HMStore = {
               notes: ld.notes || '',
               tags: Array.isArray(ld.tags) ? ld.tags : []
             };
-            window.hmSupabase.from('documents').upsert(payload).catch(() => {});
+            try {
+              await window.hmSupabase.from('documents').upsert(payload);
+            } catch (upErr) {
+              console.warn('Document local upsert note:', upErr);
+            }
           }
         } else {
           this._set('documents', []);
@@ -750,7 +830,11 @@ const HMStore = {
         });
 
         if (apptIdsToDelete.length > 0) {
-          window.hmSupabase.from('appointments').delete().in('id', apptIdsToDelete).catch(() => {});
+          try {
+            await window.hmSupabase.from('appointments').delete().in('id', apptIdsToDelete);
+          } catch (delApptErr) {
+            console.warn('Appointments cleanup note:', delApptErr);
+          }
         }
 
         const mappedAppts = validAppts.map(a => ({
@@ -1071,7 +1155,7 @@ const HMStore = {
             const { error: avErr } = await window.hmSupabase.from('documents').upsert(avatarPayload);
             if (avErr) console.warn('[Healthmate] Avatar document upsert note:', avErr);
           } else {
-            await window.hmSupabase.from('documents').delete().eq('id', avatarDocId).catch(() => {});
+            await window.hmSupabase.from('documents').delete().eq('id', avatarDocId);
           }
 
           // 2. Persist profile fields to Supabase profiles table (only valid table columns)
@@ -1093,11 +1177,13 @@ const HMStore = {
 
           // 3. Update auth metadata name
           if (updated.name) {
-            window.hmSupabase.auth.updateUser({
-              data: {
-                full_name: updated.name || user.user_metadata?.full_name || ''
-              }
-            }).catch(() => {});
+            try {
+              await window.hmSupabase.auth.updateUser({
+                data: {
+                  full_name: updated.name || user.user_metadata?.full_name || ''
+                }
+              });
+            } catch (uErr) {}
           }
         }
       } catch (err) {
@@ -1278,14 +1364,14 @@ const HMStore = {
       try {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
-          await window.hmSupabase.from('medicine_logs').delete().eq('user_id', user.id).eq('medicine_id', targetUUID).catch(() => {});
-          await window.hmSupabase.from('medicines').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
+          await window.hmSupabase.from('medicine_logs').delete().eq('user_id', user.id).eq('medicine_id', targetUUID);
+          await window.hmSupabase.from('medicines').delete().eq('user_id', user.id).eq('id', targetUUID);
           if (strId !== targetUUID) {
-            await window.hmSupabase.from('medicine_logs').delete().eq('user_id', user.id).eq('medicine_id', strId).catch(() => {});
-            await window.hmSupabase.from('medicines').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+            await window.hmSupabase.from('medicine_logs').delete().eq('user_id', user.id).eq('medicine_id', strId);
+            await window.hmSupabase.from('medicines').delete().eq('user_id', user.id).eq('id', strId);
           }
           if (deletedItem && deletedItem.name) {
-            await window.hmSupabase.from('medicines').delete().eq('user_id', user.id).eq('name', deletedItem.name).catch(() => {});
+            await window.hmSupabase.from('medicines').delete().eq('user_id', user.id).eq('name', deletedItem.name);
           }
         }
       } catch (e) {
@@ -1297,7 +1383,9 @@ const HMStore = {
 
   async markMedicineTaken(medId, dateStr = null) {
     const meds = this.getMedicines();
-    const med = meds.find(m => String(m.id) === String(medId));
+    const targetUUID = hmToUUID(medId);
+    const rawId = String(medId);
+    const med = meds.find(m => String(m.id) === rawId || String(m.id) === targetUUID);
     if (!med) return null;
 
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -1316,28 +1404,45 @@ const HMStore = {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
           if (targetDate === todayStr) {
-            await window.hmSupabase.from('medicines').update({
-              status: 'taken'
-            }).eq('id', med.id).catch(() => {});
+            await window.hmSupabase.from('medicines').update({ status: 'taken' }).eq('id', med.id);
+            if (med.id !== targetUUID) {
+              await window.hmSupabase.from('medicines').update({ status: 'taken' }).eq('id', targetUUID);
+            }
           }
 
-          await window.hmSupabase.from('medicine_logs').upsert({
+          // Atomically replace the log record for that date
+          await window.hmSupabase.from('medicine_logs').delete()
+            .eq('user_id', user.id)
+            .eq('medicine_id', targetUUID)
+            .eq('log_date', targetDate);
+
+          if (rawId !== targetUUID) {
+            await window.hmSupabase.from('medicine_logs').delete()
+              .eq('user_id', user.id)
+              .eq('medicine_id', rawId)
+              .eq('log_date', targetDate);
+          }
+
+          await window.hmSupabase.from('medicine_logs').insert({
             user_id: user.id,
-            medicine_id: med.id,
+            medicine_id: targetUUID,
             log_date: targetDate,
             status: 'taken'
-          }).catch(() => {});
+          });
         }
       } catch (e) {
         console.warn('markMedicineTaken error:', e);
       }
     }
+    this.notifySynced();
     return med;
   },
 
   async markMedicinePending(medId, dateStr = null) {
     const meds = this.getMedicines();
-    const med = meds.find(m => String(m.id) === String(medId));
+    const targetUUID = hmToUUID(medId);
+    const rawId = String(medId);
+    const med = meds.find(m => String(m.id) === rawId || String(m.id) === targetUUID);
     if (!med) return null;
 
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -1356,26 +1461,37 @@ const HMStore = {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
           if (targetDate === todayStr) {
-            await window.hmSupabase.from('medicines').update({
-              status: 'upcoming'
-            }).eq('id', med.id).catch(() => {});
+            await window.hmSupabase.from('medicines').update({ status: 'upcoming' }).eq('id', med.id);
+            if (med.id !== targetUUID) {
+              await window.hmSupabase.from('medicines').update({ status: 'upcoming' }).eq('id', targetUUID);
+            }
           }
 
           await window.hmSupabase.from('medicine_logs').delete()
             .eq('user_id', user.id)
-            .eq('medicine_id', med.id)
-            .eq('log_date', targetDate).catch(() => {});
+            .eq('medicine_id', targetUUID)
+            .eq('log_date', targetDate);
+
+          if (rawId !== targetUUID) {
+            await window.hmSupabase.from('medicine_logs').delete()
+              .eq('user_id', user.id)
+              .eq('medicine_id', rawId)
+              .eq('log_date', targetDate);
+          }
         }
       } catch (e) {
         console.warn('markMedicinePending error:', e);
       }
     }
+    this.notifySynced();
     return med;
   },
 
   async setMedicineHistoryStatus(medId, dateStr, status) {
     const meds = this.getMedicines();
-    const med = meds.find(m => String(m.id) === String(medId));
+    const targetUUID = hmToUUID(medId);
+    const rawId = String(medId);
+    const med = meds.find(m => String(m.id) === rawId || String(m.id) === targetUUID);
     if (!med) return null;
 
     if (!med.history) med.history = {};
@@ -1397,29 +1513,38 @@ const HMStore = {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
           if (dateStr === todayStr) {
-            await window.hmSupabase.from('medicines').update({
-              status: med.status
-            }).eq('id', med.id).catch(() => {});
+            await window.hmSupabase.from('medicines').update({ status: med.status }).eq('id', med.id);
+            if (med.id !== targetUUID) {
+              await window.hmSupabase.from('medicines').update({ status: med.status }).eq('id', targetUUID);
+            }
+          }
+
+          await window.hmSupabase.from('medicine_logs').delete()
+            .eq('user_id', user.id)
+            .eq('medicine_id', targetUUID)
+            .eq('log_date', dateStr);
+
+          if (rawId !== targetUUID) {
+            await window.hmSupabase.from('medicine_logs').delete()
+              .eq('user_id', user.id)
+              .eq('medicine_id', rawId)
+              .eq('log_date', dateStr);
           }
 
           if (status === 'taken' || status === 'missed') {
-            await window.hmSupabase.from('medicine_logs').upsert({
+            await window.hmSupabase.from('medicine_logs').insert({
               user_id: user.id,
-              medicine_id: med.id,
+              medicine_id: targetUUID,
               log_date: dateStr,
               status: status
-            }).catch(() => {});
-          } else {
-            await window.hmSupabase.from('medicine_logs').delete()
-              .eq('user_id', user.id)
-              .eq('medicine_id', med.id)
-              .eq('log_date', dateStr).catch(() => {});
+            });
           }
         }
       } catch (e) {
         console.warn('setMedicineHistoryStatus sync note:', e);
       }
     }
+    this.notifySynced();
     return med;
   },
 
@@ -1578,14 +1703,14 @@ const HMStore = {
       try {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
-          await window.hmSupabase.from('routine_logs').delete().eq('user_id', user.id).eq('routine_id', targetUUID).catch(() => {});
-          await window.hmSupabase.from('routines').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
+          await window.hmSupabase.from('routine_logs').delete().eq('user_id', user.id).eq('routine_id', targetUUID);
+          await window.hmSupabase.from('routines').delete().eq('user_id', user.id).eq('id', targetUUID);
           if (strId !== targetUUID) {
-            await window.hmSupabase.from('routine_logs').delete().eq('user_id', user.id).eq('routine_id', strId).catch(() => {});
-            await window.hmSupabase.from('routines').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+            await window.hmSupabase.from('routine_logs').delete().eq('user_id', user.id).eq('routine_id', strId);
+            await window.hmSupabase.from('routines').delete().eq('user_id', user.id).eq('id', strId);
           }
           if (deletedItem && deletedItem.name) {
-            await window.hmSupabase.from('routines').delete().eq('user_id', user.id).eq('name', deletedItem.name).catch(() => {});
+            await window.hmSupabase.from('routines').delete().eq('user_id', user.id).eq('name', deletedItem.name);
           }
         }
       } catch (e) {
@@ -1597,12 +1722,14 @@ const HMStore = {
 
   async logRoutineDay(routineId, dayIndex, completed) {
     const routines = this.getRoutines();
-    const r = routines.find(x => String(x.id) === String(routineId));
+    const targetUUID = hmToUUID(routineId);
+    const rawId = String(routineId);
+    const r = routines.find(x => String(x.id) === rawId || String(x.id) === targetUUID);
     if (r) {
       if (!Array.isArray(r.week)) {
         r.week = [false, false, false, false, false, false, false];
       }
-      r.week[dayIndex] = completed;
+      r.week[dayIndex] = !!completed;
       this._set('routines', routines);
     }
 
@@ -1616,17 +1743,32 @@ const HMStore = {
           targetDate.setDate(now.getDate() - (currentDay - dayIndex));
           const logDateStr = targetDate.toISOString().slice(0, 10);
 
-          await window.hmSupabase.from('routine_logs').upsert({
-            user_id: user.id,
-            routine_id: routineId,
-            log_date: logDateStr,
-            completed: !!completed
-          });
+          await window.hmSupabase.from('routine_logs').delete()
+            .eq('user_id', user.id)
+            .eq('routine_id', targetUUID)
+            .eq('log_date', logDateStr);
+
+          if (rawId !== targetUUID) {
+            await window.hmSupabase.from('routine_logs').delete()
+              .eq('user_id', user.id)
+              .eq('routine_id', rawId)
+              .eq('log_date', logDateStr);
+          }
+
+          if (completed) {
+            await window.hmSupabase.from('routine_logs').insert({
+              user_id: user.id,
+              routine_id: targetUUID,
+              log_date: logDateStr,
+              completed: true
+            });
+          }
         }
       } catch (e) {
         console.warn('logRoutineDay error:', e);
       }
     }
+    this.notifySynced();
   },
 
   getRecords() {
@@ -1728,9 +1870,9 @@ const HMStore = {
       try {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
-          await window.hmSupabase.from('health_records').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
+          await window.hmSupabase.from('health_records').delete().eq('user_id', user.id).eq('id', targetUUID);
           if (strId !== targetUUID) {
-            await window.hmSupabase.from('health_records').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+            await window.hmSupabase.from('health_records').delete().eq('user_id', user.id).eq('id', strId);
           }
           if (deletedItem) {
             let query = window.hmSupabase.from('health_records').delete().eq('user_id', user.id).eq('type', type);
@@ -1740,7 +1882,7 @@ const HMStore = {
             } else if (deletedItem.value !== undefined && deletedItem.value !== null) {
               query = query.eq('value', Number(deletedItem.value));
             }
-            await query.catch(() => {});
+            await query;
           }
         }
       } catch (err) {
@@ -1926,12 +2068,12 @@ const HMStore = {
       try {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
-          await window.hmSupabase.from('documents').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
+          await window.hmSupabase.from('documents').delete().eq('user_id', user.id).eq('id', targetUUID);
           if (strId !== targetUUID) {
-            await window.hmSupabase.from('documents').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+            await window.hmSupabase.from('documents').delete().eq('user_id', user.id).eq('id', strId);
           }
           if (deletedItem && deletedItem.title) {
-            await window.hmSupabase.from('documents').delete().eq('user_id', user.id).eq('title', deletedItem.title).catch(() => {});
+            await window.hmSupabase.from('documents').delete().eq('user_id', user.id).eq('title', deletedItem.title);
           }
         }
       } catch (err) {
@@ -2053,12 +2195,12 @@ const HMStore = {
       try {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
-          await window.hmSupabase.from('appointments').delete().eq('user_id', user.id).eq('id', targetUUID).catch(() => {});
+          await window.hmSupabase.from('appointments').delete().eq('user_id', user.id).eq('id', targetUUID);
           if (strId !== targetUUID) {
-            await window.hmSupabase.from('appointments').delete().eq('user_id', user.id).eq('id', strId).catch(() => {});
+            await window.hmSupabase.from('appointments').delete().eq('user_id', user.id).eq('id', strId);
           }
           if (deletedItem && deletedItem.doctorName) {
-            await window.hmSupabase.from('appointments').delete().eq('user_id', user.id).eq('doctor_name', deletedItem.doctorName).catch(() => {});
+            await window.hmSupabase.from('appointments').delete().eq('user_id', user.id).eq('doctor_name', deletedItem.doctorName);
           }
         }
       } catch (err) {
@@ -2653,7 +2795,7 @@ const HMStore = {
             allergies: HM_DEFAULT_USER.allergies,
             chronic_conditions: HM_DEFAULT_USER.conditions,
             updated_at: new Date().toISOString()
-          }).catch(() => {});
+          });
 
           // 2. Reset user settings
           await window.hmSupabase.from('user_settings').upsert({
@@ -2664,16 +2806,16 @@ const HMStore = {
             daily_summary_time: '08:00',
             active_modules: ['medicines', 'routines', 'vitals', 'appointments', 'vault'],
             updated_at: new Date().toISOString()
-          }).catch(() => {});
+          });
 
           // 3. Clear existing cloud records (respecting foreign keys)
-          await window.hmSupabase.from('medicine_logs').delete().eq('user_id', user.id).catch(() => {});
-          await window.hmSupabase.from('medicines').delete().eq('user_id', user.id).catch(() => {});
-          await window.hmSupabase.from('routine_logs').delete().eq('user_id', user.id).catch(() => {});
-          await window.hmSupabase.from('routines').delete().eq('user_id', user.id).catch(() => {});
-          await window.hmSupabase.from('health_records').delete().eq('user_id', user.id).catch(() => {});
-          await window.hmSupabase.from('documents').delete().eq('user_id', user.id).catch(() => {});
-          await window.hmSupabase.from('appointments').delete().eq('user_id', user.id).catch(() => {});
+          await window.hmSupabase.from('medicine_logs').delete().eq('user_id', user.id);
+          await window.hmSupabase.from('medicines').delete().eq('user_id', user.id);
+          await window.hmSupabase.from('routine_logs').delete().eq('user_id', user.id);
+          await window.hmSupabase.from('routines').delete().eq('user_id', user.id);
+          await window.hmSupabase.from('health_records').delete().eq('user_id', user.id);
+          await window.hmSupabase.from('documents').delete().eq('user_id', user.id);
+          await window.hmSupabase.from('appointments').delete().eq('user_id', user.id);
 
           // 4. Re-seed default sample records to cloud
           const medPayloads = HM_DEFAULT_MEDICINES.map(m => ({
@@ -2690,7 +2832,7 @@ const HMStore = {
             is_active: m.reminder !== false,
             status: m.status || 'pending'
           }));
-          await window.hmSupabase.from('medicines').upsert(medPayloads).catch(() => {});
+          await window.hmSupabase.from('medicines').upsert(medPayloads);
 
           const rtPayloads = HM_DEFAULT_ROUTINES.map(r => ({
             id: hmToUUID(r.id),
@@ -2701,7 +2843,7 @@ const HMStore = {
             frequency: r.frequency || 'Daily',
             reminder: r.reminder !== false
           }));
-          await window.hmSupabase.from('routines').upsert(rtPayloads).catch(() => {});
+          await window.hmSupabase.from('routines').upsert(rtPayloads);
 
           const apptPayloads = HM_DEFAULT_APPOINTMENTS.map(a => ({
             id: hmToUUID(a.id),
@@ -2718,7 +2860,7 @@ const HMStore = {
             notes: a.notes || '',
             follow_up_date: a.followUpDate || null
           }));
-          await window.hmSupabase.from('appointments').upsert(apptPayloads).catch(() => {});
+          await window.hmSupabase.from('appointments').upsert(apptPayloads);
 
           const docPayloads = HM_DEFAULT_DOCUMENTS.map(d => ({
             id: hmToUUID(d.id),
@@ -2736,7 +2878,7 @@ const HMStore = {
             notes: d.notes || '',
             tags: Array.isArray(d.tags) ? d.tags : []
           }));
-          await window.hmSupabase.from('documents').upsert(docPayloads).catch(() => {});
+          await window.hmSupabase.from('documents').upsert(docPayloads);
         }
       } catch (err) {
         console.warn('resetToDefaults cloud sync error:', err);
@@ -2776,9 +2918,23 @@ HMStore.uploadToSupabaseStorage = uploadToSupabaseStorage;
 
 // Auto-sync from cloud on startup, returning to tab/app on mobile or reconnecting
 if (typeof window !== 'undefined') {
+  // BroadcastChannel for instant local multi-tab sync
+  if (typeof BroadcastChannel !== 'undefined') {
+    try {
+      HMStore._broadcastChannel = new BroadcastChannel('healthmate_sync');
+      HMStore._broadcastChannel.onmessage = (msg) => {
+        if (msg.data && msg.data.type === 'cloud-synced') {
+          window.dispatchEvent(new CustomEvent('hm:cloud-synced', { detail: msg.data }));
+        }
+      };
+    } catch (bcErr) {}
+  }
+
   const triggerAutoSync = () => {
     if (window.HMStore && typeof HMStore.syncAllFromCloud === 'function') {
-      HMStore.syncAllFromCloud();
+      if (HMStore.isAuthenticated()) {
+        HMStore.syncAllFromCloud();
+      }
     }
   };
 
@@ -2794,7 +2950,17 @@ if (typeof window !== 'undefined') {
     }
   });
 
+  window.addEventListener('focus', triggerAutoSync);
   window.addEventListener('online', triggerAutoSync);
+
+  // Background polling heartbeat (every 12 seconds when tab is active) to guarantee cross-device consistency
+  setInterval(() => {
+    if (document.visibilityState === 'visible' && window.HMStore && HMStore.isAuthenticated()) {
+      HMStore.fetchMedicinesAndRoutines().then(() => {
+        window.dispatchEvent(new CustomEvent('hm:cloud-synced', { detail: { timestamp: Date.now() } }));
+      }).catch(() => {});
+    }
+  }, 12000);
 }
 
 window.HMStore = HMStore;

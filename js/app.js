@@ -107,22 +107,34 @@ async function logoutUser() {
 // Session Guard: Checks Supabase session on protected pages
 async function checkAuthSession() {
   const path = window.location.pathname.toLowerCase();
-  const isAuthPage = path.endsWith('index.html') || path.endsWith('register.html') || path === '/' || path === '';
+  const isAuthPage = path.endsWith('index.html') || path.endsWith('register.html') || path === '/' || path === '' || path.endsWith('/');
 
   if (window.hmSupabase) {
     try {
       const { data: { session } } = await window.hmSupabase.auth.getSession();
-      if (session && session.user) {
+      const isExplicitOut = window.HMStore ? HMStore._get('explicit_logged_out', false) : false;
+      const isAuthenticated = !!(session && session.user && !isExplicitOut);
+
+      if (isAuthenticated) {
+        if (window.HMStore) HMStore._set('auth', true);
         if (isAuthPage) {
           window.location.href = 'dashboard.html';
         }
       } else {
-        if (!isAuthPage && window.HMStore && !HMStore.isAuthenticated()) {
+        if (window.HMStore) HMStore._set('auth', false);
+        if (!isAuthPage) {
           window.location.href = 'index.html';
         }
       }
     } catch (e) {
       console.warn('[Healthmate] Session check error:', e);
+    }
+  } else {
+    const isAuth = window.HMStore ? HMStore.isAuthenticated() : false;
+    if (isAuth && isAuthPage) {
+      window.location.href = 'dashboard.html';
+    } else if (!isAuth && !isAuthPage) {
+      window.location.href = 'index.html';
     }
   }
 }
@@ -182,14 +194,14 @@ function initAppShell() {
       });
     });
 
-    // Ensure mobile sidebar footer exists for quick emergency access
+    // Ensure mobile sidebar footer exists with logout option
     if (!sidebar.querySelector('.sidebar-footer')) {
       const footer = document.createElement('div');
       footer.className = 'sidebar-footer';
       footer.innerHTML = `
-        <button type="button" class="sidebar-emergency-btn" onclick="openEmergencyModal(); closeMobileSidebar();">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
-          <span>Emergency Medical ID</span>
+        <button type="button" class="sidebar-logout-btn" onclick="logoutUser(); closeMobileSidebar();">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>লগআউট (Log Out)</span>
         </button>
       `;
       sidebar.appendChild(footer);
