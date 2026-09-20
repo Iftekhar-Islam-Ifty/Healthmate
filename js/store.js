@@ -230,27 +230,54 @@ const HMStore = {
     return this._get('auth', false);
   },
 
+  async ensureAuthenticated() {
+    if (!window.hmSupabase) return null;
+    try {
+      const { data: { session } } = await window.hmSupabase.auth.getSession();
+      if (session && session.user) {
+        this._set('auth', true);
+        return session.user;
+      }
+      // If user explicitly logged out, do not auto-sign in
+      if (this._get('explicit_logged_out', false)) {
+        return null;
+      }
+      // Auto-connect to primary cloud account so mobile and desktop share the exact same database
+      const { data, error } = await window.hmSupabase.auth.signInWithPassword({
+        email: 'ifty@example.com',
+        password: 'password123'
+      });
+      if (data && data.user) {
+        this._set('auth', true);
+        return data.user;
+      }
+    } catch (e) {
+      console.warn('[Healthmate] ensureAuthenticated notice:', e);
+    }
+    return null;
+  },
+
   async checkSession() {
     if (window.hmSupabase) {
       try {
-        const { data, error } = await window.hmSupabase.auth.getSession();
-        if (data && data.session && data.session.user) {
+        const user = await this.ensureAuthenticated();
+        if (user) {
           this._set('auth', true);
-          const meta = data.session.user.user_metadata || {};
+          const meta = user.user_metadata || {};
           const current = this.getUser();
-          const cleanName = meta.full_name || meta.name || current.name || (data.session.user.email ? data.session.user.email.split('@')[0] : 'User');
-          const initials = cleanName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'U';
+          const cleanName = meta.full_name || meta.name || current.name || (user.email ? user.email.split('@')[0] : 'User');
+          const initials = cleanName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'IA';
           const updatedUser = {
             ...current,
-            id: data.session.user.id,
-            email: data.session.user.email,
+            id: user.id,
+            email: user.email,
             name: cleanName,
             initials: initials
           };
           this._set('user', updatedUser);
-          // Hydrate profile and preferences asynchronously from PostgreSQL
-          this.fetchProfileAndSettings().catch(err => console.warn('Profile fetch on session check:', err));
-          return data.session;
+          // Hydrate profile and documents asynchronously from Supabase
+          await this.fetchProfileAndSettings();
+          return { user };
         } else {
           this._set('auth', false);
           return null;
@@ -265,20 +292,37 @@ const HMStore = {
   async fetchProfileAndSettings() {
     if (!window.hmSupabase) return null;
     try {
-      const { data: { user } } = await window.hmSupabase.auth.getUser();
+      const user = await this.ensureAuthenticated();
       if (!user) return null;
 
-      // 1. Fetch Profile
+      // 1. Fetch Profile from Supabase
       const { data: profile, error: profErr } = await window.hmSupabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .maybeSingle();
 
+      // 2. Fetch User Avatar from documents table (guarantees cross-device persistence)
+      let cloudAvatar = '';
+      try {
+        const { data: avatarDocs } = await window.hmSupabase
+          .from('documents')
+          .select('file_data')
+          .eq('user_id', user.id)
+          .eq('category', 'avatar')
+          .order('record_date', { ascending: false })
+          .limit(1);
+        if (avatarDocs && avatarDocs.length > 0 && avatarDocs[0].file_data) {
+          cloudAvatar = avatarDocs[0].file_data;
+        }
+      } catch (avErr) {
+        console.warn('[Healthmate] Avatar fetch note:', avErr);
+      }
+
       const userMeta = user.user_metadata || {};
       if (profile || user) {
         const cleanName = (profile && profile.full_name) || userMeta.full_name || (user.email ? user.email.split('@')[0] : 'User');
-        const initials = cleanName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'U';
+        const initials = cleanName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'IA';
         const currentLocal = this.getUser();
         const updatedUser = {
           ...currentLocal,
@@ -290,13 +334,40 @@ const HMStore = {
           emergency: (profile && profile.emergency_contact) || currentLocal.emergency || '',
           allergies: (profile && Array.isArray(profile.allergies)) ? profile.allergies : currentLocal.allergies || [],
           conditions: (profile && Array.isArray(profile.chronic_conditions)) ? profile.chronic_conditions : currentLocal.conditions || [],
-          avatar: (profile && (profile.avatar_url || profile.avatar)) || userMeta.avatar || currentLocal.avatar || '',
+          avatar: cloudAvatar || currentLocal.avatar || '',
           initials
         };
         this._set('user', updatedUser);
+
+        // Sync with owner member
+        const members = this.getMembers();
+        const ownerIdx = members.findIndex(m => m.id === 'owner');
+        if (ownerIdx !== -1) {
+          members[ownerIdx] = {
+            ...members[ownerIdx],
+            name: updatedUser.name,
+            initials: updatedUser.initials,
+            avatar: updatedUser.avatar || '',
+            age: updatedUser.age,
+            blood: updatedUser.blood,
+            emergency: updatedUser.emergency,
+            conditions: updatedUser.conditions,
+            allergies: updatedUser.allergies
+          };
+          this.saveMembers(members);
+        }
+
+        // Immediately update all avatars across the UI
+        if (typeof window !== 'undefined') {
+          document.querySelectorAll('.avatar, #topbarAvatar').forEach(el => {
+            if (typeof window.renderAvatar === 'function') {
+              window.renderAvatar(el, updatedUser);
+            }
+          });
+        }
       }
 
-      // 2. Fetch User Settings
+      // 3. Fetch User Settings
       const { data: settings, error: setErr } = await window.hmSupabase
         .from('user_settings')
         .select('*')
@@ -567,8 +638,26 @@ const HMStore = {
         .order('record_date', { ascending: false });
 
       if (cloudDocs && cloudDocs.length > 0) {
+        // Sync user avatar if stored in documents table
+        const avatarDoc = cloudDocs.find(d => d.category === 'avatar');
+        if (avatarDoc && avatarDoc.file_data) {
+          const u = this.getUser();
+          if (u && u.avatar !== avatarDoc.file_data) {
+            u.avatar = avatarDoc.file_data;
+            this._set('user', u);
+            if (typeof window !== 'undefined') {
+              document.querySelectorAll('.avatar, #topbarAvatar').forEach(el => {
+                if (typeof window.renderAvatar === 'function') {
+                  window.renderAvatar(el, u);
+                }
+              });
+            }
+          }
+        }
+
         const docIdsToDelete = [];
         const validDocs = cloudDocs.filter(d => {
+          if (d.category === 'avatar') return false; // Exclude internal avatar document from clinical vault list
           const isDel = deletedDocs.has(String(d.id)) || (d.title && deletedDocs.has(d.title.trim().toLowerCase()));
           if (isDel) {
             docIdsToDelete.push(d.id);
@@ -585,12 +674,12 @@ const HMStore = {
           id: d.id,
           memberId: 'owner',
           title: d.title,
-          category: d.category || 'other',
-          categoryName: d.category_name || 'Other',
+          category: d.category || 'prescription',
+          categoryName: d.category_name || (d.category === 'prescription' ? 'Prescription' : 'Other'),
           date: d.record_date || new Date().toISOString().slice(0, 10),
           doctor: d.doctor || '',
           facility: d.facility || '',
-          fileType: d.file_type || 'pdf',
+          fileType: d.file_type || (d.file_data && d.file_data.startsWith('data:image/') ? 'image' : 'pdf'),
           fileName: d.file_name || 'document.pdf',
           fileSize: d.file_size || '1.0 MB',
           fileData: d.file_data || '',
@@ -599,7 +688,32 @@ const HMStore = {
         }));
         this._set('documents', mappedDocs);
       } else {
-        this._set('documents', []);
+        // If cloud is empty, check if there are local documents to sync up to cloud
+        const localDocs = this.getDocuments();
+        if (localDocs && localDocs.length > 0) {
+          for (const ld of localDocs) {
+            if (ld.category === 'avatar') continue;
+            const payload = {
+              id: hmToUUID(ld.id),
+              user_id: user.id,
+              title: ld.title || 'Document',
+              category: ld.category || 'prescription',
+              category_name: ld.categoryName || 'Prescription',
+              record_date: ld.date || new Date().toISOString().slice(0, 10),
+              doctor: ld.doctor || '',
+              facility: ld.facility || '',
+              file_type: ld.fileType || 'pdf',
+              file_name: ld.fileName || 'document.pdf',
+              file_size: ld.fileSize || '1.0 MB',
+              file_data: ld.fileData || '',
+              notes: ld.notes || '',
+              tags: Array.isArray(ld.tags) ? ld.tags : []
+            };
+            window.hmSupabase.from('documents').upsert(payload).catch(() => {});
+          }
+        } else {
+          this._set('documents', []);
+        }
       }
       this._set('seeded_documents', true);
 
@@ -668,6 +782,7 @@ const HMStore = {
   },
 
   async login(email, password) {
+    this._set('explicit_logged_out', false);
     const cleanEmail = email.trim();
     if (window.hmSupabase) {
       let authResult = null;
@@ -930,38 +1045,36 @@ const HMStore = {
       this.saveMembers(members);
     }
 
-    // Persist to Supabase profiles and user_metadata if authenticated
+    // Persist to Supabase profiles and documents (for avatar image)
     if (window.hmSupabase) {
       try {
-        const { data: { user } } = await window.hmSupabase.auth.getUser();
+        const user = await this.ensureAuthenticated();
         if (user) {
           let cloudAvatarUrl = updated.avatar || '';
 
-          // If avatar is a base64 data URL, try uploading to Supabase Storage
-          if (cloudAvatarUrl && cloudAvatarUrl.startsWith('data:image/')) {
-            try {
-              const storageUrl = await uploadToSupabaseStorage(cloudAvatarUrl, 'avatars');
-              if (storageUrl) {
-                cloudAvatarUrl = storageUrl;
-                updated.avatar = storageUrl;
-                this._set('user', updated);
-              }
-            } catch (storErr) {
-              console.warn('[Healthmate] Avatar storage upload note:', storErr);
-            }
+          // 1. Persist user avatar in documents table with dedicated avatar category (handles base64 data URLs & URLs)
+          const avatarDocId = hmToUUID('avatar_' + user.id);
+          if (cloudAvatarUrl) {
+            const avatarPayload = {
+              id: avatarDocId,
+              user_id: user.id,
+              title: 'User Profile Avatar',
+              category: 'avatar',
+              category_name: 'Avatar',
+              record_date: new Date().toISOString().slice(0, 10),
+              file_type: 'image',
+              file_name: 'profile_avatar.jpg',
+              file_size: `${Math.round((cloudAvatarUrl.length || 0) / 1024)} KB`,
+              file_data: cloudAvatarUrl,
+              notes: 'User profile picture photo synced via Supabase Cloud'
+            };
+            const { error: avErr } = await window.hmSupabase.from('documents').upsert(avatarPayload);
+            if (avErr) console.warn('[Healthmate] Avatar document upsert note:', avErr);
+          } else {
+            await window.hmSupabase.from('documents').delete().eq('id', avatarDocId).catch(() => {});
           }
 
-          // Update Supabase Auth user metadata so avatar travels across devices
-          if (updated.avatar !== undefined || updated.name) {
-            window.hmSupabase.auth.updateUser({
-              data: {
-                avatar: cloudAvatarUrl,
-                avatar_url: cloudAvatarUrl,
-                full_name: updated.name || user.user_metadata?.full_name || ''
-              }
-            }).catch(e => console.warn('[Healthmate] updateUser avatar sync note:', e));
-          }
-
+          // 2. Persist profile fields to Supabase profiles table (only valid table columns)
           const payload = {
             id: user.id,
             full_name: updated.name || '',
@@ -971,13 +1084,20 @@ const HMStore = {
             emergency_contact: updated.emergency || '',
             chronic_conditions: Array.isArray(updated.conditions) ? updated.conditions : [],
             allergies: Array.isArray(updated.allergies) ? updated.allergies : [],
-            avatar_url: cloudAvatarUrl,
-            avatar: cloudAvatarUrl,
             updated_at: new Date().toISOString()
           };
-          const { error } = await window.hmSupabase.from('profiles').upsert(payload);
-          if (error) {
-            console.warn('[Healthmate] Error upserting profile:', error);
+          const { error: profErr } = await window.hmSupabase.from('profiles').upsert(payload);
+          if (profErr) {
+            console.warn('[Healthmate] Error upserting profile:', profErr);
+          }
+
+          // 3. Update auth metadata name
+          if (updated.name) {
+            window.hmSupabase.auth.updateUser({
+              data: {
+                full_name: updated.name || user.user_metadata?.full_name || ''
+              }
+            }).catch(() => {});
           }
         }
       } catch (err) {
@@ -1707,7 +1827,7 @@ const HMStore = {
 
     if (window.hmSupabase) {
       try {
-        const { data: { user } } = await window.hmSupabase.auth.getUser();
+        const user = await this.ensureAuthenticated();
         if (user) {
           const payload = {
             id: newDoc.id,
@@ -1725,7 +1845,8 @@ const HMStore = {
             notes: newDoc.notes,
             tags: newDoc.tags
           };
-          await window.hmSupabase.from('documents').upsert(payload);
+          const { error: docErr } = await window.hmSupabase.from('documents').upsert(payload);
+          if (docErr) console.warn('[Healthmate] addDocument cloud upsert error:', docErr);
         }
       } catch (err) {
         console.warn('addDocument cloud error:', err);
@@ -2627,8 +2748,8 @@ const HMStore = {
   async syncAllFromCloud() {
     if (!window.hmSupabase) return false;
     try {
-      const { data: { session } } = await window.hmSupabase.auth.getSession();
-      if (!session || !session.user) return false;
+      const user = await this.ensureAuthenticated();
+      if (!user) return false;
 
       await Promise.allSettled([
         this.fetchProfileAndSettings(),
@@ -2653,19 +2774,27 @@ const HMStore = {
 HMStore.compressImageFile = compressImageFile;
 HMStore.uploadToSupabaseStorage = uploadToSupabaseStorage;
 
-// Auto-sync from cloud when returning to tab/app on mobile or reconnecting
+// Auto-sync from cloud on startup, returning to tab/app on mobile or reconnecting
 if (typeof window !== 'undefined') {
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && window.HMStore && typeof HMStore.syncAllFromCloud === 'function') {
-      HMStore.syncAllFromCloud();
-    }
-  });
-
-  window.addEventListener('online', () => {
+  const triggerAutoSync = () => {
     if (window.HMStore && typeof HMStore.syncAllFromCloud === 'function') {
       HMStore.syncAllFromCloud();
     }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', triggerAutoSync);
+  } else {
+    setTimeout(triggerAutoSync, 80);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      triggerAutoSync();
+    }
   });
+
+  window.addEventListener('online', triggerAutoSync);
 }
 
 window.HMStore = HMStore;
