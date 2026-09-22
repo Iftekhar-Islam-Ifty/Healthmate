@@ -523,6 +523,8 @@ const HMStore = {
           const isMissedToday = cloudHistory[todayStr] === 'missed';
           const resolvedStatus = isTakenToday ? 'taken' : (isMissedToday ? 'missed' : (m.status || 'upcoming'));
 
+          const isComp = m.status === 'completed' || !!(localItem && (localItem.completed || localItem.isCompleted)) || (m.end_date && todayStr > m.end_date);
+
           return {
             id: m.id,
             memberId: 'owner',
@@ -531,11 +533,13 @@ const HMStore = {
             time: m.time || '08:00 AM',
             frequency: m.period || 'Once daily',
             meal: m.condition || 'After meal',
-            status: resolvedStatus,
+            status: isComp ? 'completed' : resolvedStatus,
+            completed: isComp,
+            isCompleted: isComp,
             stock: typeof m.stock === 'number' ? m.stock : 0,
             refillThreshold: typeof m.refill_alert === 'number' ? m.refill_alert : 5,
             unit: m.unit || 'tablets',
-            reminder: m.is_active !== false,
+            reminder: m.is_active !== false && !isComp,
             start: m.start || m.start_date || (localItem && localItem.start) || '',
             end: m.end || m.end_date || (localItem && localItem.end) || '',
             instructions: m.instructions || (localItem && localItem.instructions) || '',
@@ -1209,6 +1213,81 @@ const HMStore = {
     this.savePermissions(perms);
   },
 
+  isMedicineCompleted(m, dateStr = null) {
+    if (!m) return false;
+    if (m.completed === true || m.isCompleted === true || m.status === 'completed') {
+      return true;
+    }
+    if (m.end) {
+      const todayStr = dateStr || new Date().toISOString().slice(0, 10);
+      const endStr = String(m.end).trim().slice(0, 10);
+      if (endStr && /^\d{4}-\d{2}-\d{2}$/.test(endStr) && todayStr > endStr) {
+        return true;
+      }
+    }
+    return false;
+  },
+
+  isMedicineActiveToday(m, dateStr = null) {
+    if (!m) return false;
+    if (this.isMedicineCompleted(m, dateStr)) return false;
+    const todayStr = dateStr || new Date().toISOString().slice(0, 10);
+    if (m.start) {
+      const startStr = String(m.start).trim().slice(0, 10);
+      if (startStr && /^\d{4}-\d{2}-\d{2}$/.test(startStr) && todayStr < startStr) {
+        return false;
+      }
+    }
+    return true;
+  },
+
+  getActiveMedicines(memberId = null) {
+    const list = this.getMedicines();
+    const targetId = memberId || this.getActiveProfileId();
+    return list.filter(m => (m.memberId || 'owner') === targetId && !this.isMedicineCompleted(m));
+  },
+
+  async toggleMedicineCompletion(medId, forceStatus = null) {
+    const meds = this.getMedicines();
+    const targetUUID = hmToUUID(medId);
+    const rawId = String(medId);
+    const med = meds.find(m => String(m.id) === rawId || String(m.id) === targetUUID);
+    if (!med) return null;
+
+    const currentCompleted = this.isMedicineCompleted(med);
+    const newCompleted = forceStatus !== null ? forceStatus : !currentCompleted;
+
+    med.completed = newCompleted;
+    med.isCompleted = newCompleted;
+    if (newCompleted) {
+      med.status = 'completed';
+    } else {
+      med.status = 'upcoming';
+    }
+
+    this._set('medicines', meds);
+
+    if (window.hmSupabase) {
+      try {
+        const { data: { user } } = await window.hmSupabase.auth.getUser();
+        if (user) {
+          await window.hmSupabase.from('medicines').update({
+            status: med.status
+          }).eq('id', med.id);
+          if (med.id !== targetUUID) {
+            await window.hmSupabase.from('medicines').update({
+              status: med.status
+            }).eq('id', targetUUID);
+          }
+        }
+      } catch (e) {
+        console.warn('toggleMedicineCompletion cloud error:', e);
+      }
+    }
+    this.notifySynced();
+    return med;
+  },
+
   getMedicines() {
     const list = this._get('medicines', HM_DEFAULT_MEDICINES);
     let changed = false;
@@ -1229,6 +1308,11 @@ const HMStore = {
       if (!copy.unit) {
         copy.unit = 'tablets';
         updated = true;
+      }
+      const isComp = this.isMedicineCompleted(copy);
+      if (copy.completed !== isComp && isComp) {
+        copy.completed = true;
+        copy.isCompleted = true;
       }
       if (updated) changed = true;
       return copy;
@@ -1252,6 +1336,7 @@ const HMStore = {
       const payloads = meds.map(m => {
         const id = hmToUUID(m.id);
         m.id = id;
+        const isComp = this.isMedicineCompleted(m);
         return {
           id: id,
           user_id: user.id,
@@ -1267,8 +1352,8 @@ const HMStore = {
           stock: Number(m.stock) || 0,
           refill_alert: Number(m.refillThreshold) || 5,
           unit: m.unit || 'tablets',
-          is_active: m.reminder !== false,
-          status: m.status || 'pending'
+          is_active: m.reminder !== false && !isComp,
+          status: isComp ? 'completed' : (m.status || 'pending')
         };
       });
       await window.hmSupabase.from('medicines').upsert(payloads);
@@ -1280,6 +1365,11 @@ const HMStore = {
   async saveMedicine(med) {
     const meds = this.getMedicines();
     med.id = hmToUUID(med.id);
+    if (med.completed === true || med.status === 'completed') {
+      med.completed = true;
+      med.isCompleted = true;
+      med.status = 'completed';
+    }
     const idx = meds.findIndex(m => String(m.id) === String(med.id));
     if (idx !== -1) {
       meds[idx] = { ...meds[idx], ...med };
@@ -1293,6 +1383,7 @@ const HMStore = {
         const { data: { user } } = await window.hmSupabase.auth.getUser();
         if (user) {
           const targetMed = idx !== -1 ? meds[idx] : med;
+          const isComp = this.isMedicineCompleted(targetMed);
           await window.hmSupabase.from('medicines').upsert({
             id: targetMed.id,
             user_id: user.id,
@@ -1308,8 +1399,8 @@ const HMStore = {
             stock: Number(targetMed.stock) || 0,
             refill_alert: Number(targetMed.refillThreshold) || 5,
             unit: targetMed.unit || 'tablets',
-            is_active: targetMed.reminder !== false,
-            status: targetMed.status || 'pending'
+            is_active: targetMed.reminder !== false && !isComp,
+            status: isComp ? 'completed' : (targetMed.status || 'pending')
           });
         }
       } catch (e) {

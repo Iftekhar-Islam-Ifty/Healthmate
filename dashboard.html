@@ -1994,10 +1994,11 @@
     }
 
     // Update Today's Switcher Counts
-    const meds = HMStore.getMedicines();
+    const allMeds = HMStore.getMedicines();
+    const activeMeds = allMeds.filter(m => !HMStore.isMedicineCompleted(m));
     const routines = HMStore.getRoutines();
     const medsPill = document.getElementById('medsPillCount');
-    if (medsPill) medsPill.textContent = meds.length;
+    if (medsPill) medsPill.textContent = activeMeds.length;
     const routinesPill = document.getElementById('routinesPillCount');
     if (routinesPill) routinesPill.textContent = routines.length;
 
@@ -2260,11 +2261,12 @@
     const container = document.getElementById('dashboardMedsList');
     if (!container) return;
 
-    const meds = HMStore.getMedicines();
+    const allMeds = HMStore.getMedicines();
+    const meds = allMeds.filter(m => !HMStore.isMedicineCompleted(m));
     if (meds.length === 0) {
       container.innerHTML = `
         <div style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font-size:0.88rem;">
-          আজকের জন্য কোনো ওষুধ শিডিউল করা নেই। <a href="medicines.html" style="color:var(--color-primary);font-weight:600;">+ নতুন ওষুধ যোগ করুন</a>
+          আজকের জন্য কোনো সক্রিয় ওষুধ শিডিউল করা নেই। <a href="medicines.html" style="color:var(--color-primary);font-weight:600;">+ নতুন ওষুধ যোগ করুন</a>
         </div>
       `;
       return;

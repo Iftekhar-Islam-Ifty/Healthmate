@@ -84,16 +84,18 @@ function getDaysBetween(startDateStr, endDateStr, existingHistoryKeys = []) {
     start.setHours(0, 0, 0, 0);
   }
 
-  // End date is at least today
-  let end = parseDateStrToDate(endDateStr) || today;
-  end.setHours(0, 0, 0, 0);
-  if (end < today) end = today;
+  // End date is capped at endDateStr if specified, otherwise at least today
+  let end = parseDateStrToDate(endDateStr);
+  if (end) {
+    end.setHours(0, 0, 0, 0);
+  } else {
+    end = today;
+  }
 
   const dateSet = new Set();
 
-  // If start is after today, at least include today
-  if (start > today) {
-    dateSet.add(formatDateToISO(today));
+  if (start > end) {
+    dateSet.add(formatDateToISO(start));
   } else {
     const curr = new Date(start);
     const diffDays = Math.min(Math.round((end - start) / (1000 * 60 * 60 * 24)), 180);
@@ -106,7 +108,11 @@ function getDaysBetween(startDateStr, endDateStr, existingHistoryKeys = []) {
   // Also include any dates that already exist in history
   if (Array.isArray(existingHistoryKeys)) {
     existingHistoryKeys.forEach(k => {
-      if (/^\d{4}-\d{2}-\d{2}$/.test(k)) dateSet.add(k);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(k)) {
+        if (!endDateStr || k <= endDateStr) {
+          dateSet.add(k);
+        }
+      }
     });
   }
 
@@ -136,10 +142,12 @@ function initPageHeader() {
 function renderSchedule() {
   const el = document.getElementById('scheduleList');
   if (!el) return;
-  const list = getFilteredMedicines();
+  const allFiltered = getFilteredMedicines();
+  // Filter out completed medicines from today's schedule
+  const list = allFiltered.filter(m => !HMStore.isMedicineCompleted(m));
 
   if (list.length === 0) {
-    el.innerHTML = `<div style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font-size:0.9rem;">আজকের জন্য কোনো ওষুধ শিডিউল করা নেই।</div>`;
+    el.innerHTML = `<div style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font-size:0.9rem;">আজকের জন্য কোনো সক্রিয় ওষুধ শিডিউল করা নেই।</div>`;
     return;
   }
 
@@ -187,21 +195,41 @@ function renderMedicineList() {
   el.style.display = 'block';
   emptyEl.style.display = 'none';
 
+  const todayStr = new Date().toISOString().slice(0, 10);
+
   el.innerHTML = list.map(m => {
+    const isCompleted = HMStore.isMedicineCompleted(m);
+    const isExpired = m.end && todayStr > m.end;
+
     const datesInfo = [];
     if (m.start) datesInfo.push(`Started: ${m.start}`);
     if (m.end) datesInfo.push(`Ends: ${m.end}`);
     const datesText = datesInfo.join(' · ');
 
+    let statusBadgeHtml = '';
+    if (isCompleted) {
+      statusBadgeHtml = `
+        <span class="badge-hm" style="background:#EDE9FE;color:#6D28D9;border:1px solid #DDD6FE;font-size:0.72rem;padding:2px 8px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Complete (সম্পূর্ণ)
+        </span>
+      `;
+    } else {
+      const meta = statusMeta[m.status] || statusMeta.pending;
+      statusBadgeHtml = `
+        <span class="badge-hm ${meta.badgeClass}" style="font-size:0.72rem;padding:2px 8px;">
+          <span class="dot"></span>${meta.label}
+        </span>
+      `;
+    }
+
     return `
-      <div class="list-row" style="align-items:flex-start;padding:14px var(--space-3);">
-        <div class="list-row-icon" style="margin-top:2px;">${pillIcon}</div>
+      <div class="list-row" style="align-items:flex-start;padding:14px var(--space-3);background:${isCompleted ? '#FAF5FF' : '#FFFFFF'};border-bottom:1px solid ${isCompleted ? '#EDE9FE' : 'var(--color-border)'};">
+        <div class="list-row-icon" style="margin-top:2px;color:${isCompleted ? '#7C3AED' : 'inherit'};">${pillIcon}</div>
         <div class="list-row-main">
           <div class="name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span style="font-weight:700;font-size:0.96rem;">${escapeHtml(m.name)}</span>
-            <span class="badge-hm ${statusMeta[m.status]?.badgeClass || 'badge-info'}" style="font-size:0.72rem;padding:2px 8px;">
-              <span class="dot"></span>${statusMeta[m.status]?.label || 'Upcoming'}
-            </span>
+            <span style="font-weight:700;font-size:0.96rem;color:${isCompleted ? '#4C1D95' : 'var(--color-text)'};">${escapeHtml(m.name)}</span>
+            ${statusBadgeHtml}
           </div>
           
           <div class="meta" style="margin-top:3px;font-size:0.8rem;color:var(--color-text-secondary);">
@@ -211,6 +239,7 @@ function renderMedicineList() {
           ${datesText ? `<div style="font-size:0.76rem;color:var(--color-text-muted);margin-top:3px;display:flex;align-items:center;gap:4px;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             <span>${escapeHtml(datesText)}</span>
+            ${isExpired ? `<span style="color:#7C3AED;font-weight:600;margin-left:4px;">(Last date passed / মেয়াদ শেষ)</span>` : ''}
           </div>` : ''}
 
           ${m.instructions ? `
@@ -235,7 +264,7 @@ function renderMedicineList() {
 
         <div class="list-row-side" style="margin-top:2px;">
           <label class="toggle" title="Reminder">
-            <input type="checkbox" ${m.reminder !== false ? 'checked' : ''} onchange="toggleReminder('${m.id}', this.checked)">
+            <input type="checkbox" ${m.reminder !== false && !isCompleted ? 'checked' : ''} ${isCompleted ? 'disabled' : ''} onchange="toggleReminder('${m.id}', this.checked)">
             <span class="toggle-track"></span>
           </label>
           <button class="icon-action" title="Edit" onclick="openEditMedicine('${m.id}')">
@@ -248,6 +277,17 @@ function renderMedicineList() {
       </div>
     `;
   }).join('');
+}
+
+async function toggleCompleteStatus(id, forceStatus) {
+  const med = await HMStore.toggleMedicineCompletion(id, forceStatus);
+  if (!med) return;
+  medicines = HMStore.getMedicines();
+  renderSchedule();
+  renderMedicineList();
+  if (window.initAppShell) initAppShell();
+  const isComp = HMStore.isMedicineCompleted(med);
+  showToast(isComp ? `${med.name} marked as Complete (সম্পূর্ণ)` : `${med.name} marked as Active (সক্রিয়)`);
 }
 
 async function markTaken(id) {
@@ -336,6 +376,7 @@ function renderDoseHistoryModalList() {
   container.innerHTML = dates.map(dateStr => {
     const info = formatDisplayDate(dateStr);
     const status = history[dateStr]; // 'taken' | 'missed' | undefined
+    const isPastEnd = med.end && dateStr > med.end;
 
     let badgeHtml = `<span style="font-size:0.75rem;padding:3px 8px;border-radius:12px;background:#F1F5F9;color:#64748B;font-weight:600;">— Not set</span>`;
     if (status === 'taken') {
@@ -343,6 +384,26 @@ function renderDoseHistoryModalList() {
     } else if (status === 'missed') {
       badgeHtml = `<span style="font-size:0.75rem;padding:3px 8px;border-radius:12px;background:#FEF2F2;color:#DC2626;font-weight:700;">✗ Missed</span>`;
     }
+
+    const actionButtons = isPastEnd
+      ? `<span style="font-size:0.75rem;padding:3px 8px;border-radius:6px;background:#F1F5F9;color:#64748B;font-weight:600;">Course Ended (মেয়াদ সমাপ্ত)</span>`
+      : `
+        <button type="button" class="btn-hm btn-ghost" 
+          style="font-size:0.75rem;padding:4px 8px;border:1px solid ${status === 'taken' ? '#059669' : '#CBD5E1'};background:${status === 'taken' ? '#ECFDF5' : '#FFFFFF'};color:${status === 'taken' ? '#047857' : 'var(--color-text)'};font-weight:${status === 'taken' ? '700' : '500'};"
+          onclick="setDayStatus('${dateStr}', 'taken')">
+          ✓ Taken
+        </button>
+        <button type="button" class="btn-hm btn-ghost" 
+          style="font-size:0.75rem;padding:4px 8px;border:1px solid ${status === 'missed' ? '#DC2626' : '#CBD5E1'};background:${status === 'missed' ? '#FEF2F2' : '#FFFFFF'};color:${status === 'missed' ? '#B91C1C' : 'var(--color-text)'};font-weight:${status === 'missed' ? '700' : '500'};"
+          onclick="setDayStatus('${dateStr}', 'missed')">
+          ✗ Missed
+        </button>
+        <button type="button" class="btn-hm btn-ghost" 
+          style="font-size:0.75rem;padding:4px 8px;border:1px solid #E2E8F0;background:#F8FAFC;color:var(--color-text-muted);"
+          onclick="setDayStatus('${dateStr}', 'unrecorded')" title="Clear record">
+          Clear
+        </button>
+      `;
 
     return `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;gap:8px;flex-wrap:wrap;">
@@ -356,21 +417,7 @@ function renderDoseHistoryModalList() {
         </div>
 
         <div style="display:flex;align-items:center;gap:4px;">
-          <button type="button" class="btn-hm btn-ghost" 
-            style="font-size:0.75rem;padding:4px 8px;border:1px solid ${status === 'taken' ? '#059669' : '#CBD5E1'};background:${status === 'taken' ? '#ECFDF5' : '#FFFFFF'};color:${status === 'taken' ? '#047857' : 'var(--color-text)'};font-weight:${status === 'taken' ? '700' : '500'};"
-            onclick="setDayStatus('${dateStr}', 'taken')">
-            ✓ Taken
-          </button>
-          <button type="button" class="btn-hm btn-ghost" 
-            style="font-size:0.75rem;padding:4px 8px;border:1px solid ${status === 'missed' ? '#DC2626' : '#CBD5E1'};background:${status === 'missed' ? '#FEF2F2' : '#FFFFFF'};color:${status === 'missed' ? '#B91C1C' : 'var(--color-text)'};font-weight:${status === 'missed' ? '700' : '500'};"
-            onclick="setDayStatus('${dateStr}', 'missed')">
-            ✗ Missed
-          </button>
-          <button type="button" class="btn-hm btn-ghost" 
-            style="font-size:0.75rem;padding:4px 8px;border:1px solid #E2E8F0;background:#F8FAFC;color:var(--color-text-muted);"
-            onclick="setDayStatus('${dateStr}', 'unrecorded')" title="Clear record">
-            Clear
-          </button>
+          ${actionButtons}
         </div>
       </div>
     `;
@@ -379,6 +426,13 @@ function renderDoseHistoryModalList() {
 
 async function setDayStatus(dateStr, status) {
   if (!activeHistoryMedId) return;
+  medicines = HMStore.getMedicines();
+  const med = medicines.find(m => String(m.id) === String(activeHistoryMedId));
+  if (med && med.end && dateStr > med.end && (status === 'taken' || status === 'missed')) {
+    showToast('Cannot mark doses after the last date (শেষ তারিখের পর প্রযোজ্য নয়)');
+    return;
+  }
+
   await HMStore.setMedicineHistoryStatus(activeHistoryMedId, dateStr, status);
   medicines = HMStore.getMedicines();
   renderDoseHistoryModalList();
@@ -398,7 +452,9 @@ async function quickMarkAllHistory(status) {
 
   const dates = getDaysBetween(med.start, med.end, Object.keys(med.history || {}));
   for (const d of dates) {
-    await HMStore.setMedicineHistoryStatus(activeHistoryMedId, d, status);
+    if (!med.end || d <= med.end) {
+      await HMStore.setMedicineHistoryStatus(activeHistoryMedId, d, status);
+    }
   }
 
   medicines = HMStore.getMedicines();
@@ -406,7 +462,7 @@ async function quickMarkAllHistory(status) {
   renderSchedule();
   renderMedicineList();
   if (window.initAppShell) initAppShell();
-  showToast(`All days marked as ${status === 'taken' ? 'Taken' : 'Missed'}`);
+  showToast(`All active course days marked as ${status === 'taken' ? 'Taken' : 'Missed'}`);
 }
 
 async function addCustomLogDate() {
@@ -417,6 +473,13 @@ async function addCustomLogDate() {
   }
   const dateStr = input.value.trim();
   if (!activeHistoryMedId) return;
+
+  medicines = HMStore.getMedicines();
+  const med = medicines.find(m => String(m.id) === String(activeHistoryMedId));
+  if (med && med.end && dateStr > med.end) {
+    showToast('Selected date is after the medicine end date');
+    return;
+  }
 
   await HMStore.setMedicineHistoryStatus(activeHistoryMedId, dateStr, 'taken');
   medicines = HMStore.getMedicines();
@@ -453,6 +516,22 @@ function renderModalHistory(medId) {
   listEl.innerHTML = dates.map(dateStr => {
     const info = formatDisplayDate(dateStr);
     const status = history[dateStr];
+    const isPastEnd = med.end && dateStr > med.end;
+
+    const actionButtons = isPastEnd
+      ? `<span style="font-size:0.72rem;color:var(--color-text-muted);font-style:italic;">Course Ended</span>`
+      : `
+        <button type="button" class="btn-hm btn-ghost" 
+          style="font-size:0.72rem;padding:3px 7px;border:1px solid ${status === 'taken' ? '#059669' : '#CBD5E1'};background:${status === 'taken' ? '#ECFDF5' : '#FFFFFF'};color:${status === 'taken' ? '#047857' : 'var(--color-text)'};"
+          onclick="setInlineModalDayStatus('${med.id}', '${dateStr}', 'taken')">
+          ✓ Taken
+        </button>
+        <button type="button" class="btn-hm btn-ghost" 
+          style="font-size:0.72rem;padding:3px 7px;border:1px solid ${status === 'missed' ? '#DC2626' : '#CBD5E1'};background:${status === 'missed' ? '#FEF2F2' : '#FFFFFF'};color:${status === 'missed' ? '#B91C1C' : 'var(--color-text)'};"
+          onclick="setInlineModalDayStatus('${med.id}', '${dateStr}', 'missed')">
+          ✗ Missed
+        </button>
+      `;
 
     return `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:6px;gap:6px;">
@@ -461,16 +540,7 @@ function renderModalHistory(medId) {
           <span style="font-size:0.72rem;color:var(--color-text-muted);">(${info.dayName}${info.relative})</span>
         </div>
         <div style="display:flex;align-items:center;gap:4px;">
-          <button type="button" class="btn-hm btn-ghost" 
-            style="font-size:0.72rem;padding:3px 7px;border:1px solid ${status === 'taken' ? '#059669' : '#CBD5E1'};background:${status === 'taken' ? '#ECFDF5' : '#FFFFFF'};color:${status === 'taken' ? '#047857' : 'var(--color-text)'};"
-            onclick="setInlineModalDayStatus('${med.id}', '${dateStr}', 'taken')">
-            ✓ Taken
-          </button>
-          <button type="button" class="btn-hm btn-ghost" 
-            style="font-size:0.72rem;padding:3px 7px;border:1px solid ${status === 'missed' ? '#DC2626' : '#CBD5E1'};background:${status === 'missed' ? '#FEF2F2' : '#FFFFFF'};color:${status === 'missed' ? '#B91C1C' : 'var(--color-text)'};"
-            onclick="setInlineModalDayStatus('${med.id}', '${dateStr}', 'missed')">
-            ✗ Missed
-          </button>
+          ${actionButtons}
         </div>
       </div>
     `;
@@ -478,6 +548,11 @@ function renderModalHistory(medId) {
 }
 
 async function setInlineModalDayStatus(medId, dateStr, status) {
+  const med = medicines.find(m => String(m.id) === String(medId));
+  if (med && med.end && dateStr > med.end) {
+    showToast('Cannot set status after medicine end date');
+    return;
+  }
   await HMStore.setMedicineHistoryStatus(medId, dateStr, status);
   medicines = HMStore.getMedicines();
   renderModalHistory(medId);
@@ -493,13 +568,15 @@ async function markAllHistoryInModal(status) {
 
   const dates = getDaysBetween(med.start, med.end, Object.keys(med.history || {}));
   for (const d of dates) {
-    await HMStore.setMedicineHistoryStatus(med.id, d, status);
+    if (!med.end || d <= med.end) {
+      await HMStore.setMedicineHistoryStatus(med.id, d, status);
+    }
   }
   medicines = HMStore.getMedicines();
   renderModalHistory(med.id);
   renderSchedule();
   renderMedicineList();
-  showToast(`All days marked as ${status === 'taken' ? 'Taken' : 'Missed'}`);
+  showToast(`All active days marked as ${status === 'taken' ? 'Taken' : 'Missed'}`);
 }
 
 /* =========================================================
@@ -514,6 +591,7 @@ function openAddMedicine() {
   document.getElementById('medId').value = '';
   document.getElementById('medStart').value = formatDateToISO(new Date());
   document.getElementById('medDescription').value = '';
+  document.getElementById('medCompleted').checked = false;
   document.getElementById('medReminder').checked = true;
 
   const historyContainer = document.getElementById('medModalHistoryContainer');
@@ -537,7 +615,8 @@ function openEditMedicine(id) {
   document.getElementById('medEnd').value = med.end || '';
   document.getElementById('medInstructions').value = med.instructions || '';
   document.getElementById('medDescription').value = med.description || '';
-  document.getElementById('medReminder').checked = med.reminder !== false;
+  document.getElementById('medCompleted').checked = HMStore.isMedicineCompleted(med);
+  document.getElementById('medReminder').checked = med.reminder !== false && !HMStore.isMedicineCompleted(med);
 
   renderModalHistory(med.id);
   openModal('medicineModal');
@@ -570,6 +649,7 @@ document.getElementById('medicineForm').addEventListener('submit', async functio
 
   const idVal = document.getElementById('medId').value;
   const currentProfileId = window.HMStore ? HMStore.getActiveProfileId() : 'owner';
+  const isCompletedVal = document.getElementById('medCompleted').checked;
 
   const data = {
     name: document.getElementById('medName').value.trim(),
@@ -583,7 +663,10 @@ document.getElementById('medicineForm').addEventListener('submit', async functio
     end: document.getElementById('medEnd').value.trim(),
     instructions: document.getElementById('medInstructions').value.trim(),
     description: document.getElementById('medDescription').value.trim(),
-    reminder: document.getElementById('medReminder').checked,
+    completed: isCompletedVal,
+    isCompleted: isCompletedVal,
+    status: isCompletedVal ? 'completed' : 'upcoming',
+    reminder: !isCompletedVal && document.getElementById('medReminder').checked,
   };
 
   if (!data.name) return;
@@ -593,10 +676,13 @@ document.getElementById('medicineForm').addEventListener('submit', async functio
     medicines = HMStore.getMedicines();
     const existing = medicines.find(m => String(m.id) === String(idVal));
     const merged = { ...(existing || {}), ...data, id: idVal };
+    if (!isCompletedVal && existing && existing.status === 'taken') {
+      merged.status = 'taken';
+    }
     savedMed = await HMStore.saveMedicine(merged);
     showToast('Medicine updated in cloud');
   } else {
-    savedMed = await HMStore.saveMedicine({ status: 'upcoming', ...data });
+    savedMed = await HMStore.saveMedicine(data);
     showToast('Medicine saved to cloud');
   }
 
