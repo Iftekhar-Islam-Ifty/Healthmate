@@ -521,9 +521,14 @@ const HMStore = {
           const cloudHistory = historyByMedId[rawId] || historyByMedId[uuidId] || {};
           const isTakenToday = cloudHistory[todayStr] === 'taken';
           const isMissedToday = cloudHistory[todayStr] === 'missed';
-          const resolvedStatus = isTakenToday ? 'taken' : (isMissedToday ? 'missed' : (m.status || 'upcoming'));
+          const resolvedStatus = isTakenToday ? 'taken' : (isMissedToday ? 'missed' : 'upcoming');
 
-          const isComp = m.status === 'completed' || !!(localItem && (localItem.completed || localItem.isCompleted)) || (m.end_date && todayStr > m.end_date);
+          const rawStart = m.start_date || m.start || (localItem && (localItem.start || localItem.start_date)) || '';
+          const rawEnd = m.end_date || m.end || (localItem && (localItem.end || localItem.end_date)) || '';
+          const cleanStart = rawStart ? String(rawStart).trim().slice(0, 10) : '';
+          const cleanEnd = rawEnd ? String(rawEnd).trim().slice(0, 10) : '';
+
+          const isComp = m.status === 'completed' || !!(localItem && (localItem.completed || localItem.isCompleted)) || (cleanEnd && todayStr > cleanEnd);
 
           return {
             id: m.id,
@@ -540,8 +545,10 @@ const HMStore = {
             refillThreshold: typeof m.refill_alert === 'number' ? m.refill_alert : 5,
             unit: m.unit || 'tablets',
             reminder: m.is_active !== false && !isComp,
-            start: m.start || m.start_date || (localItem && localItem.start) || '',
-            end: m.end || m.end_date || (localItem && localItem.end) || '',
+            start: cleanStart,
+            start_date: cleanStart,
+            end: cleanEnd,
+            end_date: cleanEnd,
             instructions: m.instructions || (localItem && localItem.instructions) || '',
             description: m.description || (localItem && localItem.description) || '',
             history: cloudHistory
@@ -1218,9 +1225,10 @@ const HMStore = {
     if (m.completed === true || m.isCompleted === true || m.status === 'completed') {
       return true;
     }
-    if (m.end) {
+    const endVal = m.end || m.end_date;
+    if (endVal) {
       const todayStr = dateStr || new Date().toISOString().slice(0, 10);
-      const endStr = String(m.end).trim().slice(0, 10);
+      const endStr = String(endVal).trim().slice(0, 10);
       if (endStr && /^\d{4}-\d{2}-\d{2}$/.test(endStr) && todayStr > endStr) {
         return true;
       }
@@ -1228,12 +1236,32 @@ const HMStore = {
     return false;
   },
 
+  isMedicineTakenToday(m, dateStr = null) {
+    if (!m) return false;
+    const targetDate = dateStr || new Date().toISOString().slice(0, 10);
+    if (m.history && typeof m.history === 'object') {
+      return m.history[targetDate] === 'taken';
+    }
+    return false;
+  },
+
+  getMedicineTodayStatus(m, dateStr = null) {
+    if (!m) return 'upcoming';
+    if (this.isMedicineCompleted(m, dateStr)) return 'completed';
+    const targetDate = dateStr || new Date().toISOString().slice(0, 10);
+    if (m.history && typeof m.history === 'object' && m.history[targetDate]) {
+      return m.history[targetDate];
+    }
+    return 'upcoming';
+  },
+
   isMedicineActiveToday(m, dateStr = null) {
     if (!m) return false;
     if (this.isMedicineCompleted(m, dateStr)) return false;
     const todayStr = dateStr || new Date().toISOString().slice(0, 10);
-    if (m.start) {
-      const startStr = String(m.start).trim().slice(0, 10);
+    const startVal = m.start || m.start_date;
+    if (startVal) {
+      const startStr = String(startVal).trim().slice(0, 10);
       if (startStr && /^\d{4}-\d{2}-\d{2}$/.test(startStr) && todayStr < startStr) {
         return false;
       }
@@ -1290,6 +1318,7 @@ const HMStore = {
 
   getMedicines() {
     const list = this._get('medicines', HM_DEFAULT_MEDICINES);
+    const todayStr = new Date().toISOString().slice(0, 10);
     let changed = false;
     const normalized = list.map((m) => {
       let updated = false;
@@ -1309,11 +1338,45 @@ const HMStore = {
         copy.unit = 'tablets';
         updated = true;
       }
-      const isComp = this.isMedicineCompleted(copy);
-      if (copy.completed !== isComp && isComp) {
-        copy.completed = true;
-        copy.isCompleted = true;
+
+      const rawStart = copy.start || copy.start_date || '';
+      const rawEnd = copy.end || copy.end_date || '';
+      const cleanStart = rawStart ? String(rawStart).trim().slice(0, 10) : '';
+      const cleanEnd = rawEnd ? String(rawEnd).trim().slice(0, 10) : '';
+      if (copy.start !== cleanStart || copy.start_date !== cleanStart) {
+        copy.start = cleanStart;
+        copy.start_date = cleanStart;
+        updated = true;
       }
+      if (copy.end !== cleanEnd || copy.end_date !== cleanEnd) {
+        copy.end = cleanEnd;
+        copy.end_date = cleanEnd;
+        updated = true;
+      }
+
+      const isComp = this.isMedicineCompleted(copy, todayStr);
+      if (isComp) {
+        if (copy.completed !== true || copy.isCompleted !== true || copy.status !== 'completed') {
+          copy.completed = true;
+          copy.isCompleted = true;
+          copy.status = 'completed';
+          updated = true;
+        }
+      } else {
+        if (copy.completed === true || copy.isCompleted === true) {
+          copy.completed = false;
+          copy.isCompleted = false;
+          updated = true;
+        }
+        // Daily dose status must strictly follow today's log in history
+        const todayDose = copy.history && copy.history[todayStr];
+        const expectedStatus = todayDose === 'taken' ? 'taken' : (todayDose === 'missed' ? 'missed' : 'upcoming');
+        if (copy.status !== expectedStatus) {
+          copy.status = expectedStatus;
+          updated = true;
+        }
+      }
+
       if (updated) changed = true;
       return copy;
     });
@@ -1337,6 +1400,8 @@ const HMStore = {
         const id = hmToUUID(m.id);
         m.id = id;
         const isComp = this.isMedicineCompleted(m);
+        const cleanStart = (m.start || m.start_date) ? String(m.start || m.start_date).trim().slice(0, 10) : null;
+        const cleanEnd = (m.end || m.end_date) ? String(m.end || m.end_date).trim().slice(0, 10) : null;
         return {
           id: id,
           user_id: user.id,
@@ -1345,8 +1410,8 @@ const HMStore = {
           time: m.time || '08:00 AM',
           period: m.frequency || 'Once daily',
           condition: m.meal || 'After meal',
-          start_date: m.start || null,
-          end_date: m.end || null,
+          start_date: cleanStart,
+          end_date: cleanEnd,
           instructions: m.instructions || '',
           description: m.description || '',
           stock: Number(m.stock) || 0,
@@ -1370,6 +1435,13 @@ const HMStore = {
       med.isCompleted = true;
       med.status = 'completed';
     }
+    const cleanStart = (med.start || med.start_date) ? String(med.start || med.start_date).trim().slice(0, 10) : '';
+    const cleanEnd = (med.end || med.end_date) ? String(med.end || med.end_date).trim().slice(0, 10) : '';
+    med.start = cleanStart;
+    med.start_date = cleanStart;
+    med.end = cleanEnd;
+    med.end_date = cleanEnd;
+
     const idx = meds.findIndex(m => String(m.id) === String(med.id));
     if (idx !== -1) {
       meds[idx] = { ...meds[idx], ...med };
@@ -1392,8 +1464,8 @@ const HMStore = {
             time: targetMed.time || '08:00 AM',
             period: targetMed.frequency || 'Once daily',
             condition: targetMed.meal || 'After meal',
-            start_date: targetMed.start || null,
-            end_date: targetMed.end || null,
+            start_date: cleanStart || null,
+            end_date: cleanEnd || null,
             instructions: targetMed.instructions || '',
             description: targetMed.description || '',
             stock: Number(targetMed.stock) || 0,
@@ -1660,7 +1732,7 @@ const HMStore = {
   getDynamicNotifications() {
     const notifs = [];
 
-    const pendingMeds = this.getMedicines().filter(m => m.status === 'pending');
+    const pendingMeds = this.getMedicines().filter(m => !this.isMedicineCompleted(m) && m.status !== 'taken');
     pendingMeds.forEach(m => {
       notifs.push({
         type: 'medicine',
@@ -2360,13 +2432,14 @@ const HMStore = {
 
   getProfileTodayStats(memberId = null) {
     const targetId = memberId || this.getActiveProfileId();
-    const meds = this.getMedicinesForMember(targetId);
+    const allMeds = this.getMedicinesForMember(targetId);
+    const activeMeds = allMeds.filter(m => !this.isMedicineCompleted(m));
     const routines = this.getRoutinesForMember(targetId);
     const TODAY_INDEX = 4; // Friday in current prototype
 
-    const totalMeds = meds.length;
-    const doneMeds = meds.filter(m => m.status === 'taken').length;
-    const nextPendingMed = meds.find(m => m.status !== 'taken');
+    const totalMeds = activeMeds.length;
+    const doneMeds = activeMeds.filter(m => m.status === 'taken').length;
+    const nextPendingMed = activeMeds.find(m => m.status !== 'taken');
 
     const totalRoutines = routines.length;
     const doneRoutines = routines.filter(r => r.week && r.week[TODAY_INDEX]).length;

@@ -13,6 +13,323 @@
 <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
 <link href="/css/style.css" rel="stylesheet">
+<style>
+  /* =========================================================
+     MEDICINES PAGE — DEDICATED RESPONSIVE & USER-FRIENDLY UI
+  ========================================================= */
+  
+  .med-schedule-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Today's Schedule Card */
+  .today-med-card {
+    background: #FFFFFF;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .today-med-card.is-taken {
+    background: #F0FDF4;
+    border-color: #BBF7D0;
+  }
+  .today-med-card:hover {
+    border-color: #CBD5E1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+  }
+
+  .today-med-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .today-med-title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .today-med-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0F172A;
+    line-height: 1.35;
+    word-break: break-word;
+    letter-spacing: -0.01em;
+  }
+  .today-med-card.is-taken .today-med-name {
+    color: #1E293B;
+  }
+
+  /* Tags & Chips */
+  .med-meta-chips {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 8px;
+  }
+
+  .med-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 9px;
+    border-radius: 6px;
+    background: #F1F5F9;
+    color: #475569;
+    border: 1px solid #E2E8F0;
+    line-height: 1.2;
+  }
+  .med-chip.time-chip {
+    background: #F0FDFA;
+    color: #0D6E6E;
+    border-color: #CCFBF1;
+    font-weight: 700;
+  }
+  .med-chip.meal-chip {
+    background: #FFFBEB;
+    color: #92400E;
+    border-color: #FEF3C7;
+  }
+
+  .med-desc-box {
+    font-size: 0.82rem;
+    color: #0F766E;
+    background: #F0FDFA;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border-left: 3.5px solid var(--color-primary);
+    line-height: 1.45;
+    word-break: break-word;
+  }
+
+  .today-med-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #E2E8F0;
+    flex-wrap: wrap;
+  }
+  .today-med-card.is-taken .today-med-actions {
+    border-top-color: #DCFCE7;
+  }
+
+  /* Inventory All Medicines Cards */
+  .inventory-card {
+    background: #FFFFFF;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .inventory-card.is-completed {
+    background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%) !important;
+    border: 1.5px solid #C4B5FD !important;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.07);
+    position: relative;
+  }
+  .inventory-card.is-completed::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #8B5CF6;
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+  }
+  .inventory-card.is-completed .inventory-icon-box {
+    background: #EDE9FE !important;
+    color: #7C3AED !important;
+    border-color: #DDD6FE !important;
+  }
+  .inventory-card.is-completed .inventory-name {
+    color: #5B21B6 !important;
+  }
+  .inventory-card.is-completed .med-chip {
+    background: #FFFFFF !important;
+    border-color: #DDD6FE !important;
+    color: #6B21A8 !important;
+  }
+
+  .date-preset-chip {
+    padding: 3px 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid #CBD5E1;
+    background: #FFFFFF;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .date-preset-chip:hover {
+    background: #F1F5F9;
+    border-color: var(--color-primary);
+    color: var(--color-primary-dark);
+  }
+  .date-preset-chip.clear-chip {
+    background: #FEF2F2;
+    border-color: #FECACA;
+    color: #DC2626;
+  }
+  .date-preset-chip.clear-chip:hover {
+    background: #FEE2E2;
+  }
+
+  .modal-close-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    color: #64748B;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .modal-close-icon-btn:hover {
+    background: #E2E8F0;
+    color: #0F172A;
+  }
+
+  .inventory-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .inventory-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid #F1F5F9;
+    flex-wrap: wrap;
+  }
+
+  /* Search & Filter Bar */
+  .meds-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  @media (min-width: 640px) {
+    .meds-toolbar {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  .meds-search-box {
+    position: relative;
+    flex: 1;
+    max-width: 100%;
+  }
+  @media (min-width: 640px) {
+    .meds-search-box {
+      max-width: 360px;
+    }
+  }
+
+  .meds-search-input {
+    width: 100%;
+    padding: 9px 12px 9px 36px;
+    font-size: 0.88rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: var(--color-text);
+  }
+  .meds-search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+  }
+
+  .meds-filter-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .meds-filter-tabs::-webkit-scrollbar { display: none; }
+
+  .filter-tab-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid var(--color-border);
+    background: #FFFFFF;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+  .filter-tab-btn.active {
+    background: var(--color-primary);
+    color: #FFFFFF;
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 6px rgba(13, 110, 110, 0.25);
+  }
+
+  @media (max-width: 640px) {
+    .today-med-card, .inventory-card {
+      padding: 14px;
+      gap: 10px;
+    }
+    .today-med-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+    .today-med-actions .btn-hm {
+      width: 100%;
+      justify-content: center;
+      min-height: 42px;
+    }
+    .inventory-footer {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+    .inventory-footer .btn-hm {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
 </head>
 <body>
 
@@ -108,30 +425,59 @@
 
       <!-- ============ TODAY'S SCHEDULE (Major Action Area) ============ -->
       <section class="section">
-        <div class="section-head">
-          <h2>Today's schedule</h2>
-          <p>ওষুধ খাওয়া সম্পন্ন হলে Mark Taken চাপুন — স্ট্যাটাস সাথে সাথে আপডেট হবে।</p>
+        <div class="section-head" style="margin-bottom:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <div>
+              <h2 style="font-size:1.15rem;font-weight:700;color:var(--color-text);">Today's schedule</h2>
+              <p style="font-size:0.84rem;color:var(--color-text-muted);margin-top:2px;">আজকের জন্য নির্ধারিত ওষুধগুলোর তালিকা ও ডোজ গ্রহণের স্ট্যাটাস।</p>
+            </div>
+          </div>
         </div>
-        <div class="panel panel-major" id="scheduleList" style="padding:0;overflow:hidden;">
+        <div class="med-schedule-grid" id="scheduleList">
           <!-- rendered by renderSchedule() -->
         </div>
       </section>
 
       <!-- ============ ALL MEDICINES (Reference Inventory) ============ -->
-      <section class="section">
-        <div class="section-head">
-          <h2>All medicines</h2>
-          <p>প্রতিটি ওষুধের Dosage, Frequency ও Reminder সহজেই ম্যানেজ করুন।</p>
+      <section class="section" style="margin-top:28px;">
+        <div class="section-head" style="margin-bottom:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <div>
+              <h2 style="font-size:1.15rem;font-weight:700;color:var(--color-text);">All medicines</h2>
+              <p style="font-size:0.84rem;color:var(--color-text-muted);margin-top:2px;">চলমান ও পূর্ববর্তী সকল প্রেসক্রিপশনের তথ্য ও ডোজ লগ হিস্ট্রি।</p>
+            </div>
+          </div>
         </div>
-        <div class="panel panel-minor" id="medicineList" style="padding: 0 var(--space-4);">
+
+        <!-- Toolbar: Search and Filter Tabs -->
+        <div class="meds-toolbar">
+          <div class="meds-search-box">
+            <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#94A3B8;pointer-events:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="medSearchInput" class="meds-search-input" placeholder="Search medicine, note..." oninput="handleMedicineSearch(this.value)">
+          </div>
+
+          <div class="meds-filter-tabs">
+            <button type="button" class="filter-tab-btn active" id="tabFilterAll" onclick="setMedicineFilter('all')">
+              All (<span id="countFilterAll">0</span>)
+            </button>
+            <button type="button" class="filter-tab-btn" id="tabFilterActive" onclick="setMedicineFilter('active')">
+              Active (<span id="countFilterActive">0</span>)
+            </button>
+            <button type="button" class="filter-tab-btn" id="tabFilterCompleted" onclick="setMedicineFilter('completed')">
+              Completed (<span id="countFilterCompleted">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <div id="medicineList">
           <!-- rendered by renderMedicineList() -->
         </div>
         <div id="medicinesEmpty" style="display:none;">
           <div class="empty-state">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
-            <h3>No medicines added yet</h3>
-            <p>দৈনিক শিডিউল ও রিমাইন্ডার পেতে আপনার প্রথম ওষুধটি যুক্ত করুন।</p>
-            <button class="btn-hm btn-primary" onclick="openAddMedicine()">Add a medicine</button>
+            <h3>No medicines found</h3>
+            <p id="emptyStateMsg">আপনার জন্য কোনো ওষুধ পাওয়া যায়নি। নতুন ওষুধ যুক্ত করতে নিচের বাটনে ক্লিক করুন।</p>
+            <button class="btn-hm btn-primary" onclick="openAddMedicine()">+ Add a medicine</button>
           </div>
         </div>
       </section>
@@ -155,8 +501,23 @@
 
 <!-- Add / Edit medicine modal -->
 <div class="modal-hm-backdrop" id="medicineModal">
-  <div class="modal-hm" style="max-width:500px;max-height:92vh;overflow-y:auto;">
-    <h3 id="medicineModalTitle">Add a medicine</h3>
+  <div class="modal-hm" style="max-width:500px;max-height:92vh;overflow-y:auto;position:relative;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #F1F5F9;">
+      <h3 id="medicineModalTitle" style="margin:0;font-size:1.18rem;font-weight:700;color:var(--color-text);">Add a medicine</h3>
+      <button type="button" class="modal-close-icon-btn" onclick="closeModal('medicineModal')" aria-label="Cancel & Close Modal" title="Close">✕</button>
+    </div>
+
+    <!-- Active Expired/Completed Banner -->
+    <div id="medModalCompletedAlert" style="display:none;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:8px;padding:10px 12px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1rem;">✅</span>
+        <div>
+          <div style="font-weight:700;font-size:0.85rem;color:#6D28D9;">Course Completed (কোর্স সমাপ্ত)</div>
+          <div id="medModalCompletedAlertText" style="font-size:0.75rem;color:#5B21B6;margin-top:2px;">এই ওষুধটির নির্ধারিত মেয়াদ সমাপ্ত হয়েছে। এটি ড্যাশবোর্ড বা আজকের শিডিউলে আসবে না।</div>
+        </div>
+      </div>
+    </div>
+
     <form id="medicineForm">
       <input type="hidden" id="medId">
       <div style="display:flex;flex-direction:column;gap:var(--space-3);">
@@ -194,16 +555,37 @@
             </select>
           </div>
         </div>
-        <div class="control-row" style="gap:var(--space-3);">
-          <div class="field" style="flex:1;min-width:120px;">
+        <div class="control-row" style="gap:var(--space-3);align-items:flex-start;">
+          <div class="field" style="flex:1;min-width:130px;">
             <label for="medStart">Starting date (শুরুর তারিখ)</label>
-            <input type="date" id="medStart">
+            <div style="position:relative;display:flex;align-items:center;">
+              <input type="date" id="medStart" onchange="updateModalDateSummary()" style="width:100%;cursor:pointer;">
+            </div>
+            <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;">
+              <button type="button" class="date-preset-chip" onclick="setQuickStartDate('today')">Today (আজ)</button>
+              <button type="button" class="date-preset-chip" onclick="setQuickStartDate('yesterday')">Yesterday</button>
+            </div>
           </div>
-          <div class="field" style="flex:1;min-width:120px;">
+          <div class="field" style="flex:1;min-width:130px;">
             <label for="medEnd">End date (শেষের তারিখ)</label>
-            <input type="date" id="medEnd">
+            <div style="position:relative;display:flex;align-items:center;">
+              <input type="date" id="medEnd" onchange="updateModalDateSummary()" style="width:100%;cursor:pointer;">
+            </div>
+            <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;">
+              <button type="button" class="date-preset-chip" onclick="setQuickEndDate(3)">+3 Days</button>
+              <button type="button" class="date-preset-chip" onclick="setQuickEndDate(5)">+5 Days</button>
+              <button type="button" class="date-preset-chip" onclick="setQuickEndDate(7)">+7 Days</button>
+              <button type="button" class="date-preset-chip" onclick="setQuickEndDate(14)">+14 Days</button>
+              <button type="button" class="date-preset-chip" onclick="setQuickEndDate(30)">+1 Month</button>
+              <button type="button" class="date-preset-chip clear-chip" onclick="clearEndDate()">No End (চলমান)</button>
+            </div>
           </div>
         </div>
+
+        <div id="medModalDateSummaryBox" style="display:none;background:#F0FDFA;border:1px solid #CCFBF1;border-radius:6px;padding:6px 10px;font-size:0.78rem;color:var(--color-primary-dark);font-weight:600;">
+          <!-- dynamic summary -->
+        </div>
+
         <div class="field">
           <label for="medInstructions">Instructions</label>
           <textarea id="medInstructions" rows="2" placeholder="e.g. Take with a full glass of water"></textarea>
@@ -244,7 +626,7 @@
             <div style="font-size:0.75rem;color:var(--color-text-muted);">Mark as Complete (চিহ্নিত করলে এটি Completed দেখাবে এবং আজকের শিডিউল বা ড্যাশবোর্ডে আসবে না)</div>
           </div>
           <label class="toggle" title="Mark as Completed">
-            <input type="checkbox" id="medCompleted">
+            <input type="checkbox" id="medCompleted" onchange="onMedCompletedCheckboxChange(this.checked)">
             <span class="toggle-track"></span>
           </label>
         </div>
@@ -267,15 +649,15 @@
 
 <!-- Standalone Dose History Modal (For quick 1-click day-by-day status editing) -->
 <div class="modal-hm-backdrop" id="doseHistoryModal">
-  <div class="modal-hm" style="max-width:520px;max-height:90vh;display:flex;flex-direction:column;">
+  <div class="modal-hm" style="max-width:520px;max-height:90vh;display:flex;flex-direction:column;position:relative;">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;">
       <div>
-        <h3 id="doseHistoryModalTitle" style="margin:0;font-size:1.15rem;">Dose History</h3>
+        <h3 id="doseHistoryModalTitle" style="margin:0;font-size:1.15rem;font-weight:700;">Dose History</h3>
         <p id="doseHistoryModalSub" style="font-size:0.82rem;color:var(--color-text-muted);margin:4px 0 0;">
-          শুরুর তারিখ থেকে আজ পর্যন্ত প্রতিদিনের ডোজ গ্রহণের তথ্য ম্যানুয়ালি এডিট করুন।
+          শুরুর তারিখ থেকে শেষ তারিখ পর্যন্ত প্রতিদিনের ডোজ গ্রহণের তথ্য ম্যানুয়ালি এডিট করুন।
         </p>
       </div>
-      <button type="button" class="icon-action" onclick="closeModal('doseHistoryModal')" style="font-size:1.25rem;line-height:1;">&times;</button>
+      <button type="button" class="modal-close-icon-btn" onclick="closeModal('doseHistoryModal')" aria-label="Close">✕</button>
     </div>
 
     <!-- Quick action bar -->
@@ -317,8 +699,11 @@
 
 <!-- Delete confirm modal -->
 <div class="modal-hm-backdrop" id="deleteMedModal">
-  <div class="modal-hm" style="max-width:360px;">
-    <h3>Remove this medicine?</h3>
+  <div class="modal-hm" style="max-width:360px;position:relative;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <h3 style="margin:0;">Remove this medicine?</h3>
+      <button type="button" class="modal-close-icon-btn" onclick="closeModal('deleteMedModal')" aria-label="Cancel">✕</button>
+    </div>
     <p style="color:var(--color-text-muted);font-size:0.88rem;">This will remove it from today's schedule as well. This can't be undone.</p>
     <div class="modal-hm-actions">
       <button class="btn-hm btn-ghost" onclick="closeModal('deleteMedModal')">Cancel</button>

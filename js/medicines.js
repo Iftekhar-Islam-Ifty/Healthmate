@@ -31,11 +31,24 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+function normalizeDateStr(str) {
+  if (!str) return '';
+  const trimmed = String(str).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) {
+    return trimmed.slice(0, 10);
+  }
+  const d = new Date(trimmed);
+  if (!isNaN(d.getTime())) {
+    return formatDateToISO(d);
+  }
+  return '';
+}
+
 function parseDateStrToDate(str) {
   if (!str) return null;
   const trimmed = String(str).trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-    const [y, m, d] = trimmed.split('-').map(Number);
+  if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) {
+    const [y, m, d] = trimmed.slice(0, 10).split('-').map(Number);
     return new Date(y, m - 1, d);
   }
   const d = new Date(trimmed);
@@ -74,20 +87,32 @@ function formatDisplayDate(isoStr) {
 function getDaysBetween(startDateStr, endDateStr, existingHistoryKeys = []) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const todayISO = formatDateToISO(today);
 
-  let start = parseDateStrToDate(startDateStr);
+  const startNormalized = normalizeDateStr(startDateStr);
+  const endNormalized = normalizeDateStr(endDateStr);
+
+  let start = parseDateStrToDate(startNormalized);
   if (!start) {
-    // If no start date specified, default to 7 days ago
     start = new Date(today);
     start.setDate(today.getDate() - 6);
   } else {
     start.setHours(0, 0, 0, 0);
   }
 
-  // End date is capped at endDateStr if specified, otherwise at least today
-  let end = parseDateStrToDate(endDateStr);
-  if (end) {
-    end.setHours(0, 0, 0, 0);
+  // Calculate the effective end boundary:
+  // 1. If an end date is set, the date list MUST NEVER exceed endNormalized!
+  // 2. The date list also does not show future unreached dates beyond today.
+  let end;
+  if (endNormalized) {
+    const parsedEnd = parseDateStrToDate(endNormalized);
+    if (parsedEnd) {
+      parsedEnd.setHours(0, 0, 0, 0);
+      // If end date is in the past, stop strictly at end date. If end date is in future, stop at today.
+      end = parsedEnd < today ? parsedEnd : today;
+    } else {
+      end = today;
+    }
   } else {
     end = today;
   }
@@ -95,28 +120,36 @@ function getDaysBetween(startDateStr, endDateStr, existingHistoryKeys = []) {
   const dateSet = new Set();
 
   if (start > end) {
-    dateSet.add(formatDateToISO(start));
+    const sISO = formatDateToISO(start);
+    if (!endNormalized || sISO <= endNormalized) {
+      dateSet.add(sISO);
+    }
   } else {
     const curr = new Date(start);
     const diffDays = Math.min(Math.round((end - start) / (1000 * 60 * 60 * 24)), 180);
     for (let i = 0; i <= diffDays; i++) {
-      dateSet.add(formatDateToISO(curr));
+      const cISO = formatDateToISO(curr);
+      // Strictly enforce that no date after end date is included!
+      if (!endNormalized || cISO <= endNormalized) {
+        dateSet.add(cISO);
+      }
       curr.setDate(curr.getDate() + 1);
     }
   }
 
-  // Also include any dates that already exist in history
+  // Also include any dates that already exist in history, BUT NEVER past endNormalized!
   if (Array.isArray(existingHistoryKeys)) {
     existingHistoryKeys.forEach(k => {
-      if (/^\d{4}-\d{2}-\d{2}$/.test(k)) {
-        if (!endDateStr || k <= endDateStr) {
-          dateSet.add(k);
+      const kNorm = normalizeDateStr(k);
+      if (kNorm && /^\d{4}-\d{2}-\d{2}$/.test(kNorm)) {
+        if (!endNormalized || kNorm <= endNormalized) {
+          dateSet.add(kNorm);
         }
       }
     });
   }
 
-  // Sort descending: today and recent dates at the top
+  // Sort descending: today/recent dates at the top
   return Array.from(dateSet).sort().reverse();
 }
 
@@ -139,6 +172,29 @@ function initPageHeader() {
   }
 }
 
+let currentMedFilter = 'all'; // 'all' | 'active' | 'completed'
+let currentSearchQuery = '';
+
+function setMedicineFilter(filter) {
+  currentMedFilter = filter;
+  ['All', 'Active', 'Completed'].forEach(tab => {
+    const btn = document.getElementById(`tabFilter${tab}`);
+    if (btn) {
+      if (tab.toLowerCase() === filter) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    }
+  });
+  renderMedicineList();
+}
+
+function handleMedicineSearch(query) {
+  currentSearchQuery = (query || '').trim().toLowerCase();
+  renderMedicineList();
+}
+
 function renderSchedule() {
   const el = document.getElementById('scheduleList');
   if (!el) return;
@@ -147,55 +203,145 @@ function renderSchedule() {
   const list = allFiltered.filter(m => !HMStore.isMedicineCompleted(m));
 
   if (list.length === 0) {
-    el.innerHTML = `<div style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font-size:0.9rem;">আজকের জন্য কোনো সক্রিয় ওষুধ শিডিউল করা নেই।</div>`;
+    el.innerHTML = `
+      <div style="padding:24px 16px;text-align:center;background:#FFFFFF;border:1px dashed var(--color-border);border-radius:12px;">
+        <div style="color:var(--color-primary);font-size:1.5rem;margin-bottom:6px;">✨</div>
+        <div style="font-weight:700;font-size:0.95rem;color:var(--color-text);">আজকের জন্য কোনো সক্রিয় ওষুধ শিডিউল করা নেই</div>
+        <div style="color:var(--color-text-muted);font-size:0.82rem;margin-top:4px;">নতুন ওষুধ যোগ করতে উপরের "+ Add medicine" বাটনে ক্লিক করুন।</div>
+      </div>
+    `;
     return;
   }
 
   el.innerHTML = list.map(m => {
-    const meta = statusMeta[m.status] || statusMeta.pending;
-    const isTaken = m.status === 'taken';
+    const todayStr = formatDateToISO(new Date());
+    const isTaken = HMStore.isMedicineTakenToday ? HMStore.isMedicineTakenToday(m, todayStr) : (m.status === 'taken');
+    const todayStatus = isTaken ? 'taken' : (m.status === 'missed' ? 'missed' : 'upcoming');
+    const meta = statusMeta[todayStatus] || statusMeta.pending;
 
     const actionBtn = isTaken
-      ? `<button class="btn-hm btn-ghost" style="padding:6px 12px;font-size:0.8rem;color:var(--color-success-dark);font-weight:600;border-radius:6px;background:#ECFDF5;border:1px solid #A7F3D0;" onclick="toggleTakenStatus('${m.id}')" title="Click to unmark if taken by mistake">✓ Taken</button>`
-      : `<button class="btn-hm btn-primary" style="padding:6px 14px;font-size:0.8rem;box-shadow:0 2px 6px rgba(13,110,110,0.2);" onclick="markTaken('${m.id}')">Mark as taken</button>`;
+      ? `<button type="button" class="btn-hm btn-ghost" style="padding:8px 14px;font-size:0.84rem;color:#047857;font-weight:700;border-radius:8px;background:#ECFDF5;border:1px solid #A7F3D0;display:inline-flex;align-items:center;gap:6px;" onclick="toggleTakenStatus('${m.id}')" title="ভুলবশত ক্লিক হয়ে থাকলে আনমার্ক করুন">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>✓ Taken (খাওয়া হয়েছে)</span>
+        </button>`
+      : `<button type="button" class="btn-hm btn-primary" style="padding:8px 18px;font-size:0.84rem;font-weight:600;box-shadow:0 3px 8px rgba(13,110,110,0.22);display:inline-flex;align-items:center;gap:6px;" onclick="markTaken('${m.id}')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Mark as taken</span>
+        </button>`;
 
     return `
-      <div class="med-row" style="flex-wrap:wrap;gap:var(--space-2);background:${isTaken ? '#F0FDF4' : '#FFFFFF'};padding:12px 18px;border-bottom:1px solid ${isTaken ? '#DCFCE7' : 'var(--color-border)'};">
-        <span class="today-med-time-pill">${m.time || '—'}</span>
-        <div style="flex:1;min-width:160px;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span class="med-name" style="font-weight:${isTaken ? '600' : '700'};color:${isTaken ? 'var(--color-text-secondary)' : 'var(--color-text)'};">${escapeHtml(m.name)}</span>
-            <span style="font-size:0.78rem;color:var(--color-text-muted);">${escapeHtml(m.dosage || '')}</span>
-            <span style="font-size:0.75rem;color:var(--color-text-muted);">• ${escapeHtml(m.meal || 'After meal')}</span>
+      <div class="today-med-card ${isTaken ? 'is-taken' : ''}">
+        <div class="today-med-header">
+          <div class="today-med-title-wrap">
+            <h3 class="today-med-name">${escapeHtml(m.name)}</h3>
+            <div class="med-meta-chips">
+              <span class="med-chip time-chip">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>${escapeHtml(m.time || 'Time not set')}</span>
+              </span>
+              <span class="med-chip">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
+                <span>${escapeHtml(m.dosage || '1 tablet')}</span>
+              </span>
+              <span class="med-chip meal-chip">
+                <span>🍽️ ${escapeHtml(m.meal || 'After meal')}</span>
+              </span>
+            </div>
           </div>
-          ${m.description ? `<div style="font-size:0.76rem;color:var(--color-primary-dark);margin-top:3px;line-height:1.3;">${escapeHtml(m.description)}</div>` : ''}
+          <span class="badge-hm ${meta.badgeClass}" style="font-size:0.75rem;padding:3px 10px;flex-shrink:0;">
+            <span class="dot"></span>${meta.label}
+          </span>
         </div>
-        <span class="badge-hm ${meta.badgeClass}" style="margin-right:var(--space-2);"><span class="dot"></span>${meta.label}</span>
-        <button type="button" class="btn-hm btn-ghost" style="font-size:0.75rem;padding:5px 9px;border:1px solid var(--color-border);display:inline-flex;align-items:center;gap:4px;" onclick="openDoseHistoryModal('${m.id}')" title="বিগত দিনগুলোর ডোজ লগ ম্যানেজ করুন">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span>History</span>
-        </button>
-        ${actionBtn}
-      </div>`;
+
+        ${m.description ? `
+          <div class="med-desc-box">
+            <span style="font-weight:700;color:var(--color-primary-dark);">বিবরণ:</span> ${escapeHtml(m.description)}
+          </div>
+        ` : ''}
+
+        ${m.instructions ? `
+          <div style="font-size:0.78rem;color:var(--color-text-secondary);padding-left:2px;">
+            <span style="font-weight:600;color:var(--color-text);">নির্দেশনা:</span> ${escapeHtml(m.instructions)}
+          </div>
+        ` : ''}
+
+        <div class="today-med-actions">
+          <button type="button" class="btn-hm btn-ghost" style="font-size:0.78rem;padding:6px 12px;border:1px solid #CBD5E1;background:#FFFFFF;display:inline-flex;align-items:center;gap:6px;font-weight:600;" onclick="openDoseHistoryModal('${m.id}')" title="বিগত দিনগুলোর ডোজ লগ পরিবর্তন করুন">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>Dose History</span>
+          </button>
+          ${actionBtn}
+        </div>
+      </div>
+    `;
   }).join('');
 }
 
 function renderMedicineList() {
   const el = document.getElementById('medicineList');
   const emptyEl = document.getElementById('medicinesEmpty');
+  const emptyMsgEl = document.getElementById('emptyStateMsg');
   if (!el || !emptyEl) return;
-  const list = getFilteredMedicines();
+
+  const allFiltered = getFilteredMedicines();
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  // Update count badges
+  const totalCount = allFiltered.length;
+  const activeCount = allFiltered.filter(m => !HMStore.isMedicineCompleted(m)).length;
+  const completedCount = allFiltered.filter(m => HMStore.isMedicineCompleted(m)).length;
+
+  const cAllEl = document.getElementById('countFilterAll');
+  const cActEl = document.getElementById('countFilterActive');
+  const cCompEl = document.getElementById('countFilterCompleted');
+  if (cAllEl) cAllEl.textContent = totalCount;
+  if (cActEl) cActEl.textContent = activeCount;
+  if (cCompEl) cCompEl.textContent = completedCount;
+
+  // Filter by tab
+  let list = allFiltered;
+  if (currentMedFilter === 'active') {
+    list = list.filter(m => !HMStore.isMedicineCompleted(m));
+  } else if (currentMedFilter === 'completed') {
+    list = list.filter(m => HMStore.isMedicineCompleted(m));
+  }
+
+  // Filter by search query
+  if (currentSearchQuery) {
+    list = list.filter(m => {
+      const name = (m.name || '').toLowerCase();
+      const desc = (m.description || '').toLowerCase();
+      const inst = (m.instructions || '').toLowerCase();
+      const meal = (m.meal || '').toLowerCase();
+      const dosage = (m.dosage || '').toLowerCase();
+      return name.includes(currentSearchQuery) || 
+             desc.includes(currentSearchQuery) || 
+             inst.includes(currentSearchQuery) || 
+             meal.includes(currentSearchQuery) || 
+             dosage.includes(currentSearchQuery);
+    });
+  }
 
   if (list.length === 0) {
     el.innerHTML = '';
     el.style.display = 'none';
     emptyEl.style.display = 'block';
+    if (emptyMsgEl) {
+      if (currentSearchQuery) {
+        emptyMsgEl.textContent = `"${currentSearchQuery}" দিয়ে কোনো ওষুধ খুঁজে পাওয়া যায়নি।`;
+      } else if (currentMedFilter === 'completed') {
+        emptyMsgEl.textContent = `কোনো সম্পূর্ণ (Completed) ওষুধ নেই।`;
+      } else if (currentMedFilter === 'active') {
+        emptyMsgEl.textContent = `কোনো চলমান সক্রিয় ওষুধ নেই।`;
+      } else {
+        emptyMsgEl.textContent = `আপনার অ্যাকাউন্টে কোনো ওষুধ নেই। নতুন ওষুধ যোগ করতে বাটনে চাপুন।`;
+      }
+    }
     return;
   }
+
   el.style.display = 'block';
   emptyEl.style.display = 'none';
-
-  const todayStr = new Date().toISOString().slice(0, 10);
 
   el.innerHTML = list.map(m => {
     const isCompleted = HMStore.isMedicineCompleted(m);
@@ -209,8 +355,8 @@ function renderMedicineList() {
     let statusBadgeHtml = '';
     if (isCompleted) {
       statusBadgeHtml = `
-        <span class="badge-hm" style="background:#EDE9FE;color:#6D28D9;border:1px solid #DDD6FE;font-size:0.72rem;padding:2px 8px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="badge-hm" style="background:#EDE9FE;color:#6D28D9;border:1px solid #DDD6FE;font-size:0.75rem;padding:3px 10px;font-weight:700;display:inline-flex;align-items:center;gap:5px;border-radius:20px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
           Complete (সম্পূর্ণ)
         </span>
       `;
@@ -224,55 +370,79 @@ function renderMedicineList() {
     }
 
     return `
-      <div class="list-row" style="align-items:flex-start;padding:14px var(--space-3);background:${isCompleted ? '#FAF5FF' : '#FFFFFF'};border-bottom:1px solid ${isCompleted ? '#EDE9FE' : 'var(--color-border)'};">
-        <div class="list-row-icon" style="margin-top:2px;color:${isCompleted ? '#7C3AED' : 'inherit'};">${pillIcon}</div>
-        <div class="list-row-main">
-          <div class="name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span style="font-weight:700;font-size:0.96rem;color:${isCompleted ? '#4C1D95' : 'var(--color-text)'};">${escapeHtml(m.name)}</span>
-            ${statusBadgeHtml}
-          </div>
-          
-          <div class="meta" style="margin-top:3px;font-size:0.8rem;color:var(--color-text-secondary);">
-            ${escapeHtml(m.dosage || '1 tablet')} &middot; ${escapeHtml(m.frequency || 'Once daily')} &middot; ${escapeHtml(m.meal || 'After meal')} &middot; ${escapeHtml(m.time || '—')}
-          </div>
-
-          ${datesText ? `<div style="font-size:0.76rem;color:var(--color-text-muted);margin-top:3px;display:flex;align-items:center;gap:4px;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span>${escapeHtml(datesText)}</span>
-            ${isExpired ? `<span style="color:#7C3AED;font-weight:600;margin-left:4px;">(Last date passed / মেয়াদ শেষ)</span>` : ''}
-          </div>` : ''}
-
-          ${m.instructions ? `
-            <div style="font-size:0.78rem;color:var(--color-text-secondary);margin-top:4px;">
-              <span style="font-weight:600;color:var(--color-text);">Instructions:</span> ${escapeHtml(m.instructions)}
+      <div class="inventory-card ${isCompleted ? 'is-completed' : ''}">
+        <div class="inventory-top-row">
+          <div class="inventory-name-section">
+            <div class="inventory-icon-box">
+              ${pillIcon}
             </div>
-          ` : ''}
-
-          ${m.description ? `
-            <div style="font-size:0.8rem;color:var(--color-primary-dark);margin-top:6px;background:#F0FDFA;padding:6px 10px;border-radius:6px;border-left:3px solid var(--color-primary);line-height:1.4;">
-              <span style="font-weight:600;color:var(--color-text);">বিবরণ:</span> ${escapeHtml(m.description)}
+            <div class="inventory-title-wrap">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <h3 class="inventory-name">${escapeHtml(m.name)}</h3>
+                ${statusBadgeHtml}
+              </div>
+              <div class="med-meta-chips" style="margin-top:6px;">
+                <span class="med-chip time-chip">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>${escapeHtml(m.time || '—')}</span>
+                </span>
+                <span class="med-chip">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
+                  <span>${escapeHtml(m.dosage || '1 tablet')}</span>
+                </span>
+                <span class="med-chip">
+                  <span>${escapeHtml(m.frequency || 'Once daily')}</span>
+                </span>
+                <span class="med-chip meal-chip">
+                  <span>🍽️ ${escapeHtml(m.meal || 'After meal')}</span>
+                </span>
+              </div>
             </div>
-          ` : ''}
+          </div>
 
-          <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <button type="button" class="btn-hm btn-ghost" style="font-size:0.76rem;padding:4px 10px;border:1px solid #CBD5E1;background:#F8FAFC;display:inline-flex;align-items:center;gap:5px;font-weight:600;" onclick="openDoseHistoryModal('${m.id}')" title="শুরুর তারিখ থেকে আজ পর্যন্ত প্রতিদিনের ডোজ লগ পরিবর্তন করুন">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              <span>Dose History</span>
+          <div class="inventory-controls">
+            <button type="button" class="icon-action" title="Edit" onclick="openEditMedicine('${m.id}')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+            <button type="button" class="icon-action danger" title="Remove" onclick="askDeleteMedicine('${m.id}')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
             </button>
           </div>
         </div>
 
-        <div class="list-row-side" style="margin-top:2px;">
-          <label class="toggle" title="Reminder">
-            <input type="checkbox" ${m.reminder !== false && !isCompleted ? 'checked' : ''} ${isCompleted ? 'disabled' : ''} onchange="toggleReminder('${m.id}', this.checked)">
-            <span class="toggle-track"></span>
-          </label>
-          <button class="icon-action" title="Edit" onclick="openEditMedicine('${m.id}')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        ${datesText ? `
+          <div style="font-size:0.78rem;color:var(--color-text-muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>${escapeHtml(datesText)}</span>
+            ${isCompleted ? (isExpired ? `<span style="background:#EDE9FE;color:#6D28D9;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.72rem;">📅 মেয়াদ অতিক্রান্ত (${m.end})</span>` : `<span style="background:#EDE9FE;color:#6D28D9;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.72rem;">✓ সমাপ্ত চিহ্নিত</span>`) : ''}
+          </div>
+        ` : ''}
+
+        ${m.instructions ? `
+          <div style="font-size:0.8rem;color:var(--color-text-secondary);">
+            <span style="font-weight:600;color:var(--color-text);">Instructions:</span> ${escapeHtml(m.instructions)}
+          </div>
+        ` : ''}
+
+        ${m.description ? `
+          <div class="med-desc-box">
+            <span style="font-weight:700;color:var(--color-primary-dark);">বিবরণ:</span> ${escapeHtml(m.description)}
+          </div>
+        ` : ''}
+
+        <div class="inventory-footer">
+          <button type="button" class="btn-hm btn-ghost" style="font-size:0.78rem;padding:5px 12px;border:1px solid #CBD5E1;background:#FFFFFF;display:inline-flex;align-items:center;gap:6px;font-weight:600;" onclick="openDoseHistoryModal('${m.id}')" title="শুরুর তারিখ থেকে আজ পর্যন্ত প্রতিদিনের ডোজ লগ পরিবর্তন করুন">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>Dose History</span>
           </button>
-          <button class="icon-action danger" title="Remove" onclick="askDeleteMedicine('${m.id}')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-          </button>
+
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:0.78rem;color:var(--color-text-muted);font-weight:500;">Reminder</span>
+            <label class="toggle" title="Reminder">
+              <input type="checkbox" ${m.reminder !== false && !isCompleted ? 'checked' : ''} ${isCompleted ? 'disabled' : ''} onchange="toggleReminder('${m.id}', this.checked)">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
         </div>
       </div>
     `;
@@ -305,11 +475,14 @@ async function toggleTakenStatus(id) {
   const med = medicines.find(m => String(m.id) === String(id));
   if (!med) return;
 
-  if (med.status === 'taken') {
-    await HMStore.markMedicinePending(id);
+  const todayStr = formatDateToISO(new Date());
+  const isTaken = HMStore.isMedicineTakenToday ? HMStore.isMedicineTakenToday(med, todayStr) : (med.status === 'taken');
+
+  if (isTaken) {
+    await HMStore.markMedicinePending(id, todayStr);
     showToast(`${med.name} reset to upcoming`);
   } else {
-    await HMStore.markMedicineTaken(id);
+    await HMStore.markMedicineTaken(id, todayStr);
     showToast(`${med.name} marked as taken`);
   }
   medicines = HMStore.getMedicines();
@@ -343,14 +516,20 @@ function openDoseHistoryModal(medId) {
   if (titleEl) titleEl.textContent = `Dose History: ${med.name}`;
   if (subEl) {
     const startStr = med.start ? `Starting: ${med.start}` : 'Recent doses';
-    subEl.textContent = `${startStr} · শুরুর তারিখ থেকে আজ পর্যন্ত প্রতিদিনের ওষুধ খাওয়ার স্ট্যাটাস পরিবর্তন করুন`;
+    const endStr = med.end ? ` · Ends: ${med.end}` : '';
+    subEl.textContent = `${startStr}${endStr} · শুরুর তারিখ থেকে শেষ তারিখ পর্যন্ত প্রতিদিনের ওষুধ খাওয়ার স্ট্যাটাস`;
   }
 
   const customDateInput = document.getElementById('customLogDate');
   if (customDateInput) {
+    const todayStr = formatDateToISO(new Date());
+    const maxDate = med.end && med.end < todayStr ? med.end : todayStr;
+    customDateInput.max = maxDate;
+
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    customDateInput.value = formatDateToISO(yesterday);
+    const yesterdayStr = formatDateToISO(yesterday);
+    customDateInput.value = maxDate < yesterdayStr ? maxDate : yesterdayStr;
   }
 
   renderDoseHistoryModalList();
@@ -376,7 +555,6 @@ function renderDoseHistoryModalList() {
   container.innerHTML = dates.map(dateStr => {
     const info = formatDisplayDate(dateStr);
     const status = history[dateStr]; // 'taken' | 'missed' | undefined
-    const isPastEnd = med.end && dateStr > med.end;
 
     let badgeHtml = `<span style="font-size:0.75rem;padding:3px 8px;border-radius:12px;background:#F1F5F9;color:#64748B;font-weight:600;">— Not set</span>`;
     if (status === 'taken') {
@@ -385,25 +563,23 @@ function renderDoseHistoryModalList() {
       badgeHtml = `<span style="font-size:0.75rem;padding:3px 8px;border-radius:12px;background:#FEF2F2;color:#DC2626;font-weight:700;">✗ Missed</span>`;
     }
 
-    const actionButtons = isPastEnd
-      ? `<span style="font-size:0.75rem;padding:3px 8px;border-radius:6px;background:#F1F5F9;color:#64748B;font-weight:600;">Course Ended (মেয়াদ সমাপ্ত)</span>`
-      : `
-        <button type="button" class="btn-hm btn-ghost" 
-          style="font-size:0.75rem;padding:4px 8px;border:1px solid ${status === 'taken' ? '#059669' : '#CBD5E1'};background:${status === 'taken' ? '#ECFDF5' : '#FFFFFF'};color:${status === 'taken' ? '#047857' : 'var(--color-text)'};font-weight:${status === 'taken' ? '700' : '500'};"
-          onclick="setDayStatus('${dateStr}', 'taken')">
-          ✓ Taken
-        </button>
-        <button type="button" class="btn-hm btn-ghost" 
-          style="font-size:0.75rem;padding:4px 8px;border:1px solid ${status === 'missed' ? '#DC2626' : '#CBD5E1'};background:${status === 'missed' ? '#FEF2F2' : '#FFFFFF'};color:${status === 'missed' ? '#B91C1C' : 'var(--color-text)'};font-weight:${status === 'missed' ? '700' : '500'};"
-          onclick="setDayStatus('${dateStr}', 'missed')">
-          ✗ Missed
-        </button>
-        <button type="button" class="btn-hm btn-ghost" 
-          style="font-size:0.75rem;padding:4px 8px;border:1px solid #E2E8F0;background:#F8FAFC;color:var(--color-text-muted);"
-          onclick="setDayStatus('${dateStr}', 'unrecorded')" title="Clear record">
-          Clear
-        </button>
-      `;
+    const actionButtons = `
+      <button type="button" class="btn-hm btn-ghost" 
+        style="font-size:0.75rem;padding:4px 8px;border:1px solid ${status === 'taken' ? '#059669' : '#CBD5E1'};background:${status === 'taken' ? '#ECFDF5' : '#FFFFFF'};color:${status === 'taken' ? '#047857' : 'var(--color-text)'};font-weight:${status === 'taken' ? '700' : '500'};"
+        onclick="setDayStatus('${dateStr}', 'taken')">
+        ✓ Taken
+      </button>
+      <button type="button" class="btn-hm btn-ghost" 
+        style="font-size:0.75rem;padding:4px 8px;border:1px solid ${status === 'missed' ? '#DC2626' : '#CBD5E1'};background:${status === 'missed' ? '#FEF2F2' : '#FFFFFF'};color:${status === 'missed' ? '#B91C1C' : 'var(--color-text)'};font-weight:${status === 'missed' ? '700' : '500'};"
+        onclick="setDayStatus('${dateStr}', 'missed')">
+        ✗ Missed
+      </button>
+      <button type="button" class="btn-hm btn-ghost" 
+        style="font-size:0.75rem;padding:4px 8px;border:1px solid #E2E8F0;background:#F8FAFC;color:var(--color-text-muted);"
+        onclick="setDayStatus('${dateStr}', 'unrecorded')" title="Clear record">
+        Clear
+      </button>
+    `;
 
     return `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;gap:8px;flex-wrap:wrap;">
@@ -471,13 +647,13 @@ async function addCustomLogDate() {
     showToast('Please select a valid date');
     return;
   }
-  const dateStr = input.value.trim();
+  const dateStr = normalizeDateStr(input.value);
   if (!activeHistoryMedId) return;
 
   medicines = HMStore.getMedicines();
   const med = medicines.find(m => String(m.id) === String(activeHistoryMedId));
   if (med && med.end && dateStr > med.end) {
-    showToast('Selected date is after the medicine end date');
+    showToast('Selected date is after the medicine end date (শেষ তারিখের পরের তারিখ প্রযোজ্য নয়)');
     return;
   }
 
@@ -516,22 +692,19 @@ function renderModalHistory(medId) {
   listEl.innerHTML = dates.map(dateStr => {
     const info = formatDisplayDate(dateStr);
     const status = history[dateStr];
-    const isPastEnd = med.end && dateStr > med.end;
 
-    const actionButtons = isPastEnd
-      ? `<span style="font-size:0.72rem;color:var(--color-text-muted);font-style:italic;">Course Ended</span>`
-      : `
-        <button type="button" class="btn-hm btn-ghost" 
-          style="font-size:0.72rem;padding:3px 7px;border:1px solid ${status === 'taken' ? '#059669' : '#CBD5E1'};background:${status === 'taken' ? '#ECFDF5' : '#FFFFFF'};color:${status === 'taken' ? '#047857' : 'var(--color-text)'};"
-          onclick="setInlineModalDayStatus('${med.id}', '${dateStr}', 'taken')">
-          ✓ Taken
-        </button>
-        <button type="button" class="btn-hm btn-ghost" 
-          style="font-size:0.72rem;padding:3px 7px;border:1px solid ${status === 'missed' ? '#DC2626' : '#CBD5E1'};background:${status === 'missed' ? '#FEF2F2' : '#FFFFFF'};color:${status === 'missed' ? '#B91C1C' : 'var(--color-text)'};"
-          onclick="setInlineModalDayStatus('${med.id}', '${dateStr}', 'missed')">
-          ✗ Missed
-        </button>
-      `;
+    const actionButtons = `
+      <button type="button" class="btn-hm btn-ghost" 
+        style="font-size:0.72rem;padding:3px 7px;border:1px solid ${status === 'taken' ? '#059669' : '#CBD5E1'};background:${status === 'taken' ? '#ECFDF5' : '#FFFFFF'};color:${status === 'taken' ? '#047857' : 'var(--color-text)'};"
+        onclick="setInlineModalDayStatus('${med.id}', '${dateStr}', 'taken')">
+        ✓ Taken
+      </button>
+      <button type="button" class="btn-hm btn-ghost" 
+        style="font-size:0.72rem;padding:3px 7px;border:1px solid ${status === 'missed' ? '#DC2626' : '#CBD5E1'};background:${status === 'missed' ? '#FEF2F2' : '#FFFFFF'};color:${status === 'missed' ? '#B91C1C' : 'var(--color-text)'};"
+        onclick="setInlineModalDayStatus('${med.id}', '${dateStr}', 'missed')">
+        ✗ Missed
+      </button>
+    `;
 
     return `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:6px;gap:6px;">
@@ -580,6 +753,101 @@ async function markAllHistoryInModal(status) {
 }
 
 /* =========================================================
+   DATE QUICK PRESETS & MODAL HELPERS
+========================================================= */
+
+function setQuickStartDate(type) {
+  const startInput = document.getElementById('medStart');
+  if (!startInput) return;
+  const d = new Date();
+  if (type === 'yesterday') {
+    d.setDate(d.getDate() - 1);
+  }
+  startInput.value = formatDateToISO(d);
+  updateModalDateSummary();
+}
+
+function setQuickEndDate(days) {
+  const startInput = document.getElementById('medStart');
+  const endInput = document.getElementById('medEnd');
+  if (!endInput) return;
+
+  const baseDate = startInput && startInput.value ? parseDateStrToDate(startInput.value) : new Date();
+  const d = baseDate ? new Date(baseDate) : new Date();
+  d.setDate(d.getDate() + (Number(days) - 1));
+  endInput.value = formatDateToISO(d);
+  updateModalDateSummary();
+}
+
+function clearEndDate() {
+  const endInput = document.getElementById('medEnd');
+  if (endInput) {
+    endInput.value = '';
+    updateModalDateSummary();
+  }
+}
+
+function updateModalDateSummary() {
+  const startVal = normalizeDateStr(document.getElementById('medStart')?.value);
+  const endVal = normalizeDateStr(document.getElementById('medEnd')?.value);
+  const summaryBox = document.getElementById('medModalDateSummaryBox');
+  const alertBox = document.getElementById('medModalCompletedAlert');
+  const alertText = document.getElementById('medModalCompletedAlertText');
+  const completedCheckbox = document.getElementById('medCompleted');
+  if (!summaryBox) return;
+
+  const todayStr = formatDateToISO(new Date());
+
+  if (startVal && endVal) {
+    const sDate = parseDateStrToDate(startVal);
+    const eDate = parseDateStrToDate(endVal);
+    if (sDate && eDate) {
+      const diffTime = eDate.getTime() - sDate.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      const daysCount = diffDays > 0 ? diffDays : 1;
+      summaryBox.style.display = 'block';
+      summaryBox.textContent = `📅 নির্ধারিত কোর্স: ${daysCount} দিন (${startVal} থেকে ${endVal})`;
+    } else {
+      summaryBox.style.display = 'none';
+    }
+  } else if (startVal && !endVal) {
+    summaryBox.style.display = 'block';
+    summaryBox.textContent = `📅 চলমান কোর্স (শুরু: ${startVal} · কোনো শেষ তারিখ নেই)`;
+  } else {
+    summaryBox.style.display = 'none';
+  }
+
+  // If end date is in the past, update the modal alert
+  if (endVal && todayStr > endVal) {
+    if (alertBox) alertBox.style.display = 'block';
+    if (alertText) alertText.textContent = `এই ওষুধের শেষ তারিখ (${endVal}) অতিক্রান্ত হয়েছে। কোর্সটি স্বয়ংক্রিয়ভাবে Completed হিসেবে গণ্য হবে।`;
+    if (completedCheckbox) completedCheckbox.checked = true;
+  } else if (!completedCheckbox?.checked) {
+    if (alertBox) alertBox.style.display = 'none';
+  }
+}
+
+function onMedCompletedCheckboxChange(checked) {
+  const alertBox = document.getElementById('medModalCompletedAlert');
+  const alertText = document.getElementById('medModalCompletedAlertText');
+  if (alertBox) {
+    if (checked) {
+      alertBox.style.display = 'block';
+      if (alertText) alertText.textContent = 'ওষুধটি ব্যবহারকারী কর্তৃক সম্পূর্ণ (Completed) চিহ্নিত করা হয়েছে।';
+    } else {
+      const endVal = normalizeDateStr(document.getElementById('medEnd')?.value);
+      const todayStr = formatDateToISO(new Date());
+      if (endVal && todayStr > endVal) {
+        alertBox.style.display = 'block';
+        if (alertText) alertText.textContent = `এই ওষুধের শেষ তারিখ (${endVal}) অতিক্রান্ত হয়েছে।`;
+      } else {
+        alertBox.style.display = 'none';
+      }
+    }
+  }
+}
+
+/* =========================================================
    ADD / EDIT MODALS
 ========================================================= */
 
@@ -590,13 +858,18 @@ function openAddMedicine() {
   document.getElementById('medicineForm').reset();
   document.getElementById('medId').value = '';
   document.getElementById('medStart').value = formatDateToISO(new Date());
+  document.getElementById('medEnd').value = '';
   document.getElementById('medDescription').value = '';
   document.getElementById('medCompleted').checked = false;
   document.getElementById('medReminder').checked = true;
 
+  const alertBox = document.getElementById('medModalCompletedAlert');
+  if (alertBox) alertBox.style.display = 'none';
+
   const historyContainer = document.getElementById('medModalHistoryContainer');
   if (historyContainer) historyContainer.style.display = 'none';
 
+  updateModalDateSummary();
   openModal('medicineModal');
 }
 
@@ -609,15 +882,39 @@ function openEditMedicine(id) {
   document.getElementById('medName').value = med.name || '';
   document.getElementById('medDosage').value = med.dosage || '';
   document.getElementById('medTime').value = med.time || '';
-  document.getElementById('medFrequency').value = med.frequency || 'Once daily';
-  document.getElementById('medMeal').value = med.meal || 'After meal';
-  document.getElementById('medStart').value = med.start || '';
-  document.getElementById('medEnd').value = med.end || '';
+  document.getElementById('medFrequency').value = med.frequency || med.period || 'Once daily';
+  document.getElementById('medMeal').value = med.meal || med.condition || 'After meal';
+  
+  const cleanStart = normalizeDateStr(med.start || med.start_date);
+  const cleanEnd = normalizeDateStr(med.end || med.end_date);
+  document.getElementById('medStart').value = cleanStart;
+  document.getElementById('medEnd').value = cleanEnd;
+  
   document.getElementById('medInstructions').value = med.instructions || '';
   document.getElementById('medDescription').value = med.description || '';
-  document.getElementById('medCompleted').checked = HMStore.isMedicineCompleted(med);
-  document.getElementById('medReminder').checked = med.reminder !== false && !HMStore.isMedicineCompleted(med);
+  
+  const isCompleted = HMStore.isMedicineCompleted(med);
+  document.getElementById('medCompleted').checked = isCompleted;
+  document.getElementById('medReminder').checked = med.reminder !== false && !isCompleted;
 
+  const alertBox = document.getElementById('medModalCompletedAlert');
+  const alertText = document.getElementById('medModalCompletedAlertText');
+  const todayStr = formatDateToISO(new Date());
+
+  if (alertBox) {
+    if (isCompleted || (cleanEnd && todayStr > cleanEnd)) {
+      alertBox.style.display = 'block';
+      if (cleanEnd && todayStr > cleanEnd) {
+        if (alertText) alertText.textContent = `এই ওষুধের শেষ তারিখ (${cleanEnd}) অতিক্রান্ত হওয়ায় কোর্সটি সমাপ্ত হয়েছে।`;
+      } else {
+        if (alertText) alertText.textContent = 'এই ওষুধটি ব্যবহারকারী কর্তৃক সম্পূর্ণ (Completed) চিহ্নিত করা হয়েছে।';
+      }
+    } else {
+      alertBox.style.display = 'none';
+    }
+  }
+
+  updateModalDateSummary();
   renderModalHistory(med.id);
   openModal('medicineModal');
 }
@@ -649,7 +946,15 @@ document.getElementById('medicineForm').addEventListener('submit', async functio
 
   const idVal = document.getElementById('medId').value;
   const currentProfileId = window.HMStore ? HMStore.getActiveProfileId() : 'owner';
-  const isCompletedVal = document.getElementById('medCompleted').checked;
+  const startVal = normalizeDateStr(document.getElementById('medStart').value);
+  const endVal = normalizeDateStr(document.getElementById('medEnd').value);
+  const todayStr = formatDateToISO(new Date());
+
+  // Strict completion condition: checkbox is checked OR end date has passed today
+  let isCompletedVal = document.getElementById('medCompleted').checked;
+  if (endVal && todayStr > endVal) {
+    isCompletedVal = true;
+  }
 
   const data = {
     name: document.getElementById('medName').value.trim(),
@@ -659,8 +964,10 @@ document.getElementById('medicineForm').addEventListener('submit', async functio
     unit: 'tablets',
     frequency: document.getElementById('medFrequency').value,
     meal: document.getElementById('medMeal').value,
-    start: document.getElementById('medStart').value.trim(),
-    end: document.getElementById('medEnd').value.trim(),
+    start: startVal,
+    start_date: startVal,
+    end: endVal,
+    end_date: endVal,
     instructions: document.getElementById('medInstructions').value.trim(),
     description: document.getElementById('medDescription').value.trim(),
     completed: isCompletedVal,
@@ -676,9 +983,6 @@ document.getElementById('medicineForm').addEventListener('submit', async functio
     medicines = HMStore.getMedicines();
     const existing = medicines.find(m => String(m.id) === String(idVal));
     const merged = { ...(existing || {}), ...data, id: idVal };
-    if (!isCompletedVal && existing && existing.status === 'taken') {
-      merged.status = 'taken';
-    }
     savedMed = await HMStore.saveMedicine(merged);
     showToast('Medicine updated in cloud');
   } else {

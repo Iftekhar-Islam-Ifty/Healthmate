@@ -63,6 +63,21 @@ function openMobileSidebar() {
 }
 window.openMobileSidebar = openMobileSidebar;
 
+// Close modal when clicking on the backdrop outside the modal card
+document.addEventListener('click', function (e) {
+  if (e.target && e.target.classList && e.target.classList.contains('modal-hm-backdrop')) {
+    e.target.classList.remove('show');
+  }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    const openModals = document.querySelectorAll('.modal-hm-backdrop.show');
+    openModals.forEach(m => m.classList.remove('show'));
+  }
+});
+
 // Close drawer on Escape key
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape' && document.body.classList.contains('sidebar-open')) {

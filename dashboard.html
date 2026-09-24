@@ -2262,7 +2262,8 @@
     if (!container) return;
 
     const allMeds = HMStore.getMedicines();
-    const meds = allMeds.filter(m => !HMStore.isMedicineCompleted(m));
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const meds = allMeds.filter(m => !HMStore.isMedicineCompleted(m, todayStr));
     if (meds.length === 0) {
       container.innerHTML = `
         <div style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font-size:0.88rem;">
@@ -2273,7 +2274,7 @@
     }
 
     container.innerHTML = meds.map(m => {
-      const isTaken = m.status === 'taken';
+      const isTaken = HMStore.isMedicineTakenToday ? HMStore.isMedicineTakenToday(m, todayStr) : (m.status === 'taken');
 
       return `
         <div class="today-med-row ${isTaken ? 'is-taken' : ''}">
@@ -2318,11 +2319,14 @@
     const med = meds.find(m => String(m.id) === String(medId));
     if (!med) return;
 
-    if (med.status === 'taken') {
-      await HMStore.markMedicinePending(med.id);
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const isCurrentlyTaken = HMStore.isMedicineTakenToday ? HMStore.isMedicineTakenToday(med, todayStr) : (med.status === 'taken');
+
+    if (isCurrentlyTaken) {
+      await HMStore.markMedicinePending(med.id, todayStr);
       showToast(`${med.name} marked pending`);
     } else {
-      await HMStore.markMedicineTaken(med.id);
+      await HMStore.markMedicineTaken(med.id, todayStr);
       showToast(`${med.name} recorded as taken`);
     }
 
