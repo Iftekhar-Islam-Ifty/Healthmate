@@ -204,8 +204,8 @@ function renderSchedule() {
 
   if (list.length === 0) {
     el.innerHTML = `
-      <div style="padding:24px 16px;text-align:center;background:#FFFFFF;border:1px dashed var(--color-border);border-radius:12px;">
-        <div style="color:var(--color-primary);font-size:1.5rem;margin-bottom:6px;">✨</div>
+      <div style="grid-column: 1 / -1; padding:24px 16px;text-align:center;background:#FFFFFF;border:1px dashed var(--color-border);border-radius:14px;">
+        <div style="color:var(--color-primary);font-size:1.6rem;margin-bottom:6px;">✨</div>
         <div style="font-weight:700;font-size:0.95rem;color:var(--color-text);">আজকের জন্য কোনো সক্রিয় ওষুধ শিডিউল করা নেই</div>
         <div style="color:var(--color-text-muted);font-size:0.82rem;margin-top:4px;">নতুন ওষুধ যোগ করতে উপরের "+ Add medicine" বাটনে ক্লিক করুন।</div>
       </div>
@@ -217,59 +217,40 @@ function renderSchedule() {
     const todayStr = formatDateToISO(new Date());
     const isTaken = HMStore.isMedicineTakenToday ? HMStore.isMedicineTakenToday(m, todayStr) : (m.status === 'taken');
     const todayStatus = isTaken ? 'taken' : (m.status === 'missed' ? 'missed' : 'upcoming');
-    const meta = statusMeta[todayStatus] || statusMeta.pending;
+
+    const statusBadge = isTaken 
+      ? `<span class="card-badge-micro card-badge-taken">✓ Taken</span>`
+      : `<span class="card-badge-micro card-badge-time">${escapeHtml(m.time || 'Schedule')}</span>`;
 
     const actionBtn = isTaken
-      ? `<button type="button" class="btn-hm btn-ghost" style="padding:8px 14px;font-size:0.84rem;color:#047857;font-weight:700;border-radius:8px;background:#ECFDF5;border:1px solid #A7F3D0;display:inline-flex;align-items:center;gap:6px;" onclick="toggleTakenStatus('${m.id}')" title="ভুলবশত ক্লিক হয়ে থাকলে আনমার্ক করুন">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>✓ Taken (খাওয়া হয়েছে)</span>
+      ? `<button type="button" class="btn-quick-taken" onclick="event.stopPropagation(); toggleTakenStatus('${m.id}')" title="আনমার্ক করতে ক্লিক করুন">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>✓ Taken</span>
         </button>`
-      : `<button type="button" class="btn-hm btn-primary" style="padding:8px 18px;font-size:0.84rem;font-weight:600;box-shadow:0 3px 8px rgba(13,110,110,0.22);display:inline-flex;align-items:center;gap:6px;" onclick="markTaken('${m.id}')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span>Mark as taken</span>
+      : `<button type="button" class="btn-quick-take" onclick="event.stopPropagation(); markTaken('${m.id}')" title="ডোজ গ্রহণ সম্পন্ন হিসেবে মার্ক করুন">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Take now</span>
         </button>`;
 
     return `
-      <div class="today-med-card ${isTaken ? 'is-taken' : ''}">
-        <div class="today-med-header">
-          <div class="today-med-title-wrap">
-            <h3 class="today-med-name">${escapeHtml(m.name)}</h3>
-            <div class="med-meta-chips">
-              <span class="med-chip time-chip">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span>${escapeHtml(m.time || 'Time not set')}</span>
-              </span>
-              <span class="med-chip">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
-                <span>${escapeHtml(m.dosage || '1 tablet')}</span>
-              </span>
-              <span class="med-chip meal-chip">
-                <span>🍽️ ${escapeHtml(m.meal || 'After meal')}</span>
-              </span>
+      <div class="modern-med-card ${isTaken ? 'is-taken' : ''}" onclick="openMedicineDetailsModal('${m.id}')" title="বিস্তারিত দেখতে ক্লিক করুন">
+        <div>
+          <div class="card-top-row">
+            <div class="card-icon-pill">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
             </div>
+            ${statusBadge}
           </div>
-          <span class="badge-hm ${meta.badgeClass}" style="font-size:0.75rem;padding:3px 10px;flex-shrink:0;">
-            <span class="dot"></span>${meta.label}
-          </span>
+
+          <div class="card-med-name" style="margin-top:6px;">${escapeHtml(m.name)}</div>
+
+          <div class="card-micro-tags" style="margin-top:6px;">
+            <span class="micro-tag">${escapeHtml(m.dosage || '1 dose')}</span>
+            ${m.meal ? `<span class="micro-tag meal">🍽️ ${escapeHtml(m.meal)}</span>` : ''}
+          </div>
         </div>
 
-        ${m.description ? `
-          <div class="med-desc-box">
-            <span style="font-weight:700;color:var(--color-primary-dark);">বিবরণ:</span> ${escapeHtml(m.description)}
-          </div>
-        ` : ''}
-
-        ${m.instructions ? `
-          <div style="font-size:0.78rem;color:var(--color-text-secondary);padding-left:2px;">
-            <span style="font-weight:600;color:var(--color-text);">নির্দেশনা:</span> ${escapeHtml(m.instructions)}
-          </div>
-        ` : ''}
-
-        <div class="today-med-actions">
-          <button type="button" class="btn-hm btn-ghost" style="font-size:0.78rem;padding:6px 12px;border:1px solid #CBD5E1;background:#FFFFFF;display:inline-flex;align-items:center;gap:6px;font-weight:600;" onclick="openDoseHistoryModal('${m.id}')" title="বিগত দিনগুলোর ডোজ লগ পরিবর্তন করুন">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span>Dose History</span>
-          </button>
+        <div class="card-action-bar">
           ${actionBtn}
         </div>
       </div>
@@ -340,114 +321,169 @@ function renderMedicineList() {
     return;
   }
 
-  el.style.display = 'block';
+  el.style.display = 'grid';
   emptyEl.style.display = 'none';
 
   el.innerHTML = list.map(m => {
     const isCompleted = HMStore.isMedicineCompleted(m);
-    const isExpired = m.end && todayStr > m.end;
-
-    const datesInfo = [];
-    if (m.start) datesInfo.push(`Started: ${m.start}`);
-    if (m.end) datesInfo.push(`Ends: ${m.end}`);
-    const datesText = datesInfo.join(' · ');
 
     let statusBadgeHtml = '';
     if (isCompleted) {
-      statusBadgeHtml = `
-        <span class="badge-hm" style="background:#EDE9FE;color:#6D28D9;border:1px solid #DDD6FE;font-size:0.75rem;padding:3px 10px;font-weight:700;display:inline-flex;align-items:center;gap:5px;border-radius:20px;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-          Complete (সম্পূর্ণ)
-        </span>
-      `;
+      statusBadgeHtml = `<span class="card-badge-micro card-badge-completed">✓ Complete</span>`;
     } else {
-      const meta = statusMeta[m.status] || statusMeta.pending;
-      statusBadgeHtml = `
-        <span class="badge-hm ${meta.badgeClass}" style="font-size:0.72rem;padding:2px 8px;">
-          <span class="dot"></span>${meta.label}
-        </span>
-      `;
+      statusBadgeHtml = `<span class="card-badge-micro card-badge-time">${escapeHtml(m.time || 'Active')}</span>`;
     }
 
     return `
-      <div class="inventory-card ${isCompleted ? 'is-completed' : ''}">
-        <div class="inventory-top-row">
-          <div class="inventory-name-section">
-            <div class="inventory-icon-box">
-              ${pillIcon}
+      <div class="modern-med-card ${isCompleted ? 'is-completed' : ''}" onclick="openMedicineDetailsModal('${m.id}')" title="সম্পূর্ণ তথ্য ও অপশন দেখতে ক্লিক করুন">
+        <div>
+          <div class="card-top-row">
+            <div class="card-icon-pill">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
             </div>
-            <div class="inventory-title-wrap">
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                <h3 class="inventory-name">${escapeHtml(m.name)}</h3>
-                ${statusBadgeHtml}
-              </div>
-              <div class="med-meta-chips" style="margin-top:6px;">
-                <span class="med-chip time-chip">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  <span>${escapeHtml(m.time || '—')}</span>
-                </span>
-                <span class="med-chip">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
-                  <span>${escapeHtml(m.dosage || '1 tablet')}</span>
-                </span>
-                <span class="med-chip">
-                  <span>${escapeHtml(m.frequency || 'Once daily')}</span>
-                </span>
-                <span class="med-chip meal-chip">
-                  <span>🍽️ ${escapeHtml(m.meal || 'After meal')}</span>
-                </span>
-              </div>
-            </div>
+            ${statusBadgeHtml}
           </div>
 
-          <div class="inventory-controls">
-            <button type="button" class="icon-action" title="Edit" onclick="openEditMedicine('${m.id}')">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-            </button>
-            <button type="button" class="icon-action danger" title="Remove" onclick="askDeleteMedicine('${m.id}')">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-            </button>
+          <div class="card-med-name" style="margin-top:6px;">${escapeHtml(m.name)}</div>
+
+          <div class="card-micro-tags" style="margin-top:6px;">
+            <span class="micro-tag">${escapeHtml(m.dosage || '1 dose')}</span>
+            <span class="micro-tag">${escapeHtml(m.frequency || 'Daily')}</span>
           </div>
         </div>
 
-        ${datesText ? `
-          <div style="font-size:0.78rem;color:var(--color-text-muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span>${escapeHtml(datesText)}</span>
-            ${isCompleted ? (isExpired ? `<span style="background:#EDE9FE;color:#6D28D9;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.72rem;">📅 মেয়াদ অতিক্রান্ত (${m.end})</span>` : `<span style="background:#EDE9FE;color:#6D28D9;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.72rem;">✓ সমাপ্ত চিহ্নিত</span>`) : ''}
-          </div>
-        ` : ''}
-
-        ${m.instructions ? `
-          <div style="font-size:0.8rem;color:var(--color-text-secondary);">
-            <span style="font-weight:600;color:var(--color-text);">Instructions:</span> ${escapeHtml(m.instructions)}
-          </div>
-        ` : ''}
-
-        ${m.description ? `
-          <div class="med-desc-box">
-            <span style="font-weight:700;color:var(--color-primary-dark);">বিবরণ:</span> ${escapeHtml(m.description)}
-          </div>
-        ` : ''}
-
-        <div class="inventory-footer">
-          <button type="button" class="btn-hm btn-ghost" style="font-size:0.78rem;padding:5px 12px;border:1px solid #CBD5E1;background:#FFFFFF;display:inline-flex;align-items:center;gap:6px;font-weight:600;" onclick="openDoseHistoryModal('${m.id}')" title="শুরুর তারিখ থেকে আজ পর্যন্ত প্রতিদিনের ডোজ লগ পরিবর্তন করুন">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span>Dose History</span>
+        <div class="card-action-bar">
+          <button type="button" class="btn-quick-details" onclick="event.stopPropagation(); openMedicineDetailsModal('${m.id}')">
+            <span>Details</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
-
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:0.78rem;color:var(--color-text-muted);font-weight:500;">Reminder</span>
-            <label class="toggle" title="Reminder">
-              <input type="checkbox" ${m.reminder !== false && !isCompleted ? 'checked' : ''} ${isCompleted ? 'disabled' : ''} onchange="toggleReminder('${m.id}', this.checked)">
-              <span class="toggle-track"></span>
-            </label>
-          </div>
         </div>
       </div>
     `;
   }).join('');
 }
+
+// Open comprehensive Medicine Details Modal
+function openMedicineDetailsModal(id) {
+  medicines = HMStore.getMedicines();
+  const med = medicines.find(m => String(m.id) === String(id));
+  if (!med) return;
+
+  const isCompleted = HMStore.isMedicineCompleted(med);
+  const todayStr = formatDateToISO(new Date());
+  const isTakenToday = HMStore.isMedicineTakenToday ? HMStore.isMedicineTakenToday(med, todayStr) : (med.status === 'taken');
+
+  // Name & Icon
+  const nameEl = document.getElementById('medDetName');
+  if (nameEl) nameEl.textContent = med.name || 'Medicine';
+
+  const badgeEl = document.getElementById('medDetBadge');
+  if (badgeEl) {
+    if (isCompleted) {
+      badgeEl.innerHTML = `<span class="badge-hm" style="background:#EDE9FE;color:#6D28D9;border:1px solid #DDD6FE;font-size:0.75rem;padding:2px 8px;font-weight:700;">✓ Course Completed (সম্পূর্ণ)</span>`;
+    } else if (isTakenToday) {
+      badgeEl.innerHTML = `<span class="badge-hm badge-success" style="font-size:0.75rem;padding:2px 8px;">✓ Taken Today</span>`;
+    } else {
+      badgeEl.innerHTML = `<span class="badge-hm badge-info" style="font-size:0.75rem;padding:2px 8px;"><span class="dot"></span>Active Prescription</span>`;
+    }
+  }
+
+  // Stats Grid
+  const timeEl = document.getElementById('medDetTime');
+  if (timeEl) timeEl.textContent = med.time || '—';
+
+  const dosageEl = document.getElementById('medDetDosage');
+  if (dosageEl) dosageEl.textContent = med.dosage || '1 tablet';
+
+  const freqEl = document.getElementById('medDetFreq');
+  if (freqEl) freqEl.textContent = med.frequency || 'Once daily';
+
+  const mealEl = document.getElementById('medDetMeal');
+  if (mealEl) mealEl.textContent = med.meal || 'No preference';
+
+  // Dates & Duration
+  const datesEl = document.getElementById('medDetDates');
+  const durBadgeEl = document.getElementById('medDetDurationBadge');
+  
+  const startStr = med.start || 'শুরুর তারিখ নেই';
+  const endStr = med.end || 'চলমান (No end date)';
+  if (datesEl) datesEl.textContent = `Started: ${startStr} · Ends: ${endStr}`;
+
+  if (durBadgeEl) {
+    if (isCompleted) {
+      durBadgeEl.textContent = 'কোর্স সমাপ্ত';
+    } else if (med.end) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const parsedEnd = parseDateStrToDate(med.end);
+      if (parsedEnd) {
+        parsedEnd.setHours(0, 0, 0, 0);
+        const diffDays = Math.ceil((parsedEnd - today) / (1000 * 60 * 60 * 24));
+        if (diffDays >= 0) {
+          durBadgeEl.textContent = `${diffDays} দিন বাকি`;
+        } else {
+          durBadgeEl.textContent = 'মেয়াদ সমাপ্ত';
+        }
+      } else {
+        durBadgeEl.textContent = 'নির্ধারিত';
+      }
+    } else {
+      durBadgeEl.textContent = 'নিয়মিত / চলমান';
+    }
+  }
+
+  // Instructions
+  const instWrap = document.getElementById('medDetInstructionsWrap');
+  const instEl = document.getElementById('medDetInstructions');
+  if (instWrap && instEl) {
+    if (med.instructions && med.instructions.trim()) {
+      instEl.textContent = med.instructions.trim();
+      instWrap.style.display = 'block';
+    } else {
+      instWrap.style.display = 'none';
+    }
+  }
+
+  // Description
+  const descWrap = document.getElementById('medDetDescWrap');
+  const descEl = document.getElementById('medDetDesc');
+  if (descWrap && descEl) {
+    if (med.description && med.description.trim()) {
+      descEl.textContent = med.description.trim();
+      descWrap.style.display = 'block';
+    } else {
+      descWrap.style.display = 'none';
+    }
+  }
+
+  // Setup buttons
+  const histBtn = document.getElementById('medDetHistoryBtn');
+  if (histBtn) {
+    histBtn.onclick = () => {
+      closeModal('medDetailsModal');
+      openDoseHistoryModal(med.id);
+    };
+  }
+
+  const editBtn = document.getElementById('medDetEditBtn');
+  if (editBtn) {
+    editBtn.onclick = () => {
+      closeModal('medDetailsModal');
+      openEditMedicine(med.id);
+    };
+  }
+
+  const deleteBtn = document.getElementById('medDetDeleteBtn');
+  if (deleteBtn) {
+    deleteBtn.onclick = () => {
+      closeModal('medDetailsModal');
+      askDeleteMedicine(med.id);
+    };
+  }
+
+  openModal('medDetailsModal');
+}
+window.openMedicineDetailsModal = openMedicineDetailsModal;
 
 async function toggleCompleteStatus(id, forceStatus) {
   const med = await HMStore.toggleMedicineCompletion(id, forceStatus);

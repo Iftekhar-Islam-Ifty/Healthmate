@@ -15,163 +15,265 @@
 <link href="/css/style.css" rel="stylesheet">
 <style>
   /* =========================================================
-     MEDICINES PAGE — DEDICATED RESPONSIVE & USER-FRIENDLY UI
+     MEDICINES PAGE — MODERN 2-COLUMN COMPACT & HIGH-CONTRAST UI
   ========================================================= */
   
-  .med-schedule-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  /* Grids for Schedule & Inventory */
+  .med-schedule-grid,
+  #medicineList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
   }
 
-  /* Today's Schedule Card */
-  .today-med-card {
+  @media (max-width: 640px) {
+    .med-schedule-grid,
+    #medicineList {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 10px !important;
+    }
+  }
+
+  /* Modern Compact Medicine Card */
+  .modern-med-card {
     background: #FFFFFF;
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    padding: 16px;
-    transition: all 0.2s ease;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 12px 12px 10px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-  }
-  .today-med-card.is-taken {
-    background: #F0FDF4;
-    border-color: #BBF7D0;
-  }
-  .today-med-card:hover {
-    border-color: #CBD5E1;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
-  }
-
-  .today-med-header {
-    display: flex;
-    align-items: flex-start;
     justify-content: space-between;
-    gap: 12px;
-    width: 100%;
+    gap: 8px;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    overflow: hidden;
+  }
+  .modern-med-card:hover {
+    border-color: #0D6E6E;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -4px rgba(13, 110, 110, 0.12);
+  }
+  .modern-med-card:active {
+    transform: scale(0.98);
   }
 
-  .today-med-title-wrap {
+  /* Taken State Card */
+  .modern-med-card.is-taken {
+    background: linear-gradient(145deg, #F0FDF4 0%, #ECFDF5 100%);
+    border-color: #A7F3D0;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
+  }
+  .modern-med-card.is-taken:hover {
+    border-color: #34D399;
+    box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.18);
+  }
+
+  /* Completed State Card */
+  .modern-med-card.is-completed {
+    background: linear-gradient(145deg, #FAF5FF 0%, #F3E8FF 100%) !important;
+    border-color: #DDD6FE !important;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.07);
+  }
+  .modern-med-card.is-completed:hover {
+    border-color: #C4B5FD !important;
+    box-shadow: 0 8px 20px -4px rgba(139, 92, 246, 0.16);
+  }
+
+  /* Card Top Row */
+  .card-top-row {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
-    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
   }
 
-  .today-med-name {
-    font-size: 1.05rem;
+  .card-icon-pill {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #E6F4F4;
+    color: #0D6E6E;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .modern-med-card.is-taken .card-icon-pill {
+    background: #D1FAE5;
+    color: #059669;
+  }
+  .modern-med-card.is-completed .card-icon-pill {
+    background: #EDE9FE;
+    color: #7C3AED;
+  }
+
+  .card-badge-micro {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 12px;
+    white-space: nowrap;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .card-badge-time {
+    background: #F0FDFA;
+    color: #0F766E;
+    border: 1px solid #CCFBF1;
+  }
+  .card-badge-taken {
+    background: #DCFCE7;
+    color: #15803D;
+    border: 1px solid #BBF7D0;
+  }
+  .card-badge-completed {
+    background: #EDE9FE;
+    color: #6D28D9;
+    border: 1px solid #DDD6FE;
+  }
+  .card-badge-missed {
+    background: #FEF2F2;
+    color: #DC2626;
+    border: 1px solid #FECACA;
+  }
+
+  /* Medicine Name */
+  .card-med-name {
+    font-size: 0.94rem;
     font-weight: 700;
     color: #0F172A;
-    line-height: 1.35;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.35em;
     word-break: break-word;
     letter-spacing: -0.01em;
   }
-  .today-med-card.is-taken .today-med-name {
-    color: #1E293B;
+  .modern-med-card.is-completed .card-med-name {
+    color: #5B21B6;
   }
 
-  /* Tags & Chips */
-  .med-meta-chips {
+  /* Micro Meta Tags */
+  .card-micro-tags {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 6px 8px;
+    gap: 4px;
   }
-
-  .med-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.78rem;
+  .micro-tag {
+    font-size: 0.72rem;
     font-weight: 600;
-    padding: 4px 9px;
-    border-radius: 6px;
+    padding: 2px 6px;
+    border-radius: 5px;
     background: #F1F5F9;
     color: #475569;
-    border: 1px solid #E2E8F0;
-    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
-  .med-chip.time-chip {
-    background: #F0FDFA;
-    color: #0D6E6E;
-    border-color: #CCFBF1;
-    font-weight: 700;
-  }
-  .med-chip.meal-chip {
+  .micro-tag.meal {
     background: #FFFBEB;
     color: #92400E;
-    border-color: #FEF3C7;
+  }
+  .modern-med-card.is-completed .micro-tag {
+    background: #FFFFFF;
+    color: #6B21A8;
+    border: 1px solid #DDD6FE;
   }
 
-  .med-desc-box {
-    font-size: 0.82rem;
-    color: #0F766E;
-    background: #F0FDFA;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border-left: 3.5px solid var(--color-primary);
-    line-height: 1.45;
-    word-break: break-word;
-  }
-
-  .today-med-actions {
+  /* Card Bottom Action Area */
+  .card-action-bar {
+    padding-top: 6px;
+    border-top: 1px solid #F1F5F9;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding-top: 8px;
-    border-top: 1px dashed #E2E8F0;
-    flex-wrap: wrap;
+    gap: 6px;
   }
-  .today-med-card.is-taken .today-med-actions {
+  .modern-med-card.is-taken .card-action-bar {
     border-top-color: #DCFCE7;
   }
-
-  /* Inventory All Medicines Cards */
-  .inventory-card {
-    background: #FFFFFF;
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    padding: 16px;
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-  .inventory-card.is-completed {
-    background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%) !important;
-    border: 1.5px solid #C4B5FD !important;
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.07);
-    position: relative;
-  }
-  .inventory-card.is-completed::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: #8B5CF6;
-    border-top-left-radius: 12px;
-    border-bottom-left-radius: 12px;
-  }
-  .inventory-card.is-completed .inventory-icon-box {
-    background: #EDE9FE !important;
-    color: #7C3AED !important;
-    border-color: #DDD6FE !important;
-  }
-  .inventory-card.is-completed .inventory-name {
-    color: #5B21B6 !important;
-  }
-  .inventory-card.is-completed .med-chip {
-    background: #FFFFFF !important;
-    border-color: #DDD6FE !important;
-    color: #6B21A8 !important;
+  .modern-med-card.is-completed .card-action-bar {
+    border-top-color: #EDE9FE;
   }
 
+  /* Quick Action Buttons */
+  .btn-quick-take {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #0D6E6E 0%, #0F766E 100%);
+    color: #FFFFFF;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(13, 110, 110, 0.25);
+    transition: all 0.15s ease;
+  }
+  .btn-quick-take:hover {
+    background: #085454;
+    transform: translateY(-1px);
+  }
+  .btn-quick-take:active {
+    transform: scale(0.96);
+  }
+
+  .btn-quick-taken {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 1px solid #A7F3D0;
+    background: #ECFDF5;
+    color: #047857;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-quick-taken:hover {
+    background: #D1FAE5;
+    border-color: #6EE7B7;
+  }
+
+  .btn-quick-details {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    background: #F8FAFC;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-quick-details:hover {
+    background: #F1F5F9;
+    color: #0F172A;
+    border-color: #CBD5E1;
+  }
+
+  /* Date preset chips in Edit Modal */
   .date-preset-chip {
     padding: 3px 8px;
     font-size: 0.72rem;
@@ -193,9 +295,6 @@
     border-color: #FECACA;
     color: #DC2626;
   }
-  .date-preset-chip.clear-chip:hover {
-    background: #FEE2E2;
-  }
 
   .modal-close-icon-btn {
     width: 32px;
@@ -215,23 +314,6 @@
   .modal-close-icon-btn:hover {
     background: #E2E8F0;
     color: #0F172A;
-  }
-
-  .inventory-controls {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-  }
-
-  .inventory-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding-top: 10px;
-    border-top: 1px solid #F1F5F9;
-    flex-wrap: wrap;
   }
 
   /* Search & Filter Bar */
@@ -262,10 +344,10 @@
 
   .meds-search-input {
     width: 100%;
-    padding: 9px 12px 9px 36px;
-    font-size: 0.88rem;
+    padding: 8px 12px 8px 34px;
+    font-size: 0.86rem;
     border: 1.5px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: 10px;
     background: #FFFFFF;
     color: var(--color-text);
   }
@@ -286,9 +368,9 @@
   .meds-filter-tabs::-webkit-scrollbar { display: none; }
 
   .filter-tab-btn {
-    padding: 6px 14px;
+    padding: 5px 12px;
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 600;
     border: 1px solid var(--color-border);
     background: #FFFFFF;
@@ -304,30 +386,30 @@
     box-shadow: 0 2px 6px rgba(13, 110, 110, 0.25);
   }
 
-  @media (max-width: 640px) {
-    .today-med-card, .inventory-card {
-      padding: 14px;
-      gap: 10px;
-    }
-    .today-med-actions {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 8px;
-    }
-    .today-med-actions .btn-hm {
-      width: 100%;
-      justify-content: center;
-      min-height: 42px;
-    }
-    .inventory-footer {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 8px;
-    }
-    .inventory-footer .btn-hm {
-      width: 100%;
-      justify-content: center;
-    }
+  /* Medicine Details Pop-up Specific Styling */
+  .details-grid-box {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .details-stat-cell {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+  .details-stat-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .details-stat-value {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #0F172A;
+    margin-top: 2px;
   }
 </style>
 </head>
@@ -497,6 +579,94 @@
 <div class="toast-hm" id="toastHm">
   <span class="dot-success"></span>
   <span>Saved</span>
+</div>
+
+<!-- Medicine Details Modal (Bottom-Sheet / Clean Modal) -->
+<div class="modal-hm-backdrop" id="medDetailsModal">
+  <div class="modal-hm" style="max-width:480px;max-height:92vh;overflow-y:auto;position:relative;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1px solid #F1F5F9;">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+        <div id="medDetIconBox" style="width:40px;height:40px;border-radius:10px;background:#E6F4F4;color:#0D6E6E;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
+        </div>
+        <div style="min-width:0;">
+          <h3 id="medDetName" style="margin:0;font-size:1.15rem;font-weight:700;color:var(--color-text);word-break:break-word;line-height:1.25;">Medicine Name</h3>
+          <div id="medDetBadge" style="margin-top:4px;"></div>
+        </div>
+      </div>
+      <button type="button" class="modal-close-icon-btn" onclick="closeModal('medDetailsModal')" aria-label="Close" title="Close">✕</button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px;">
+      <!-- Key Stats Grid -->
+      <div class="details-grid-box">
+        <div class="details-stat-cell">
+          <div class="details-stat-label">🕒 Timing (সময়)</div>
+          <div id="medDetTime" class="details-stat-value">—</div>
+        </div>
+        <div class="details-stat-cell">
+          <div class="details-stat-label">💊 Dosage (মাত্রা)</div>
+          <div id="medDetDosage" class="details-stat-value">—</div>
+        </div>
+        <div class="details-stat-cell">
+          <div class="details-stat-label">🔄 Frequency (বার)</div>
+          <div id="medDetFreq" class="details-stat-value">—</div>
+        </div>
+        <div class="details-stat-cell">
+          <div class="details-stat-label">🍽️ Meal Condition</div>
+          <div id="medDetMeal" class="details-stat-value">—</div>
+        </div>
+      </div>
+
+      <!-- Schedule Dates Banner -->
+      <div style="background:#F0FDFA;border:1px solid #CCFBF1;border-radius:10px;padding:10px 12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+          <div style="font-size:0.75rem;font-weight:700;color:#0F766E;text-transform:uppercase;letter-spacing:0.02em;">
+            📅 Schedule Duration (মেয়াদ)
+          </div>
+          <div id="medDetDurationBadge" style="font-size:0.75rem;font-weight:700;color:#0D6E6E;"></div>
+        </div>
+        <div id="medDetDates" style="font-size:0.84rem;color:#0F172A;font-weight:600;margin-top:4px;">
+          Started: — · Ends: —
+        </div>
+      </div>
+
+      <!-- Instructions Section -->
+      <div id="medDetInstructionsWrap" style="display:none;background:#F8FAFC;border:1px solid var(--color-border);border-radius:10px;padding:10px 12px;">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:4px;">
+          📋 Instructions (সেবনের নিয়ম)
+        </div>
+        <div id="medDetInstructions" style="font-size:0.85rem;color:var(--color-text);line-height:1.45;"></div>
+      </div>
+
+      <!-- Description / Purpose Section -->
+      <div id="medDetDescWrap" style="display:none;background:#F8FAFC;border:1px solid var(--color-border);border-radius:10px;padding:10px 12px;">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:4px;">
+          💡 Description & Doctor Note (বিবরণ / পরামর্শ)
+        </div>
+        <div id="medDetDesc" style="font-size:0.85rem;color:var(--color-text);line-height:1.45;"></div>
+      </div>
+
+      <!-- Quick Action Buttons inside Details -->
+      <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;">
+        <button type="button" class="btn-hm btn-ghost" id="medDetHistoryBtn" style="width:100%;justify-content:center;border:1.5px solid #CBD5E1;background:#FFFFFF;font-weight:700;padding:8px 12px;font-size:0.84rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>View & Edit Dose History (লগ হিস্ট্রি)</span>
+        </button>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button type="button" class="btn-hm btn-secondary" id="medDetEditBtn" style="justify-content:center;padding:8px 12px;font-size:0.84rem;font-weight:600;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            <span>Edit</span>
+          </button>
+          <button type="button" class="btn-hm btn-ghost" id="medDetDeleteBtn" style="justify-content:center;padding:8px 12px;font-size:0.84rem;font-weight:600;color:#DC2626;border-color:#FECACA;background:#FEF2F2;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            <span>Delete</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Add / Edit medicine modal -->
