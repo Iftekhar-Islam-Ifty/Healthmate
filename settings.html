@@ -69,7 +69,7 @@
     <div class="sidebar-footer">
       <button type="button" class="sidebar-logout-btn" onclick="logoutUser(); closeMobileSidebar();">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span>লগআউট (Log Out)</span>
+        <span>Log Out</span>
       </button>
     </div>
   </aside>
@@ -98,7 +98,7 @@
       <div class="page-header">
         <div>
           <h1>Settings</h1>
-          <p>স্বাস্থ্য পছন্দ, রিমাইন্ডার এবং ডেটা ব্যাকআপ ও রিস্টোর নিয়ন্ত্রণ করুন।</p>
+          <p>Manage notification preferences, data backups, and offline sync.</p>
         </div>
       </div>
 
@@ -106,13 +106,13 @@
       <section class="section">
         <div class="section-head">
           <h2>Reminders &amp; Alerts</h2>
-          <p>ওষুধের সময় ও দৈনিক অভ্যাসের জন্য স্বয়ংক্রিয় প্রম্পট নিয়ন্ত্রণ করুন।</p>
+          <p>Configure automated prompts for medications and wellness routines.</p>
         </div>
         <div class="panel" style="padding: 0 var(--space-4);">
           <div class="permission-row">
             <div>
               <div class="p-label">Daily medicine reminders</div>
-              <div class="p-sub">নির্ধারিত ডোজের সময় এবং ওষুধের স্টক কমে গেলে নোটিফিকেশন পান।</div>
+              <div class="p-sub">Receive notifications for scheduled doses and low supply levels.</div>
             </div>
             <label class="toggle">
               <input type="checkbox" id="prefMeds" onchange="onPrefChange('medicineReminders', this.checked)">
@@ -123,7 +123,7 @@
           <div class="permission-row">
             <div>
               <div class="p-label">Daily habit &amp; routine tracking prompts</div>
-              <div class="p-sub">পর্যাপ্ত পানি পান, হাঁটা ও ঘুমের লক্ষ্যের জন্য নিয়মিত রিমাইন্ডার পান।</div>
+              <div class="p-sub">Gentle prompts for hydration, daily walks, and sleep tracking.</div>
             </div>
             <label class="toggle">
               <input type="checkbox" id="prefRoutines" onchange="onPrefChange('routineReminders', this.checked)">
@@ -134,7 +134,7 @@
           <div class="permission-row">
             <div>
               <div class="p-label">Vital readings follow-up alerts</div>
-              <div class="p-sub">রক্তচাপ বা সুগারের মাত্রা লগ করা বা পর্যালোচনার প্রয়োজন হলে অ্যালার্ট পান।</div>
+              <div class="p-sub">Alerts when blood pressure or glucose logging is due.</div>
             </div>
             <label class="toggle">
               <input type="checkbox" id="prefAlerts" onchange="onPrefChange('healthAlerts', this.checked)">
@@ -148,20 +148,20 @@
       <section class="section">
         <div class="section-head">
           <h2>Data &amp; Portability</h2>
-          <p>আপনার Healthmate ডেটা ও প্রোফাইল সুরক্ষিত থাকে। কম্পিউটার ও মোবাইলের মধ্যে ডেটা নিতে নিচে এক্সপোর্ট/ইমপোর্ট ব্যবহার করুন।</p>
+          <p>Your health data is securely stored. Use JSON export and restore to transfer data between devices.</p>
         </div>
         <div class="panel" style="padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);">
 
           <!-- PC to Mobile Sync Tip Box -->
           <div style="background:#F0FDFA;border:1px solid #99F6E4;border-radius:8px;padding:12px 14px;font-size:0.83rem;line-height:1.45;color:#0F766E;">
             <div style="font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:0.88rem;">
-              <span>📲 কম্পিউটার থেকে মোবাইলে ডেটা সিঙ্ক করার নিয়ম:</span>
+              <span>📲 How to transfer data between PC and Mobile:</span>
             </div>
-            <div>GitHub-এ শুধু অ্যাপের <b>কোড</b> যায়, আপনার তৈরি করা ওষুধ বা প্রোফাইল ছবি ডিভাইসের মেমরিতে থাকে। কম্পিউটার থেকে মোবাইলে নিতে:</div>
+            <div>Custom medicines, doses, and logs are saved in browser storage. To transfer between devices:</div>
             <ol style="margin:6px 0 0 18px;padding:0;">
-              <li>কম্পিউটারে নিচে <b>"Export JSON"</b> চাপুন।</li>
-              <li>ফাইলটি মোবাইলে পাঠিয়ে নিন (WhatsApp/Drive/Email)।</li>
-              <li>মোবাইলের অ্যাপে এসে নিচে <b>"Restore JSON"</b> চেপে ফাইলটি লোড করুন। সাথে সাথে সব ওষুধ ও প্রোফাইল ছবি মোবাইলে চলে আসবে!</li>
+              <li>Click <b>"Export JSON"</b> on this device to download a backup file.</li>
+              <li>Send the file to your other device (WhatsApp, Drive, or Email).</li>
+              <li>Open HealthMate on the second device, click <b>"Restore JSON"</b>, and select the file.</li>
             </ol>
           </div>
           
@@ -170,7 +170,7 @@
             <div>
               <div style="font-weight:600;font-size:0.92rem;">Doctor's Consultation Report</div>
               <div style="font-size:0.82rem;color:var(--color-text-muted);margin-top:2px;">
-                সমস্ত ওষুধ, অভ্যাস ও সাম্প্রতিক Vitals সহ প্রিন্টযোগ্য ক্লিনিক্যাল শিট তৈরি করুন।
+                Generate a printable clinical sheet with current medications and recent vitals.
               </div>
             </div>
             <a href="report.html" class="btn-hm btn-ghost" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
@@ -184,7 +184,7 @@
             <div>
               <div style="font-weight:600;font-size:0.92rem;">Export Full Backup</div>
               <div style="font-size:0.82rem;color:var(--color-text-muted);margin-top:2px;">
-                ওষুধ, প্রোফাইল ছবি, রুটিন ও স্বাস্থ্য রেকর্ডের সম্পূর্ণ ব্যাকআপ JSON ফাইল হিসেবে ডাউনলোড করুন।
+                Download a complete backup JSON containing medicines, logs, vitals, and profile settings.
               </div>
             </div>
             <button type="button" class="btn-hm btn-secondary" onclick="downloadBackupFile()">
@@ -229,7 +229,7 @@
       <section class="section">
         <div class="section-head">
           <h2>App Updates &amp; Offline Cache</h2>
-          <p>মোবাইল অ্যাপ বা ইনস্টল করা PWA-তে সর্বশেষ আপডেট ও ফিচার দেখতে ক্যাশ নিয়ন্ত্রণ করুন।</p>
+          <p>Ensure you have the latest updates loaded on mobile and desktop.</p>
         </div>
         <div class="panel" style="padding: var(--space-4);">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
@@ -239,7 +239,7 @@
                 <span class="badge-status-green" style="font-size:0.7rem;padding:2px 8px;border-radius:12px;background:#E6F4F1;color:#0D6E6E;font-weight:600;">Active</span>
               </div>
               <div style="font-size:0.82rem;color:var(--color-text-muted);margin-top:4px;max-width:500px;line-height:1.4;">
-                GitHub বা সার্ভারে করা কোনো পরিবর্তন আপনার মোবাইলে তৎক্ষণাৎ না দেখা গেলে নিচের বোতাম চাপুন।
+                If updates or newly created items do not immediately reflect, tap below to refresh the offline cache.
               </div>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -366,10 +366,10 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast('ব্যাকআপ ফাইল সফলভাবে ডাউনলোড হয়েছে!');
+      showToast('Backup file downloaded successfully');
     } catch (e) {
       console.error('Export error:', e);
-      showToast('ব্যাকআপ তৈরিতে সমস্যা হয়েছে');
+      showToast('Failed to generate backup file');
     }
   }
 
@@ -383,7 +383,7 @@
         const content = evt.target.result;
         const success = HMStore.importFullBackup(content);
         if (success) {
-          showToast('সব ডেটা ও প্রোফাইল ছবি সফলভাবে রিস্টোর হয়েছে!');
+          showToast('All data and profile restored successfully!');
           setTimeout(() => {
             window.location.reload();
           }, 800);
@@ -392,7 +392,7 @@
         }
       } catch (err) {
         console.error('Import error:', err);
-        showToast('ত্রুটি: ব্যাকআপ ফাইলটি সঠিক নয়', 4000);
+        showToast('Error: Invalid backup file format', 4000);
       }
       e.target.value = '';
     };

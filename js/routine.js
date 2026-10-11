@@ -57,10 +57,10 @@ function initPageHeader() {
 
   if (activeProfile && !activeProfile.isOwner) {
     if (titleEl) titleEl.textContent = `${activeProfile.name}'s Routine`;
-    if (subEl) subEl.textContent = `${activeProfile.name}-এর দৈনিক স্বাস্থ্য রুটিন এবং সাপ্তাহিক ধারাবাহিকতা।`;
+    if (subEl) subEl.textContent = `Daily health routines and weekly habit progress for ${activeProfile.name}.`;
   } else {
     if (titleEl) titleEl.textContent = "Daily Routine";
-    if (subEl) subEl.textContent = "আজকের স্বাস্থ্য রুটিন এবং সাপ্তাহিক ধারাবাহিকতার চিত্র।";
+    if (subEl) subEl.textContent = "Today's health habits and weekly progress consistency.";
   }
 }
 

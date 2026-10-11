@@ -59,10 +59,10 @@ function initPageHeader() {
 
   if (activeProfile && !activeProfile.isOwner) {
     if (titleEl) titleEl.textContent = `${activeProfile.name}'s Health Records`;
-    if (subEl) subEl.textContent = `${activeProfile.name}-এর স্বাস্থ্য পরিমাপ, পূর্ববর্তী রেকর্ড এবং ট্রেন্ড অ্যানালাইসিস।`;
+    if (subEl) subEl.textContent = `Vital readings and trend tracking for ${activeProfile.name}.`;
   } else {
     if (titleEl) titleEl.textContent = "Health Records";
-    if (subEl) subEl.textContent = "সময়ের সাথে সাথে স্বাস্থ্য পরিমাপ ট্র্যাক করুন এবং ট্রেন্ড পর্যবেক্ষণ করুন।";
+    if (subEl) subEl.textContent = "Track vital health metrics and physiological trends over time.";
   }
 }
 

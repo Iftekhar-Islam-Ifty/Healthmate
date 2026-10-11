@@ -167,7 +167,7 @@ const HM_DEFAULT_MEMBERS = [
     emergency: '',
     conditions: [],
     allergies: [],
-    notes: 'ব্যক্তিগত স্বাস্থ্য প্রোফাইল।',
+    notes: 'Personal health profile.',
     medStats: { done: 0, total: 0 },
     routinePct: 0
   }
@@ -1058,7 +1058,7 @@ const HMStore = {
       emergency: user.emergency,
       conditions: user.conditions,
       allergies: [],
-      notes: 'ব্যক্তিগত স্বাস্থ্য প্রোফাইল।',
+      notes: 'Personal health profile.',
       medStats: { done: 0, total: 0 },
       routinePct: 0
     };
@@ -2551,7 +2551,7 @@ const HMStore = {
           bg: '#ECFDF5',
           color: '#047857',
           border: '#A7F3D0',
-          tip: 'Systolic < 120 এবং Diastolic < 80 mmHg। রক্তচাপ সম্পূর্ণ স্বাভাবিক ও স্বাস্থ্যকর মাত্রায় রয়েছে।'
+          tip: 'Systolic < 120 and Diastolic < 80 mmHg. Blood pressure is within the optimal healthy clinical range.'
         };
       }
       if (sys <= 129 && dia < 80) {
@@ -2562,7 +2562,7 @@ const HMStore = {
           bg: '#FEF3C7',
           color: '#B45309',
           border: '#FDE68A',
-          tip: 'Systolic 120–129 mmHg। খাবারে সোডিয়াম (Sodium/লবণ) পরিমিত রাখুন এবং নিয়মিত হাঁটাচলা বজায় রাখুন।'
+          tip: 'Systolic 120–129 mmHg. Maintain moderate sodium intake and regular cardiovascular exercise.'
         };
       }
       if ((sys >= 130 && sys <= 139) || (dia >= 80 && dia <= 89)) {
@@ -2573,7 +2573,7 @@ const HMStore = {
           bg: '#FFEDD5',
           color: '#C2410C',
           border: '#FED7AA',
-          tip: 'Systolic 130–139 অথবা Diastolic 80–89 mmHg। সপ্তাহে অন্তত ২ বার রিডিং পর্যবেক্ষণ করুন এবং চিকিৎসকের পরামর্শ নিন।'
+          tip: 'Systolic 130–139 or Diastolic 80–89 mmHg. Monitor readings twice weekly and consult your physician.'
         };
       }
       return {
@@ -2583,7 +2583,7 @@ const HMStore = {
         bg: '#FEE2E2',
         color: '#B91C1C',
         border: '#FECACA',
-        tip: 'Systolic ≥ 140 অথবা Diastolic ≥ 90 mmHg (উচ্চ রক্তচাপ)। কিছুটা বিশ্রাম নিয়ে পুনরায় মাপুন এবং অস্বাভাবিক থাকলে চিকিৎসকের সাথে কথা বলুন।'
+        tip: 'Systolic ≥ 140 or Diastolic ≥ 90 mmHg. Rest and re-check; consult your physician if persistent.'
       };
     }
 
@@ -2601,7 +2601,7 @@ const HMStore = {
             bg: '#FEE2E2',
             color: '#B91C1C',
             border: '#FECACA',
-            tip: 'গ্লুকোজ ৭০ mg/dL-এর নিচে নেমে গেছে (Hypoglycemia)। দ্রুত মিষ্টি খাবার বা ফলের জুস গ্রহণ করুন।'
+            tip: 'Glucose is below 70 mg/dL (Hypoglycemia). Take fast-acting carbohydrates or fruit juice promptly.'
           };
         }
         if (val <= 99) {
@@ -2612,7 +2612,7 @@ const HMStore = {
             bg: '#ECFDF5',
             color: '#047857',
             border: '#A7F3D0',
-            tip: '৭০–৯৯ mg/dL। খালি পেটে রক্তের গ্লুকোজ (Fasting Glucose) আদর্শ ও সম্পূর্ণ সুস্থ স্বাভাবিক মাত্রায় রয়েছে।'
+            tip: '70–99 mg/dL. Fasting glucose is in the optimal healthy metabolic range.'
           };
         }
         if (val <= 125) {
@@ -2623,7 +2623,7 @@ const HMStore = {
             bg: '#FEF3C7',
             color: '#B45309',
             border: '#FDE68A',
-            tip: '১০০–১২৫ mg/dL। Fasting Glucose সামান্য বেশি (Pre-diabetes)। অতিরিক্ত মিষ্টি পরিহার করুন ও নিয়মিত শরীরচর্চায় মনোযোগ দিন।'
+            tip: '100–125 mg/dL. Mildly elevated fasting glucose. Focus on balanced carbohydrates and exercise.'
           };
         }
         return {
@@ -2633,7 +2633,7 @@ const HMStore = {
           bg: '#FEE2E2',
           color: '#B91C1C',
           border: '#FECACA',
-          tip: '≥ ১২৬ mg/dL। Fasting Glucose মাত্রাতিরিক্ত। একটি HbA1c টেস্ট করিয়ে চিকিৎসকের পরামর্শ নেওয়া বাঞ্ছনীয়।'
+          tip: '≥ 126 mg/dL. Fasting glucose is elevated. Consider checking HbA1c and consulting your physician.'
         };
       } else {
         if (val < 140) {
@@ -2644,7 +2644,7 @@ const HMStore = {
             bg: '#ECFDF5',
             color: '#047857',
             border: '#A7F3D0',
-            tip: '< ১৪০ mg/dL। খাওয়ার ২ ঘণ্টা পর রক্তের গ্লুকোজ সুস্থ ও স্বাভাবিক পর্যায়ে রয়েছে।'
+            tip: '< 140 mg/dL. Post-meal glucose 2 hours after food is within normal clinical limits.'
           };
         }
         if (val <= 199) {
@@ -2655,7 +2655,7 @@ const HMStore = {
             bg: '#FEF3C7',
             color: '#B45309',
             border: '#FDE68A',
-            tip: '১৪০–১৯৯ mg/dL। খাওয়ার পর সুগারের মাত্রা কিছুটা বৃদ্ধি পেয়েছে। শর্করার (Carbohydrates) পরিমাণ নিয়ন্ত্রণে রাখুন।'
+            tip: '140–199 mg/dL. Post-meal glucose is slightly elevated. Monitor glycemic load in meals.'
           };
         }
         return {
@@ -2665,7 +2665,7 @@ const HMStore = {
           bg: '#FEE2E2',
           color: '#B91C1C',
           border: '#FECACA',
-          tip: '≥ ২০০ mg/dL। খাওয়ার পর সুগার অনেক বেশি উঠেছে। চিকিৎসকের পরামর্শ অনুযায়ী ওষুধ ও ডায়েট সমন্বয় করুন।'
+          tip: '≥ 200 mg/dL. Marked post-meal glucose spike. Discuss medication and dietary adjustments with doctor.'
         };
       }
     }
@@ -2685,7 +2685,7 @@ const HMStore = {
           bg: '#EFF6FF',
           color: '#1E40AF',
           border: '#BFDBFE',
-          tip: `গণনাকৃত BMI ${bmiStr}। আদর্শ ওজনের চেয়ে কম; পুষ্টিকর ও সুষম খাবার নিয়মিত গ্রহণ করুন।`
+          tip: `Calculated BMI is ${bmiStr}. Below standard range; prioritize balanced nutrient-dense meals.`
         };
       }
       if (bmi <= 24.9) {
@@ -2696,7 +2696,7 @@ const HMStore = {
           bg: '#ECFDF5',
           color: '#047857',
           border: '#A7F3D0',
-          tip: `গণনাকৃত BMI ${bmiStr}। আপনার ওজন স্বাস্থ্যকর এবং আদর্শ সীমার মধ্যে রয়েছে।`
+          tip: `Calculated BMI is ${bmiStr}. Body weight is within the healthy recommended index.`
         };
       }
       if (bmi <= 29.9) {
@@ -2707,7 +2707,7 @@ const HMStore = {
           bg: '#FEF3C7',
           color: '#B45309',
           border: '#FDE68A',
-          tip: `গণনাকৃত BMI ${bmiStr}। ওজন সামান্য বেশি (Overweight); নিয়মিত শারীরিক কসরত ও ক্যালরি নিয়ন্ত্রণ বজায় রাখুন।`
+          tip: `Calculated BMI is ${bmiStr}. Mildly elevated; maintain regular exercise and caloric balance.`
         };
       }
       return {
@@ -2717,7 +2717,7 @@ const HMStore = {
         bg: '#FEE2E2',
         color: '#B91C1C',
         border: '#FECACA',
-        tip: `গণনাকৃত BMI ${bmiStr}। স্থূলতার ঝুঁকি রয়েছে; সুনির্দিষ্ট জীবনধারা পরিবর্তন ও চিকিৎসকের পরামর্শ গ্রহণ করুন।`
+        tip: `Calculated BMI is ${bmiStr}. Higher metabolic risk; lifestyle modifications recommended.`
       };
     }
 
@@ -2732,7 +2732,7 @@ const HMStore = {
           bg: '#EFF6FF',
           color: '#1E40AF',
           border: '#BFDBFE',
-          tip: 'শরীরের তাপমাত্রা স্বাভাবিকের চেয়ে কিছুটা কম। শরীর গরম রাখুন ও বিশ্রাম নিন।'
+          tip: 'Body temperature is slightly lower than baseline. Stay warm and rest.'
         };
       }
       if (t <= 99.0) {
@@ -2743,7 +2743,7 @@ const HMStore = {
           bg: '#ECFDF5',
           color: '#047857',
           border: '#A7F3D0',
-          tip: '৯৭.০–৯৯.০ °F। শরীরের তাপমাত্রা সম্পূর্ণ স্বাভাবিক (Normothermic)।'
+          tip: '97.0–99.0 °F. Body temperature is normothermic and healthy.'
         };
       }
       if (t <= 100.4) {
@@ -2754,7 +2754,7 @@ const HMStore = {
           bg: '#FEF3C7',
           color: '#B45309',
           border: '#FDE68A',
-          tip: 'সামান্য জ্বর অনুভূত হচ্ছে (Low-Grade Fever)। প্রচুর পানি পান করুন ও পর্যাপ্ত বিশ্রাম নিন।'
+          tip: 'Low-grade fever detected. Stay hydrated with fluids and monitor over 24 hours.'
         };
       }
       return {
@@ -2764,7 +2764,7 @@ const HMStore = {
         bg: '#FEE2E2',
         color: '#B91C1C',
         border: '#FECACA',
-        tip: '≥ ১০০.৫ °F। উচ্চ জ্বর; তাপমাত্রা পর্যবেক্ষণ করুন এবং স্থায়ী হলে চিকিৎসকের শরণাপন্ন হন।'
+        tip: '≥ 100.5 °F. Elevated temperature. Monitor symptoms and consult a healthcare provider if persistent.'
       };
     }
 
@@ -2850,8 +2850,8 @@ const HMStore = {
         category: 'Prescriptions',
         title: `Daily Dose Adherence: ${adherence}%`,
         description: adherence === 100
-          ? 'আজকের জন্য নির্ধারিত সব ডোজ নেওয়া সম্পন্ন হয়েছে। অসাধারণ নিয়মনিষ্ঠতা!'
-          : `আজকের ${totalMeds} টির মধ্যে ${takenMeds} টি ডোজ সম্পন্ন হয়েছে। বাকি ওষুধগুলো সঠিক সময়ে গ্রহণ করতে ভুলবেন না।`,
+          ? 'All scheduled doses for today have been completed. Excellent adherence!'
+          : `${takenMeds} of ${totalMeds} scheduled doses completed today. Take remaining doses on time.`,
         level: adherence === 100 ? 'good' : 'info',
         badgeBg: adherence === 100 ? '#ECFDF5' : '#EFF6FF',
         badgeColor: adherence === 100 ? '#047857' : '#1E40AF',
@@ -2870,8 +2870,8 @@ const HMStore = {
         category: 'Daily Habits',
         title: `Hydration Target: ${doneDays}/7 Days Met`,
         description: doneDays >= 5
-          ? 'প্রতিদিন পর্যাপ্ত পানি পান (৮ গ্লাস বা ২.৫ লিটার) কিডনির সুস্থতা, রক্তচাপ নিয়ন্ত্রণ এবং সতেজতা বজায় রাখতে সাহায্য করে।'
-          : 'নিয়মিত পর্যাপ্ত পানি পান আপনার রক্তের সঞ্চালন ও বিপাকক্রিয়া (Metabolism) স্বাভাবিক রাখতে সহায়ক।',
+          ? 'Drinking sufficient water daily (8 glasses / 2.5L) maintains kidney health and cardiovascular regulation.'
+          : 'Consistent hydration supports healthy metabolism and physiological fluid balance.',
         level: doneDays >= 5 ? 'good' : 'info',
         badgeBg: '#F0FDFA',
         badgeColor: '#0D6E6E',
@@ -2892,7 +2892,7 @@ const HMStore = {
         id: 'insight-appt',
         category: 'Clinical Follow-up',
         title: `Next Visit: ${nextAppt.doctorName} (${countdownText})`,
-        description: `${nextAppt.hospital || 'Chamber'}-এ ${nextAppt.reason} সংক্রান্ত অ্যাপয়েন্টমেন্ট। যাওয়ার আগে আপনার প্রি-ভিজিট চেকলিস্ট ও প্রয়োজনীয় প্রশ্ন গুছিয়ে নিন।`,
+        description: `Scheduled appointment at ${nextAppt.hospital || 'Chamber'} for ${nextAppt.reason || 'consultation'}. Review your pre-visit checklist before your visit.`,
         level: diffDays <= 3 ? 'warning' : 'info',
         badgeBg: diffDays <= 3 ? '#FEF3C7' : '#EFF6FF',
         badgeColor: diffDays <= 3 ? '#B45309' : '#1E40AF',

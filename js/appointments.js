@@ -83,7 +83,7 @@ function clearApptSearch() {
 window.clearApptSearch = clearApptSearch;
 
 function getCountdownInfo(dateStr, timeStr) {
-  if (!dateStr) return { text: 'শিডিউল করা', type: 'normal' };
+  if (!dateStr) return { text: 'Scheduled', type: 'normal' };
   
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -93,18 +93,18 @@ function getCountdownInfo(dateStr, timeStr) {
   const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
   if (diffDays < 0) {
-    return { text: `${Math.abs(diffDays)} দিন আগে`, type: 'done' };
+    return { text: `${Math.abs(diffDays)}d ago`, type: 'done' };
   } else if (diffDays === 0) {
-    return { text: 'আজকের অ্যাপয়েন্টমেন্ট', type: 'soon' };
+    return { text: 'Today', type: 'soon' };
   } else if (diffDays === 1) {
-    return { text: 'আগামীকাল', type: 'soon' };
+    return { text: 'Tomorrow', type: 'soon' };
   } else if (diffDays <= 7) {
-    return { text: `${diffDays} দিন পর`, type: 'soon' };
+    return { text: `In ${diffDays} days`, type: 'soon' };
   } else if (diffDays <= 30) {
     const weeks = Math.round(diffDays / 7);
-    return { text: `${weeks} সপ্তাহ পর`, type: 'normal' };
+    return { text: `In ${weeks} wks`, type: 'normal' };
   } else {
-    return { text: `${diffDays} দিন পর`, type: 'normal' };
+    return { text: `In ${diffDays} days`, type: 'normal' };
   }
 }
 
@@ -114,9 +114,9 @@ function formatDisplayDate(dateStr) {
     const parts = dateStr.split('-');
     if (parts.length === 3) {
       const d = new Date(parts[0], parts[1] - 1, parts[2]);
-      const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
-      const days = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
-      return `${days[d.getDay()]}, ${parts[2]} ${months[d.getMonth()]} ${parts[0]}`;
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      return `${days[d.getDay()]}, ${months[d.getMonth()]} ${parts[2]}, ${parts[0]}`;
     }
   } catch (e) {
     return dateStr;
@@ -125,13 +125,13 @@ function formatDisplayDate(dateStr) {
 }
 
 function getDoctorInitials(name) {
-  if (!name) return 'ডা.';
+  if (!name) return 'DR';
   const clean = name.replace(/^(dr\.?|ডা\.?|ডাক্তার)\s*/i, '').trim();
   const words = clean.split(/\s+/);
   if (words.length >= 2) {
     return (words[0][0] + words[words.length - 1][0]).toUpperCase();
   }
-  return clean.slice(0, 2).toUpperCase() || 'ডা.';
+  return clean.slice(0, 2).toUpperCase() || 'DR';
 }
 
 function renderAppointmentsList() {
@@ -139,7 +139,7 @@ function renderAppointmentsList() {
   if (!container) return;
 
   if (!window.HMStore) {
-    container.innerHTML = '<div class="panel text-center">অ্যাপয়েন্টমেন্টের তথ্য লোড হচ্ছে...</div>';
+    container.innerHTML = '<div class="panel text-center">Loading appointments...</div>';
     return;
   }
 
@@ -195,15 +195,15 @@ function renderAppointmentsList() {
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
           </div>
-          <h3>"${escapeHtml(currentSearchTerm)}" এর সাথে কোনো ভিজিট পাওয়া যায়নি</h3>
-          <p>অন্য কোনো ডাক্তারের নাম, বিশেষজ্ঞ বা হাসপাতালের নাম দিয়ে চেষ্টা করুন অথবা সার্চ ফিল্টার ক্লিয়ার করুন।</p>
+          <h3>No visits match "${escapeHtml(currentSearchTerm)}"</h3>
+          <p>Try searching another doctor name, specialty, or clinic, or clear the search filter.</p>
           <button type="button" class="btn-hm btn-ghost" onclick="clearApptSearch()" style="margin-top:14px;">
-            সার্চ ক্লিয়ার করুন
+            Clear Search
           </button>
         </div>
       `;
     } else {
-      const tabTitle = currentApptTab === 'upcoming' ? 'আসন্ন কোনো' : (currentApptTab === 'completed' ? 'কোনো সম্পন্ন' : 'কোনো');
+      const tabTitle = currentApptTab === 'upcoming' ? 'upcoming' : (currentApptTab === 'completed' ? 'completed' : '');
       container.innerHTML = `
         <div class="empty-vault-state" style="grid-column: 1 / -1;">
           <div class="empty-icon-circle" style="background:#ECFDF5;color:#059669;">
@@ -214,10 +214,10 @@ function renderAppointmentsList() {
               <line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
           </div>
-          <h3>বর্তমানে ${tabTitle} ডাক্তারের অ্যাপয়েন্টমেন্ট নেই</h3>
-          <p>ডাক্তারের সাথে কনসালটেশনের সময়, চেম্বারের তথ্য এবং প্রয়োজনীয় প্রশ্ন ও ল্যাব রিপোর্টের চেকলিস্ট যুক্ত রাখুন।</p>
+          <h3>No ${tabTitle ? tabTitle + ' ' : ''}appointments found</h3>
+          <p>Track doctor consultations, clinic schedules, and pre-visit checklists in one place.</p>
           <button type="button" class="btn-hm btn-primary" onclick="openScheduleModal()" style="margin-top:14px;">
-            + নতুন অ্যাপয়েন্টমেন্ট শিডিউল
+            + Schedule Appointment
           </button>
         </div>
       `;
@@ -240,12 +240,12 @@ function renderAppointmentsList() {
             <div class="appt-avatar">${initials}</div>
             <div class="appt-doc-info">
               <h3>${escapeHtml(appt.doctorName)}</h3>
-              <span class="appt-specialty-pill">${escapeHtml(appt.specialty || 'চিকিৎসা বিশেষজ্ঞ')}</span>
+              <span class="appt-specialty-pill">${escapeHtml(appt.specialty || 'Physician')}</span>
             </div>
           </div>
           <div>
             ${isCompleted
-              ? '<span class="appt-countdown-tag done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> সম্পন্ন</span>'
+              ? '<span class="appt-countdown-tag done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Completed</span>'
               : `<span class="appt-countdown-tag ${countdown.type}">⏳ ${countdown.text}</span>`
             }
           </div>
@@ -275,22 +275,22 @@ function renderAppointmentsList() {
             <div class="appt-meta-item">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
               <a href="tel:${escapeHtml(appt.phone)}" style="color:var(--color-primary);text-decoration:none;font-weight:500;">
-                ${escapeHtml(appt.phone)} (চেম্বারে সরাসরি কল করুন)
+                ${escapeHtml(appt.phone)} (Call clinic)
               </a>
             </div>
           ` : ''}
           <div class="appt-meta-item" style="color:var(--color-text);">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <b>ভিজিটের কারণ:</b> <span>${escapeHtml(appt.reason || 'নিয়মিত চেকআপ ও পরামর্শ')}</span>
+            <b>Reason:</b> <span>${escapeHtml(appt.reason || 'Routine consultation')}</span>
           </div>
         </div>
 
         <!-- Pre-Visit Checklist & Questions -->
         <div class="appt-checklist-block">
           <div class="appt-checklist-head">
-            <span>প্রস্তুতি চেকলিস্ট ও জরুরি প্রশ্ন (${doneCheckCount}/${checklist.length})</span>
+            <span>Pre-Visit Checklist &amp; Questions (${doneCheckCount}/${checklist.length})</span>
             <span style="font-weight:normal;text-transform:none;font-size:0.75rem;color:var(--color-text-muted);">
-              ${checklist.length > 0 && doneCheckCount === checklist.length ? 'সব প্রস্তুত ✓' : 'টিক দিয়ে সম্পন্ন করুন'}
+              ${checklist.length > 0 && doneCheckCount === checklist.length ? 'Ready ✓' : 'Check off as completed'}
             </span>
           </div>
           <div id="checklist-items-${appt.id}">
@@ -302,15 +302,15 @@ function renderAppointmentsList() {
             `).join('')}
           </div>
           <div class="appt-checklist-add-row">
-            <input type="text" id="addCheckInput-${appt.id}" placeholder="প্রশ্ন বা প্রয়োজনীয় টেস্ট রিপোর্ট লিখে এন্টার দিন..." onkeydown="if(event.key==='Enter') handleAddChecklistItem('${appt.id}')">
-            <button type="button" onclick="handleAddChecklistItem('${appt.id}')">+ যোগ করুন</button>
+            <input type="text" id="addCheckInput-${appt.id}" placeholder="Type question or test to bring and press Enter..." onkeydown="if(event.key==='Enter') handleAddChecklistItem('${appt.id}')">
+            <button type="button" onclick="handleAddChecklistItem('${appt.id}')">+ Add</button>
           </div>
         </div>
 
         <!-- Notes / Doctor Guidance -->
         ${appt.notes ? `
           <div class="appt-notes-box">
-            <div style="font-size:0.75rem;font-weight:700;color:var(--color-primary-dark);margin-bottom:2px;">ডাক্তারের পরামর্শ ও টেস্টের নির্দেশিকা</div>
+            <div style="font-size:0.75rem;font-weight:700;color:var(--color-primary-dark);margin-bottom:2px;">Doctor Notes &amp; Instructions</div>
             <div>${escapeHtml(appt.notes)}</div>
           </div>
         ` : ''}
@@ -321,22 +321,22 @@ function renderAppointmentsList() {
             ${!isCompleted ? `
               <button type="button" class="btn-hm btn-primary" onclick="markApptCompleted('${appt.id}')" style="font-size:0.8rem;padding:6px 12px;background:#059669;border-color:#059669;">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                ভিজিট সম্পন্ন হয়েছে
+                Mark Completed
               </button>
             ` : `
               <button type="button" class="btn-hm btn-ghost" onclick="openFollowUpModal('${appt.id}')" style="font-size:0.8rem;padding:6px 12px;color:var(--color-primary-dark);">
-                📅 পরবর্তী ফলো-আপ শিডিউল
+                📅 Schedule Follow-up
               </button>
             `}
-            <a href="documents.html" class="btn-hm btn-ghost" style="font-size:0.8rem;padding:6px 12px;text-decoration:none;" title="মেডিকেল ভল্ট থেকে টেস্ট রিপোর্ট দেখুন">
-              ভল্ট রিপোর্টস ↗
+            <a href="documents.html" class="btn-hm btn-ghost" style="font-size:0.8rem;padding:6px 12px;text-decoration:none;" title="View medical documents & lab reports">
+              Vault Reports ↗
             </a>
           </div>
           <div style="display:flex;gap:4px;">
-            <button type="button" class="icon-btn" onclick="openScheduleModal('${appt.id}')" title="তথ্য এডিট করুন" aria-label="Edit" style="width:32px;height:32px;">
+            <button type="button" class="icon-btn" onclick="openScheduleModal('${appt.id}')" title="Edit appointment" aria-label="Edit" style="width:32px;height:32px;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             </button>
-            <button type="button" class="icon-btn" onclick="askDeleteAppt('${appt.id}')" title="অ্যাপয়েন্টমেন্ট বাতিল / মুছে ফেলুন" aria-label="Delete" style="width:32px;height:32px;color:var(--color-error);">
+            <button type="button" class="icon-btn" onclick="askDeleteAppt('${appt.id}')" title="Delete appointment" aria-label="Delete" style="width:32px;height:32px;color:var(--color-error);">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </button>
           </div>
@@ -370,7 +370,7 @@ async function handleAddChecklistItem(apptId) {
     await HMStore.updateAppointment(appt.id, { preVisitChecklist: appt.preVisitChecklist });
     input.value = '';
     renderAppointmentsList();
-    showApptToast('চেকলিস্টে নতুন বিষয় যুক্ত হয়েছে');
+    showApptToast('Checklist item added');
   }
 }
 
@@ -382,7 +382,7 @@ function openScheduleModal(apptId = null) {
 
   // Reset or pre-fill
   if (apptId) {
-    if (modalTitle) modalTitle.textContent = 'অ্যাপয়েন্টমেন্টের তথ্য পরিবর্তন করুন';
+    if (modalTitle) modalTitle.textContent = 'Edit Appointment';
     const appts = HMStore.getAppointments();
     const appt = appts.find(a => String(a.id) === String(apptId));
     if (appt) {
@@ -408,7 +408,7 @@ function openScheduleModal(apptId = null) {
       }
     }
   } else {
-    if (modalTitle) modalTitle.textContent = 'নতুন অ্যাপয়েন্টমেন্ট শিডিউল করুন';
+    if (modalTitle) modalTitle.textContent = 'Schedule New Appointment';
     form.reset();
     document.getElementById('apptDateInput').value = new Date().toISOString().slice(0, 10);
     document.getElementById('apptTimeInput').value = '10:00 AM';
@@ -417,9 +417,9 @@ function openScheduleModal(apptId = null) {
     const listContainer = document.getElementById('modalChecklistRows');
     if (listContainer) {
       listContainer.innerHTML = '';
-      addModalChecklistRow('সাম্প্রতিক প্রেসার ও সুগারের রিডিং লগ সাথে নেওয়া', false);
-      addModalChecklistRow('মেডিকেল ভল্ট থেকে সর্বশেষ ল্যাব টেস্ট ও পূর্বের প্রেসক্রিপশন রাখা', false);
-      addModalChecklistRow('ডাক্তারকে জানানোর মতো নতুন কোনো লক্ষণ বা ওষুধের প্রশ্ন লিখে রাখা', false);
+      addModalChecklistRow('Bring recent BP and blood sugar logbook', false);
+      addModalChecklistRow('Carry recent lab test reports and prior prescriptions from Medical Vault', false);
+      addModalChecklistRow('Note down new symptoms or medicine queries to ask doctor', false);
     }
   }
 
@@ -434,7 +434,7 @@ function addModalChecklistRow(text = '', isDone = false) {
   div.id = rowId;
   div.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:6px;';
   div.innerHTML = `
-    <input type="text" class="modal-chk-text" value="${escapeHtml(text)}" placeholder="যেমন: খালিপেটে সুগার টেস্টের রিপোর্ট সাথে নেওয়া" style="flex:1;padding:7px 10px;font-size:0.84rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);">
+    <input type="text" class="modal-chk-text" value="${escapeHtml(text)}" placeholder="e.g., Fasting blood test report" style="flex:1;padding:7px 10px;font-size:0.84rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);">
     <button type="button" class="icon-btn" onclick="this.closest('div').remove()" style="width:28px;height:28px;color:var(--color-error);" aria-label="Remove item">✕</button>
   `;
   container.appendChild(div);
@@ -454,7 +454,7 @@ async function handleSaveAppointment(event) {
   const status = document.getElementById('apptStatusInput').value || 'upcoming';
 
   if (!doctorName || !date) {
-    showApptToast('দয়া করে ডাক্তারের নাম ও অ্যাপয়েন্টমেন্টের তারিখ দিন।');
+    showApptToast('Please enter doctor name and appointment date.');
     return;
   }
 
@@ -487,10 +487,10 @@ async function handleSaveAppointment(event) {
 
   if (editingApptId) {
     await HMStore.updateAppointment(editingApptId, payload);
-    showApptToast('অ্যাপয়েন্টমেন্টের তথ্য সফলভাবে আপডেট হয়েছে');
+    showApptToast('Appointment updated successfully');
   } else {
     await HMStore.addAppointment(payload);
-    showApptToast('নতুন অ্যাপয়েন্টমেন্ট সফলভাবে শিডিউল হয়েছে');
+    showApptToast('Appointment scheduled successfully');
   }
 
   closeModal('scheduleApptModal');
@@ -523,7 +523,7 @@ async function confirmDeleteAppt() {
 async function deleteAppt(id) {
   await HMStore.deleteAppointment(id);
   renderAppointmentsList();
-  showApptToast('অ্যাপয়েন্টমেন্ট মুছে ফেলা হয়েছে');
+  showApptToast('Appointment deleted');
 }
 
 async function markApptCompleted(id) {
@@ -533,7 +533,7 @@ async function markApptCompleted(id) {
 
   await HMStore.updateAppointment(id, { status: 'completed' });
   renderAppointmentsList();
-  showApptToast('ডাক্তার ভিজিট সম্পন্ন হিসেবে চিহ্নিত হয়েছে');
+  showApptToast('Doctor visit marked as completed');
 
   // Prompt follow-up scheduler
   openFollowUpModal(id);
@@ -545,14 +545,14 @@ function openFollowUpModal(apptId) {
   if (!appt) return;
 
   document.getElementById('followUpDocName').textContent = appt.doctorName;
-  document.getElementById('followUpSpecialty').textContent = appt.specialty || 'চিকিৎসা বিশেষজ্ঞ';
+  document.getElementById('followUpSpecialty').textContent = appt.specialty || 'Specialist';
   document.getElementById('followUpParentId').value = appt.id;
 
   // Calculate default follow-up in 3 months
   const now = new Date();
   now.setMonth(now.getMonth() + 3);
   document.getElementById('followUpDateInput').value = now.toISOString().slice(0, 10);
-  document.getElementById('followUpReasonInput').value = `${appt.doctorName}-এর সাথে ৩ মাসের ফলো-আপ ও নিয়মিত প্রেসক্রিপশন রিভিউ`;
+  document.getElementById('followUpReasonInput').value = `3-month follow-up consultation with ${appt.doctorName}`;
 
   openModal('followUpModal');
 }
@@ -565,16 +565,16 @@ async function handleSaveFollowUp(event) {
 
   const date = document.getElementById('followUpDateInput').value;
   const time = document.getElementById('followUpTimeInput').value || '10:00 AM';
-  const reason = document.getElementById('followUpReasonInput').value || 'নিয়মিত ফলো-আপ পরামর্শ';
+  const reason = document.getElementById('followUpReasonInput').value || 'Routine follow-up consultation';
 
   if (!date) {
-    showApptToast('দয়া করে ফলো-আপের তারিখ নির্বাচন করুন।');
+    showApptToast('Please select a follow-up date.');
     return;
   }
 
   const newFollowUp = {
-    doctorName: parent ? parent.doctorName : 'ডাক্তার',
-    specialty: parent ? parent.specialty : 'চিকিৎসা বিশেষজ্ঞ',
+    doctorName: parent ? parent.doctorName : 'Doctor',
+    specialty: parent ? parent.specialty : 'Specialist',
     hospital: parent ? parent.hospital : '',
     phone: parent ? parent.phone : '',
     date: date,
@@ -582,16 +582,16 @@ async function handleSaveFollowUp(event) {
     reason: reason,
     status: 'upcoming',
     preVisitChecklist: [
-      { id: 'chk-f1', text: 'বিগত সময়ের প্রেসার ও সুগার ট্র্যাকিং চার্ট পর্যালোচনা করা', done: false },
-      { id: 'chk-f2', text: 'নতুন কোনো টেস্ট বা ল্যাব রিপোর্ট সাথে নিয়ে যাওয়া', done: false }
+      { id: 'chk-f1', text: 'Review past blood pressure & glucose trends', done: false },
+      { id: 'chk-f2', text: 'Bring new lab test reports or queries', done: false }
     ],
-    notes: `${parent ? parent.date : 'পূর্ববর্তী'} ভিজিটের পর নির্ধারিত পরবর্তী ফলো-আপ চেকআপ।`
+    notes: `Follow-up consultation scheduled following previous consultation on ${parent ? parent.date : 'prior visit'}.`
   };
 
   await HMStore.addAppointment(newFollowUp);
   closeModal('followUpModal');
   renderAppointmentsList();
-  showApptToast('পরবর্তী ফলো-আপ শিডিউল যুক্ত হয়েছে');
+  showApptToast('Follow-up scheduled successfully');
 }
 
 function escapeHtml(str) {

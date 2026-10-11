@@ -68,7 +68,7 @@
     <div class="sidebar-footer">
       <button type="button" class="sidebar-logout-btn" onclick="logoutUser(); closeMobileSidebar();">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span>লগআউট (Log Out)</span>
+        <span>Log Out</span>
       </button>
     </div>
   </aside>
@@ -80,10 +80,10 @@
         <button type="button" class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Open Navigation Menu" title="Menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
-        <div class="font-heading" style="font-size:1rem;font-weight:600;">ডাক্তার অ্যাপয়েন্টমেন্ট ও ফলো-আপ</div>
+        <div class="font-heading" style="font-size:1rem;font-weight:600;">Doctor Appointments &amp; Follow-up</div>
       </div>
       <div class="topbar-actions" style="position:relative;">
-        <button class="icon-btn" onclick="openEmergencyModal()" title="ইমার্জেন্সি মেডিকেল আইডি" aria-label="Emergency Medical ID" style="color:var(--color-error);background:#FEF2F2;">
+        <button class="icon-btn" onclick="openEmergencyModal()" title="Emergency Medical ID" aria-label="Emergency Medical ID" style="color:var(--color-error);background:#FEF2F2;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.7-4.35-9.3-8.6C1 9.1 2 5.3 5.4 4.2 7.7 3.4 10 4.3 12 6.3c2-2 4.3-2.9 6.6-2.1 3.4 1.1 4.4 4.9 2.7 8.2C18.7 16.65 12 21 12 21z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
         </button>
         <button class="icon-btn" onclick="toggleNotifPanel()" aria-label="Notifications">
@@ -91,7 +91,7 @@
           <span class="notif-dot"></span>
         </button>
         <div class="notif-panel" id="notifPanel"></div>
-        <a href="settings.html" class="avatar" id="topbarAvatar" title="ব্যক্তিগত সেটিংস" style="text-decoration:none;">IA</a>
+        <a href="settings.html" class="avatar" id="topbarAvatar" title="Account Settings" style="text-decoration:none;">IA</a>
       </div>
     </header>
 
@@ -100,13 +100,13 @@
       <!-- Header & Schedule Action -->
       <div class="page-header">
         <div>
-          <h1>ডাক্তার কনসালটেশন ও ফলো-আপ</h1>
-          <p>ডাক্তারের অ্যাপয়েন্টমেন্ট শিডিউল করুন, ফলো-আপের তারিখ ট্র্যাক করুন এবং চেকলিস্ট তৈরি করে রাখুন যাতে কোনো গুরুত্বপূর্ণ প্রশ্ন বাদ না যায়।</p>
+          <h1>Doctor Appointments &amp; Follow-ups</h1>
+          <p>Schedule consultations, track follow-up dates, and maintain pre-visit preparation checklists.</p>
         </div>
         <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;">
           <button class="btn-hm btn-primary" onclick="openScheduleModal()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            + নতুন অ্যাপয়েন্টমেন্ট শিডিউল
+            + Schedule Appointment
           </button>
         </div>
       </div>
@@ -119,16 +119,16 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
             <div class="appt-guide-text">
-              <b>ডাক্তার দেখানোর পূর্বপ্রস্তুতি নির্দেশিকা</b>
-              <p>ডাক্তার দেখানোর পূর্বে করণীয়: <b>১.</b> BP ও ভাইটালস চেক করুন। <b>২.</b> সাম্প্রতিক ল্যাব রিপোর্ট ভল্টে সাথে রাখুন। <b>৩.</b> চেকলিস্টে জরুরি প্রশ্ন লিখে রাখুন।</p>
+              <b>Pre-Visit Preparation Guide</b>
+              <p>Before your visit: <b>1.</b> Review latest BP &amp; vitals. <b>2.</b> Have recent lab reports ready in Medical Vault. <b>3.</b> Note key symptoms or questions in the checklist.</p>
             </div>
           </div>
           <div class="appt-guide-actions">
             <a href="records.html" class="btn-hm btn-ghost">
-              ভাইটালস লগ দেখুন →
+              View Vitals Log →
             </a>
             <a href="documents.html" class="btn-hm btn-ghost">
-              মেডিকেল ভল্ট রিপোর্ট →
+              Medical Vault Reports →
             </a>
           </div>
         </div>
@@ -138,20 +138,20 @@
       <div class="appt-search-row">
         <div class="vault-search-input-wrap appt-search-wrap">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="apptSearchInput" placeholder="ডাক্তারের নাম, বিভাগ, হাসপাতাল বা কারণ খুঁজুন..." autocomplete="off">
-          <button type="button" id="apptSearchClearBtn" class="appt-search-clear" onclick="clearApptSearch()" aria-label="সার্চ ক্লিয়ার" title="সার্চ ক্লিয়ার" style="display:none;">✕</button>
+          <input type="text" id="apptSearchInput" placeholder="Search doctor name, department, hospital, or reason..." autocomplete="off">
+          <button type="button" id="apptSearchClearBtn" class="appt-search-clear" onclick="clearApptSearch()" aria-label="Clear Search" title="Clear Search" style="display:none;">✕</button>
         </div>
         <div class="segmented-control appt-segmented-control" role="tablist" aria-label="Appointment view filter">
           <button type="button" class="segmented-pill active" data-tab="upcoming" onclick="setApptTab('upcoming')" role="tab" id="tabUpcoming" aria-selected="true">
-            <span>আসন্ন ভিজিট</span>
+            <span>Upcoming Visits</span>
             <span class="pill-count" id="countUpcoming">0</span>
           </button>
           <button type="button" class="segmented-pill" data-tab="completed" onclick="setApptTab('completed')" role="tab" id="tabCompleted" aria-selected="false">
-            <span>সম্পন্ন হয়েছে</span>
+            <span>Completed</span>
             <span class="pill-count" id="countCompleted">0</span>
           </button>
           <button type="button" class="segmented-pill" data-tab="all" onclick="setApptTab('all')" role="tab" id="tabAll" aria-selected="false">
-            <span>সব অ্যাপয়েন্টমেন্ট</span>
+            <span>All Appointments</span>
             <span class="pill-count" id="countAll">0</span>
           </button>
         </div>
@@ -172,7 +172,7 @@
 <div class="modal-hm-backdrop" id="scheduleApptModal">
   <div class="modal-hm" style="max-width:540px;">
     <div class="modal-hm-header">
-      <h2 id="scheduleModalTitle">নতুন অ্যাপয়েন্টমেন্ট শিডিউল করুন</h2>
+      <h2 id="scheduleModalTitle">Schedule New Appointment</h2>
       <button type="button" class="modal-hm-close" onclick="closeModal('scheduleApptModal')" aria-label="Close">✕</button>
     </div>
     <form id="scheduleApptForm" onsubmit="handleSaveAppointment(event)">
@@ -180,90 +180,90 @@
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
           <div class="form-group-hm">
-            <label for="apptDoctorInput">ডাক্তারের নাম *</label>
-            <input type="text" id="apptDoctorInput" placeholder="যেমন: ডা. আতিকুর রহমান" required>
+            <label for="apptDoctorInput">Doctor's Name *</label>
+            <input type="text" id="apptDoctorInput" placeholder="e.g., Dr. Atiqur Rahman" required>
           </div>
           <div class="form-group-hm">
-            <label for="apptSpecialtyInput">চিকিৎসা বিশেষজ্ঞ / বিভাগ *</label>
-            <input type="text" id="apptSpecialtyInput" list="specialtySuggestions" placeholder="যেমন: কার্ডিওলজিস্ট" required>
+            <label for="apptSpecialtyInput">Medical Specialty / Department *</label>
+            <input type="text" id="apptSpecialtyInput" list="specialtySuggestions" placeholder="e.g., Cardiologist" required>
             <datalist id="specialtySuggestions">
-              <option value="মেডিসিন বিশেষজ্ঞ (General Physician)">
-              <option value="হৃদরোগ বিশেষজ্ঞ (Cardiologist)">
-              <option value="ডায়াবেটিস ও হরমোন বিশেষজ্ঞ (Endocrinologist)">
-              <option value="বক্ষব্যাধি ও ফুসফুস বিশেষজ্ঞ (Pulmonologist)">
-              <option value="দন্ত বিশেষজ্ঞ (Dental Surgeon)">
-              <option value="চর্ম ও যৌন রোগ বিশেষজ্ঞ (Dermatologist)">
-              <option value="নাক-কান-গলা বিশেষজ্ঞ (ENT)">
-              <option value="নিউরোলজি ও স্নায়ুরোগ বিশেষজ্ঞ">
-              <option value="চক্ষু বিশেষজ্ঞ (Ophthalmologist)">
-              <option value="অর্থোপেডিক ও হাড় বিশেষজ্ঞ">
-              <option value="গ্যাস্ট্রোএন্টারোলজিস্ট (লিভার ও পরিপাকতন্ত্র)">
-              <option value="মানসিক স্বাস্থ্য ও মনোরোগ বিশেষজ্ঞ">
+              <option value="General Physician / Internal Medicine">
+              <option value="Cardiologist (Heart)">
+              <option value="Endocrinologist (Diabetes & Hormones)">
+              <option value="Pulmonologist (Chest & Lungs)">
+              <option value="Dental Surgeon">
+              <option value="Dermatologist (Skin)">
+              <option value="ENT Specialist">
+              <option value="Neurologist">
+              <option value="Ophthalmologist (Eye)">
+              <option value="Orthopedic Specialist">
+              <option value="Gastroenterologist">
+              <option value="Psychiatrist / Mental Health">
             </datalist>
           </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:var(--space-3);">
           <div class="form-group-hm">
-            <label for="apptHospitalInput">হাসপাতাল / চেম্বারের ঠিকানা</label>
-            <input type="text" id="apptHospitalInput" placeholder="যেমন: পপুলার ডায়াগনস্টিক, ধানমন্ডি">
+            <label for="apptHospitalInput">Hospital / Clinic Address</label>
+            <input type="text" id="apptHospitalInput" placeholder="e.g., Popular Diagnostic, Dhanmondi">
           </div>
           <div class="form-group-hm">
-            <label for="apptPhoneInput">চেম্বার / সিরিয়াল বুকিং ফোন</label>
-            <input type="tel" id="apptPhoneInput" placeholder="যেমন: +880 1711-000000">
+            <label for="apptPhoneInput">Chamber / Serial Booking Phone</label>
+            <input type="tel" id="apptPhoneInput" placeholder="e.g., +880 1711-000000">
           </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);">
           <div class="form-group-hm">
-            <label for="apptDateInput">অ্যাপয়েন্টমেন্টের তারিখ *</label>
+            <label for="apptDateInput">Appointment Date *</label>
             <input type="date" id="apptDateInput" required>
           </div>
           <div class="form-group-hm">
-            <label for="apptTimeInput">নির্ধারিত সময়</label>
-            <input type="text" id="apptTimeInput" placeholder="যেমন: 06:30 PM">
+            <label for="apptTimeInput">Scheduled Time</label>
+            <input type="text" id="apptTimeInput" placeholder="e.g., 06:30 PM">
           </div>
         </div>
 
         <div class="form-group-hm">
-          <label for="apptReasonInput">দেখানোর প্রধান কারণ / সমস্যা</label>
-          <input type="text" id="apptReasonInput" placeholder="যেমন: ৩ মাসের প্রেসার ফলো-আপ ও রক্ত পরীক্ষা পর্যালোচনা">
+          <label for="apptReasonInput">Reason for Visit / Symptoms</label>
+          <input type="text" id="apptReasonInput" placeholder="e.g., 3-month BP follow-up & lab test review">
         </div>
 
         <!-- Pre-visit preparation checklist items -->
         <div class="form-group-hm">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <label style="margin:0;">পূর্বপ্রস্তুতি চেকলিস্ট ও প্রয়োজনীয় প্রশ্ন</label>
+            <label style="margin:0;">Preparation Checklist &amp; Key Questions</label>
             <button type="button" class="btn-hm btn-ghost" onclick="addModalChecklistRow()" style="font-size:0.75rem;padding:2px 8px;">
-              + বিষয় যোগ করুন
+              + Add Item
             </button>
           </div>
           <div id="modalChecklistRows">
             <!-- Dynamic checklist items -->
           </div>
           <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:4px;">
-            যেসব রিপোর্ট সাথে নিতে হবে, নতুন লক্ষণ বা ওষুধ সংক্রান্ত প্রশ্ন এখানে লিখে রাখুন।
+            List test reports to bring, new symptoms, or medication queries to ask the doctor.
           </div>
         </div>
 
         <div class="form-group-hm">
-          <label for="apptNotesInput">ডাক্তারের পূর্ববর্তী নির্দেশনা / বিশেষ পরামর্শ</label>
-          <textarea id="apptNotesInput" rows="2" placeholder="যেমন: টেস্টের জন্য ১০ ঘণ্টা খালি পেটে থাকতে হবে; আগের ইসিজি সাথে রাখুন।"></textarea>
+          <label for="apptNotesInput">Doctor's Prior Instructions / Special Notes</label>
+          <textarea id="apptNotesInput" rows="2" placeholder="e.g., Fasting for 10 hours required; bring prior ECG."></textarea>
         </div>
 
         <div class="form-group-hm">
-          <label for="apptStatusInput">অবস্থা (Status)</label>
+          <label for="apptStatusInput">Status</label>
           <select id="apptStatusInput">
-            <option value="upcoming">আসন্ন অ্যাপয়েন্টমেন্ট (Upcoming)</option>
-            <option value="completed">সম্পন্ন ভিজিট (Completed)</option>
+            <option value="upcoming">Upcoming Visit</option>
+            <option value="completed">Completed</option>
           </select>
         </div>
 
       </div>
 
       <div class="modal-hm-footer">
-        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('scheduleApptModal')">বাতিল</button>
-        <button type="submit" class="btn-hm btn-primary">সংরক্ষণ করুন</button>
+        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('scheduleApptModal')">Cancel</button>
+        <button type="submit" class="btn-hm btn-primary">Save Appointment</button>
       </div>
     </form>
   </div>
@@ -273,37 +273,37 @@
 <div class="modal-hm-backdrop" id="followUpModal">
   <div class="modal-hm" style="max-width:440px;">
     <div class="modal-hm-header">
-      <h2>পরবর্তী ফলো-আপ শিডিউল</h2>
+      <h2>Schedule Next Follow-up</h2>
       <button type="button" class="modal-hm-close" onclick="closeModal('followUpModal')" aria-label="Close">✕</button>
     </div>
     <form id="followUpForm" onsubmit="handleSaveFollowUp(event)">
       <input type="hidden" id="followUpParentId">
       <div class="modal-hm-body">
         <div style="background:var(--color-bg);padding:10px 12px;border-radius:var(--radius-sm);margin-bottom:var(--space-3);border:1px solid var(--color-border);">
-          <div style="font-size:0.75rem;color:var(--color-text-muted);font-weight:700;">সম্পন্ন হওয়া পরামর্শ</div>
-          <div id="followUpDocName" style="font-weight:700;font-size:0.95rem;color:var(--color-text);margin-top:2px;">ডাক্তার</div>
-          <div id="followUpSpecialty" style="font-size:0.78rem;color:var(--color-primary-dark);">বিশেষজ্ঞ</div>
+          <div style="font-size:0.75rem;color:var(--color-text-muted);font-weight:700;">Completed Consultation</div>
+          <div id="followUpDocName" style="font-weight:700;font-size:0.95rem;color:var(--color-text);margin-top:2px;">Doctor</div>
+          <div id="followUpSpecialty" style="font-size:0.78rem;color:var(--color-primary-dark);">Specialist</div>
         </div>
 
         <div class="form-group-hm">
-          <label for="followUpDateInput">ফলো-আপের তারিখ *</label>
+          <label for="followUpDateInput">Follow-up Date *</label>
           <input type="date" id="followUpDateInput" required>
         </div>
 
         <div class="form-group-hm">
-          <label for="followUpTimeInput">পছন্দের সময়</label>
+          <label for="followUpTimeInput">Preferred Time</label>
           <input type="text" id="followUpTimeInput" value="10:00 AM">
         </div>
 
         <div class="form-group-hm">
-          <label for="followUpReasonInput">ফলো-আপের উদ্দেশ্য / করণীয়</label>
-          <input type="text" id="followUpReasonInput" placeholder="যেমন: নতুন ডোজের প্রভাব ও রক্তচাপ মূল্যায়ন">
+          <label for="followUpReasonInput">Follow-up Purpose / Target</label>
+          <input type="text" id="followUpReasonInput" placeholder="e.g., Evaluation of new dosage & BP response">
         </div>
       </div>
 
       <div class="modal-hm-footer">
-        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('followUpModal')">এখন থাক</button>
-        <button type="submit" class="btn-hm btn-primary">ফলো-আপ সেট করুন</button>
+        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('followUpModal')">Dismiss</button>
+        <button type="submit" class="btn-hm btn-primary">Set Follow-up</button>
       </div>
     </form>
   </div>
@@ -313,17 +313,17 @@
 <div class="modal-hm-backdrop" id="deleteApptModal">
   <div class="modal-hm" style="max-width:400px;">
     <div class="modal-hm-header">
-      <h2 style="color:var(--color-error);">অ্যাপয়েন্টমেন্ট মুছে ফেলা</h2>
+      <h2 style="color:var(--color-error);">Delete Appointment</h2>
       <button type="button" class="modal-hm-close" onclick="closeModal('deleteApptModal')" aria-label="Close">✕</button>
     </div>
     <div class="modal-hm-body">
       <p style="color:var(--color-text-secondary);font-size:0.9rem;margin:0;">
-        আপনি কি নিশ্চিত যে আপনি এই ডাক্তারের অ্যাপয়েন্টমেন্ট মুছে ফেলতে চান? এতে ভিজিটের তথ্য ও প্রস্তুতি চেকলিস্ট মুছে যাবে।
+        Are you sure you want to delete this doctor appointment? This will remove the visit details and preparation checklist.
       </p>
     </div>
     <div class="modal-hm-footer">
-      <button type="button" class="btn-hm btn-ghost" onclick="closeModal('deleteApptModal')">বাতিল</button>
-      <button type="button" class="btn-hm btn-danger" id="confirmDeleteApptBtn" onclick="confirmDeleteAppt()">মুছে ফেলুন</button>
+      <button type="button" class="btn-hm btn-ghost" onclick="closeModal('deleteApptModal')">Cancel</button>
+      <button type="button" class="btn-hm btn-danger" id="confirmDeleteApptBtn" onclick="confirmDeleteAppt()">Delete</button>
     </div>
   </div>
 </div>

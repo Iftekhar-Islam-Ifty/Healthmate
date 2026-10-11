@@ -69,7 +69,7 @@
     <div class="sidebar-footer">
       <button type="button" class="sidebar-logout-btn" onclick="logoutUser(); closeMobileSidebar();">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span>লগআউট (Log Out)</span>
+        <span>Log Out</span>
       </button>
     </div>
   </aside>
@@ -99,15 +99,15 @@
       <div class="page-header no-print">
         <div>
           <h1>Doctor Consultation Summary</h1>
-          <p>ডাক্তারের অ্যাপয়েন্টমেন্ট, ক্লিনিক্যাল চেকআপ বা ব্যক্তিগত সংরক্ষণের জন্য এক্সপোর্টেবল মেডিকেল সামারি।</p>
+          <p>Exportable clinical summary sheet for doctor visits and medical reviews.</p>
         </div>
         <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;">
           <a href="records.html" class="btn-hm btn-ghost" style="text-decoration:none;">← Back</a>
-          <button type="button" class="btn-hm btn-secondary" onclick="exportDirectPDF()" id="btnDownloadPdf" title="ডাইরেক্ট PDF ফাইল ডাউনলোড করুন">
+          <button type="button" class="btn-hm btn-secondary" onclick="exportDirectPDF()" id="btnDownloadPdf" title="Download direct PDF file">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download PDF
           </button>
-          <button type="button" class="btn-hm btn-primary" onclick="handlePrintReport()" id="btnPrintReport" title="সরাসরি প্রিন্টার বা ব্রাউজার প্রিন্ট ডায়ালগে পাঠান">
+          <button type="button" class="btn-hm btn-primary" onclick="handlePrintReport()" id="btnPrintReport" title="Send directly to printer or browser print dialog">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
             Print Report
           </button>
@@ -480,7 +480,7 @@
   function handlePrintReport() {
     // Show instant toast feedback
     if (typeof showToast === 'function') {
-      showToast('প্রিন্ট প্রস্তুত করা হচ্ছে...');
+      showToast('Preparing report for printing...');
     }
 
     // Try Method 1: Direct native print
@@ -580,25 +580,25 @@
             <div style="width:52px;height:52px;border-radius:50%;background:#F0FDFA;color:#0D6E6E;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;border:1px solid #CCFBF1;">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
             </div>
-            <h3 style="font-size:1.2rem;font-weight:700;color:#0F172A;margin-bottom:6px;">ডক্টর রিপোর্ট প্রিন্ট ও সেভ অপশন</h3>
+            <h3 style="font-size:1.2rem;font-weight:700;color:#0F172A;margin-bottom:6px;">Doctor Report Print &amp; Save Options</h3>
             <p style="font-size:0.88rem;color:#64748B;line-height:1.5;margin-bottom:20px;">
-              নিচের অপশনগুলো ব্যবহার করে সরাসরি প্রিন্টার ডায়ালগ চালু করতে পারেন অথবা এক ক্লিকে নিখুঁত A4 PDF ও প্রিন্ট ফাইল ডাউনলোড করতে পারেন।
+              Choose an option below to open your printer dialog or download an A4 PDF summary with one click.
             </p>
             <div style="display:flex;flex-direction:column;gap:10px;">
               <button type="button" class="btn-hm btn-primary" onclick="window.print(); closePrintActionModal();" style="width:100%;justify-content:center;padding:10px 16px;font-size:0.92rem;">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                সরাসরি প্রিন্ট ডায়ালগ ওপেন করুন
+                Open Print Dialog
               </button>
               <button type="button" class="btn-hm btn-secondary" onclick="exportDirectPDF(); closePrintActionModal();" style="width:100%;justify-content:center;padding:10px 16px;font-size:0.92rem;">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                A4 সাইজ PDF ডাউনলোড করুন
+                Download A4 PDF
               </button>
               <button type="button" class="btn-hm btn-ghost" onclick="downloadStandaloneReport(); closePrintActionModal();" style="width:100%;justify-content:center;padding:10px 16px;font-size:0.92rem;border:1px solid #E2E8F0;">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                প্রিন্ট-রেডি HTML রিপোর্ট সেভ করুন
+                Save Standalone HTML Sheet
               </button>
               <button type="button" class="btn-hm btn-ghost" onclick="closePrintActionModal()" style="width:100%;justify-content:center;margin-top:4px;color:#64748B;">
-                বন্ধ করুন
+                Close
               </button>
             </div>
           </div>
@@ -623,7 +623,7 @@
     const originalHtml = btn ? btn.innerHTML : '';
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;">⏳</span> PDF তৈরি হচ্ছে...`;
+      btn.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;">⏳</span> Generating PDF...`;
     }
 
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -650,7 +650,7 @@
 
         await window.html2pdf().set(opt).from(reportSheet).save();
         if (typeof showToast === 'function') {
-          showToast('ডক্টর রিপোর্ট PDF সফলভাবে ডাউনলোড হয়েছে');
+          showToast('Doctor report PDF downloaded successfully');
         }
         return;
       }
@@ -684,7 +684,7 @@
 
         pdf.save(filename);
         if (typeof showToast === 'function') {
-          showToast('ডক্টর রিপোর্ট PDF সফলভাবে ডাউনলোড হয়েছে');
+          showToast('Doctor report PDF downloaded successfully');
         }
         return;
       }

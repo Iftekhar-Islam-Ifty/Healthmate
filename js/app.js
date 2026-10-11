@@ -113,7 +113,7 @@ async function logoutUser() {
   if (window.HMStore && typeof HMStore.logout === 'function') {
     await HMStore.logout();
   }
-  showToast('সফলভাবে লগআউট করা হয়েছে');
+  showToast('Successfully logged out');
   setTimeout(() => {
     window.location.href = 'index.html';
   }, 400);
@@ -217,7 +217,7 @@ function initAppShell() {
       footer.innerHTML = `
         <button type="button" class="sidebar-logout-btn" onclick="logoutUser(); closeMobileSidebar();">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          <span>লগআউট (Log Out)</span>
+          <span>Log Out</span>
         </button>
       `;
       sidebar.appendChild(footer);
@@ -308,7 +308,7 @@ function ensureEmergencyModalInDOM() {
         <div class="emergency-header">
           <div>
             <div style="font-size:1.2rem;font-weight:700;" id="emName">User</div>
-            <div style="font-size:0.8rem;color:var(--color-text-muted);" id="emAge">ব্যক্তিগত অ্যাকাউন্ট</div>
+            <div style="font-size:0.8rem;color:var(--color-text-muted);" id="emAge">Personal Account</div>
           </div>
           <div class="emergency-blood-badge" id="emBloodBadge">
             <span>BLOOD</span>
@@ -357,7 +357,7 @@ function openEmergencyModal() {
   const nameEl = document.getElementById('emName');
   if (nameEl) nameEl.textContent = data.name || 'User';
   const ageEl = document.getElementById('emAge');
-  if (ageEl) ageEl.textContent = data.age ? `${data.age} বছর • ব্যক্তিগত অ্যাকাউন্ট` : 'ব্যক্তিগত অ্যাকাউন্ট';
+  if (ageEl) ageEl.textContent = data.age ? `${data.age} yrs • Personal Account` : 'Personal Account';
   const bloodEl = document.getElementById('emBlood');
   if (bloodEl) bloodEl.textContent = data.blood || '—';
   
@@ -372,12 +372,12 @@ function openEmergencyModal() {
     }
   }
   const callLabel = document.getElementById('emCallLabel');
-  if (callLabel) callLabel.textContent = phone ? `ইমার্জেন্সি নম্বরে কল: ${phone}` : 'ইমার্জেন্সি নম্বর যুক্ত করা নেই';
+  if (callLabel) callLabel.textContent = phone ? `Call Emergency: ${phone}` : 'No emergency contact set';
   
   const allergiesEl = document.getElementById('emAllergies');
-  if (allergiesEl) allergiesEl.textContent = (data.allergies && data.allergies.length) ? data.allergies.join(', ') : 'জানা নেই / নেই';
+  if (allergiesEl) allergiesEl.textContent = (data.allergies && data.allergies.length) ? data.allergies.join(', ') : 'None reported';
   const conditionsEl = document.getElementById('emConditions');
-  if (conditionsEl) conditionsEl.textContent = (data.conditions && data.conditions.length) ? data.conditions.join(', ') : 'কোনো জটিলতা নেই';
+  if (conditionsEl) conditionsEl.textContent = (data.conditions && data.conditions.length) ? data.conditions.join(', ') : 'None reported';
   
   const medsContainer = document.getElementById('emMedsList');
   if (medsContainer) {
@@ -388,7 +388,7 @@ function openEmergencyModal() {
         </span>
       `).join('');
     } else {
-      medsContainer.innerHTML = '<span style="color:var(--color-text-muted);font-size:0.75rem;">বর্তমানে কোনো ওষুধ চালু নেই</span>';
+      medsContainer.innerHTML = '<span style="color:var(--color-text-muted);font-size:0.75rem;">No active medications</span>';
     }
   }
 
@@ -1250,12 +1250,12 @@ function showPwaUpdateToast(worker) {
     <div class="pwa-update-content">
       <span class="pwa-update-icon">✨</span>
       <div>
-        <div class="pwa-update-title">নতুন ভার্সন তৈরি আছে! (Update Available)</div>
-        <div class="pwa-update-desc">নতুন ফিচার ও ফিক্স চালু করতে রিলোড করুন।</div>
+        <div class="pwa-update-title">New version available!</div>
+        <div class="pwa-update-desc">Reload to apply latest updates and improvements.</div>
       </div>
     </div>
     <div class="pwa-update-actions">
-      <button type="button" class="btn-pwa-refresh" id="pwaRefreshBtn">আপডেট করুন</button>
+      <button type="button" class="btn-pwa-refresh" id="pwaRefreshBtn">Update Now</button>
       <button type="button" class="btn-pwa-dismiss" id="pwaDismissBtn" title="Dismiss">✕</button>
     </div>
   `;
@@ -1280,11 +1280,11 @@ function showPwaUpdateToast(worker) {
 // User-triggered manual check for update
 async function checkForAppUpdate() {
   if (typeof showToast === 'function') {
-    showToast('নতুন আপডেট চেক করা হচ্ছে...');
+    showToast('Checking for updates...');
   }
   if (!('serviceWorker' in navigator) || !pwaRegistration) {
     setTimeout(() => {
-      if (typeof showToast === 'function') showToast('আপনি সর্বশেষ সংস্করণে আছেন (Up to date)');
+      if (typeof showToast === 'function') showToast('App is up to date');
     }, 1000);
     return;
   }
@@ -1294,19 +1294,19 @@ async function checkForAppUpdate() {
       showPwaUpdateToast(pwaRegistration.waiting);
     } else {
       setTimeout(() => {
-        if (typeof showToast === 'function') showToast('কোনো নতুন আপডেট নেই, আপনি লেটেস্ট ভার্সনে আছেন!');
+        if (typeof showToast === 'function') showToast('No updates found — you are running the latest version');
       }, 1000);
     }
   } catch (e) {
     console.warn('Update check note:', e);
-    if (typeof showToast === 'function') showToast('আপডেট চেক সম্পন্ন হয়েছে');
+    if (typeof showToast === 'function') showToast('Update check complete');
   }
 }
 
 // Force-clear service worker caches and hard reload for mobile PWA
 async function forceAppUpdate() {
   if (typeof showToast === 'function') {
-    showToast('ক্যাশ মুছে নতুন ভার্সন লোড করা হচ্ছে...');
+    showToast('Clearing cache and reloading latest version...');
   }
   try {
     if ('caches' in window) {

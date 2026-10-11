@@ -71,8 +71,8 @@ function formatDisplayDate(isoStr) {
   const yesterdayISO = formatDateToISO(yesterday);
 
   let relative = '';
-  if (isoStr === todayISO) relative = ' · Today (আজ)';
-  else if (isoStr === yesterdayISO) relative = ' · Yesterday (গতকাল)';
+  if (isoStr === todayISO) relative = ' · Today';
+  else if (isoStr === yesterdayISO) relative = ' · Yesterday';
 
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -165,10 +165,10 @@ function initPageHeader() {
 
   if (activeProfile && !activeProfile.isOwner) {
     if (titleEl) titleEl.textContent = `${activeProfile.name}'s Medicines`;
-    if (subEl) subEl.textContent = `${activeProfile.name}-এর প্রেসক্রিপশন শিডিউল ও ডোজ হিস্ট্রি।`;
+    if (subEl) subEl.textContent = `Prescription schedule and dose history for ${activeProfile.name}.`;
   } else {
     if (titleEl) titleEl.textContent = "Medicines";
-    if (subEl) subEl.textContent = "দৈনিক প্রেসক্রিপশন শিডিউল, বিবরণ ও ডোজ গ্রহণের অতীত হিস্ট্রি।";
+    if (subEl) subEl.textContent = "Daily prescription schedule, details, and dose history logs.";
   }
 }
 
@@ -206,8 +206,8 @@ function renderSchedule() {
     el.innerHTML = `
       <div style="grid-column: 1 / -1; padding:24px 16px;text-align:center;background:#FFFFFF;border:1px dashed var(--color-border);border-radius:14px;">
         <div style="color:var(--color-primary);font-size:1.6rem;margin-bottom:6px;">✨</div>
-        <div style="font-weight:700;font-size:0.95rem;color:var(--color-text);">আজকের জন্য কোনো সক্রিয় ওষুধ শিডিউল করা নেই</div>
-        <div style="color:var(--color-text-muted);font-size:0.82rem;margin-top:4px;">নতুন ওষুধ যোগ করতে উপরের "+ Add medicine" বাটনে ক্লিক করুন।</div>
+        <div style="font-weight:700;font-size:0.95rem;color:var(--color-text);">No active medicines scheduled for today</div>
+        <div style="color:var(--color-text-muted);font-size:0.82rem;margin-top:4px;">Click the "+ Add medicine" button above to add a prescription.</div>
       </div>
     `;
     return;
@@ -223,17 +223,17 @@ function renderSchedule() {
       : `<span class="card-badge-micro card-badge-time">${escapeHtml(m.time || 'Schedule')}</span>`;
 
     const actionBtn = isTaken
-      ? `<button type="button" class="btn-quick-taken" onclick="event.stopPropagation(); toggleTakenStatus('${m.id}')" title="আনমার্ক করতে ক্লিক করুন">
+      ? `<button type="button" class="btn-quick-taken" onclick="event.stopPropagation(); toggleTakenStatus('${m.id}')" title="Mark as untaken">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
           <span>✓ Taken</span>
         </button>`
-      : `<button type="button" class="btn-quick-take" onclick="event.stopPropagation(); markTaken('${m.id}')" title="ডোজ গ্রহণ সম্পন্ন হিসেবে মার্ক করুন">
+      : `<button type="button" class="btn-quick-take" onclick="event.stopPropagation(); markTaken('${m.id}')" title="Mark dose as taken">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
           <span>Take now</span>
         </button>`;
 
     return `
-      <div class="modern-med-card ${isTaken ? 'is-taken' : ''}" onclick="openMedicineDetailsModal('${m.id}')" title="বিস্তারিত দেখতে ক্লিক করুন">
+      <div class="modern-med-card ${isTaken ? 'is-taken' : ''}" onclick="openMedicineDetailsModal('${m.id}')" title="View medicine details">
         <div>
           <div class="card-top-row">
             <div class="card-icon-pill">
@@ -309,13 +309,13 @@ function renderMedicineList() {
     emptyEl.style.display = 'block';
     if (emptyMsgEl) {
       if (currentSearchQuery) {
-        emptyMsgEl.textContent = `"${currentSearchQuery}" দিয়ে কোনো ওষুধ খুঁজে পাওয়া যায়নি।`;
+        emptyMsgEl.textContent = `No medicines matching "${currentSearchQuery}".`;
       } else if (currentMedFilter === 'completed') {
-        emptyMsgEl.textContent = `কোনো সম্পূর্ণ (Completed) ওষুধ নেই।`;
+        emptyMsgEl.textContent = `No completed medicines.`;
       } else if (currentMedFilter === 'active') {
-        emptyMsgEl.textContent = `কোনো চলমান সক্রিয় ওষুধ নেই।`;
+        emptyMsgEl.textContent = `No active medicines.`;
       } else {
-        emptyMsgEl.textContent = `আপনার অ্যাকাউন্টে কোনো ওষুধ নেই। নতুন ওষুধ যোগ করতে বাটনে চাপুন।`;
+        emptyMsgEl.textContent = `No medicines recorded yet. Click the button above to add one.`;
       }
     }
     return;
@@ -335,7 +335,7 @@ function renderMedicineList() {
     }
 
     return `
-      <div class="modern-med-card ${isCompleted ? 'is-completed' : ''}" onclick="openMedicineDetailsModal('${m.id}')" title="সম্পূর্ণ তথ্য ও অপশন দেখতে ক্লিক করুন">
+      <div class="modern-med-card ${isCompleted ? 'is-completed' : ''}" onclick="openMedicineDetailsModal('${m.id}')" title="View details and options">
         <div>
           <div class="card-top-row">
             <div class="card-icon-pill">
@@ -380,7 +380,7 @@ function openMedicineDetailsModal(id) {
   const badgeEl = document.getElementById('medDetBadge');
   if (badgeEl) {
     if (isCompleted) {
-      badgeEl.innerHTML = `<span class="badge-hm" style="background:#EDE9FE;color:#6D28D9;border:1px solid #DDD6FE;font-size:0.75rem;padding:2px 8px;font-weight:700;">✓ Course Completed (সম্পূর্ণ)</span>`;
+      badgeEl.innerHTML = `<span class="badge-hm" style="background:#EDE9FE;color:#6D28D9;border:1px solid #DDD6FE;font-size:0.75rem;padding:2px 8px;font-weight:700;">✓ Course Completed</span>`;
     } else if (isTakenToday) {
       badgeEl.innerHTML = `<span class="badge-hm badge-success" style="font-size:0.75rem;padding:2px 8px;">✓ Taken Today</span>`;
     } else {
@@ -405,13 +405,13 @@ function openMedicineDetailsModal(id) {
   const datesEl = document.getElementById('medDetDates');
   const durBadgeEl = document.getElementById('medDetDurationBadge');
   
-  const startStr = med.start || 'শুরুর তারিখ নেই';
-  const endStr = med.end || 'চলমান (No end date)';
+  const startStr = med.start || 'No start date';
+  const endStr = med.end || 'Ongoing';
   if (datesEl) datesEl.textContent = `Started: ${startStr} · Ends: ${endStr}`;
 
   if (durBadgeEl) {
     if (isCompleted) {
-      durBadgeEl.textContent = 'কোর্স সমাপ্ত';
+      durBadgeEl.textContent = 'Course Completed';
     } else if (med.end) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -420,15 +420,15 @@ function openMedicineDetailsModal(id) {
         parsedEnd.setHours(0, 0, 0, 0);
         const diffDays = Math.ceil((parsedEnd - today) / (1000 * 60 * 60 * 24));
         if (diffDays >= 0) {
-          durBadgeEl.textContent = `${diffDays} দিন বাকি`;
+          durBadgeEl.textContent = `${diffDays}d left`;
         } else {
-          durBadgeEl.textContent = 'মেয়াদ সমাপ্ত';
+          durBadgeEl.textContent = 'Expired';
         }
       } else {
-        durBadgeEl.textContent = 'নির্ধারিত';
+        durBadgeEl.textContent = 'Scheduled';
       }
     } else {
-      durBadgeEl.textContent = 'নিয়মিত / চলমান';
+      durBadgeEl.textContent = 'Ongoing';
     }
   }
 
@@ -493,7 +493,7 @@ async function toggleCompleteStatus(id, forceStatus) {
   renderMedicineList();
   if (window.initAppShell) initAppShell();
   const isComp = HMStore.isMedicineCompleted(med);
-  showToast(isComp ? `${med.name} marked as Complete (সম্পূর্ণ)` : `${med.name} marked as Active (সক্রিয়)`);
+  showToast(isComp ? `${med.name} marked as Complete` : `${med.name} marked as Active`);
 }
 
 async function markTaken(id) {
@@ -553,7 +553,7 @@ function openDoseHistoryModal(medId) {
   if (subEl) {
     const startStr = med.start ? `Starting: ${med.start}` : 'Recent doses';
     const endStr = med.end ? ` · Ends: ${med.end}` : '';
-    subEl.textContent = `${startStr}${endStr} · শুরুর তারিখ থেকে শেষ তারিখ পর্যন্ত প্রতিদিনের ওষুধ খাওয়ার স্ট্যাটাস`;
+    subEl.textContent = `${startStr}${endStr} · Review or adjust daily dose completion`;
   }
 
   const customDateInput = document.getElementById('customLogDate');
@@ -641,7 +641,7 @@ async function setDayStatus(dateStr, status) {
   medicines = HMStore.getMedicines();
   const med = medicines.find(m => String(m.id) === String(activeHistoryMedId));
   if (med && med.end && dateStr > med.end && (status === 'taken' || status === 'missed')) {
-    showToast('Cannot mark doses after the last date (শেষ তারিখের পর প্রযোজ্য নয়)');
+    showToast('Cannot mark doses after prescription end date');
     return;
   }
 
@@ -652,7 +652,7 @@ async function setDayStatus(dateStr, status) {
   renderMedicineList();
   if (window.initAppShell) initAppShell();
 
-  const statusLabel = status === 'taken' ? 'Taken (খাওয়া হয়েছে)' : (status === 'missed' ? 'Missed (খাওয়া হয়নি)' : 'Cleared');
+  const statusLabel = status === 'taken' ? 'Taken' : (status === 'missed' ? 'Missed' : 'Cleared');
   showToast(`${dateStr}: ${statusLabel}`);
 }
 
@@ -689,7 +689,7 @@ async function addCustomLogDate() {
   medicines = HMStore.getMedicines();
   const med = medicines.find(m => String(m.id) === String(activeHistoryMedId));
   if (med && med.end && dateStr > med.end) {
-    showToast('Selected date is after the medicine end date (শেষ তারিখের পরের তারিখ প্রযোজ্য নয়)');
+    showToast('Selected date is after medicine end date');
     return;
   }
 
@@ -842,13 +842,13 @@ function updateModalDateSummary() {
       const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
       const daysCount = diffDays > 0 ? diffDays : 1;
       summaryBox.style.display = 'block';
-      summaryBox.textContent = `📅 নির্ধারিত কোর্স: ${daysCount} দিন (${startVal} থেকে ${endVal})`;
+      summaryBox.textContent = `📅 Prescribed course: ${daysCount} days (${startVal} to ${endVal})`;
     } else {
       summaryBox.style.display = 'none';
     }
   } else if (startVal && !endVal) {
     summaryBox.style.display = 'block';
-    summaryBox.textContent = `📅 চলমান কোর্স (শুরু: ${startVal} · কোনো শেষ তারিখ নেই)`;
+    summaryBox.textContent = `📅 Ongoing prescription (Started: ${startVal} · No end date)`;
   } else {
     summaryBox.style.display = 'none';
   }
@@ -856,7 +856,7 @@ function updateModalDateSummary() {
   // If end date is in the past, update the modal alert
   if (endVal && todayStr > endVal) {
     if (alertBox) alertBox.style.display = 'block';
-    if (alertText) alertText.textContent = `এই ওষুধের শেষ তারিখ (${endVal}) অতিক্রান্ত হয়েছে। কোর্সটি স্বয়ংক্রিয়ভাবে Completed হিসেবে গণ্য হবে।`;
+    if (alertText) alertText.textContent = `This medication's end date (${endVal}) has passed. It will be treated as Completed.`;
     if (completedCheckbox) completedCheckbox.checked = true;
   } else if (!completedCheckbox?.checked) {
     if (alertBox) alertBox.style.display = 'none';
@@ -869,13 +869,13 @@ function onMedCompletedCheckboxChange(checked) {
   if (alertBox) {
     if (checked) {
       alertBox.style.display = 'block';
-      if (alertText) alertText.textContent = 'ওষুধটি ব্যবহারকারী কর্তৃক সম্পূর্ণ (Completed) চিহ্নিত করা হয়েছে।';
+      if (alertText) alertText.textContent = 'Medication marked as Completed.';
     } else {
       const endVal = normalizeDateStr(document.getElementById('medEnd')?.value);
       const todayStr = formatDateToISO(new Date());
       if (endVal && todayStr > endVal) {
         alertBox.style.display = 'block';
-        if (alertText) alertText.textContent = `এই ওষুধের শেষ তারিখ (${endVal}) অতিক্রান্ত হয়েছে।`;
+        if (alertText) alertText.textContent = `This medication's end date (${endVal}) has passed.`;
       } else {
         alertBox.style.display = 'none';
       }
@@ -941,9 +941,9 @@ function openEditMedicine(id) {
     if (isCompleted || (cleanEnd && todayStr > cleanEnd)) {
       alertBox.style.display = 'block';
       if (cleanEnd && todayStr > cleanEnd) {
-        if (alertText) alertText.textContent = `এই ওষুধের শেষ তারিখ (${cleanEnd}) অতিক্রান্ত হওয়ায় কোর্সটি সমাপ্ত হয়েছে।`;
+        if (alertText) alertText.textContent = `This medication's end date (${cleanEnd}) has passed and the course is completed.`;
       } else {
-        if (alertText) alertText.textContent = 'এই ওষুধটি ব্যবহারকারী কর্তৃক সম্পূর্ণ (Completed) চিহ্নিত করা হয়েছে।';
+        if (alertText) alertText.textContent = 'Medication marked as Completed.';
       }
     } else {
       alertBox.style.display = 'none';

@@ -68,7 +68,7 @@
     <div class="sidebar-footer">
       <button type="button" class="sidebar-logout-btn" onclick="logoutUser(); closeMobileSidebar();">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span>লগআউট (Log Out)</span>
+        <span>Log Out</span>
       </button>
     </div>
   </aside>
@@ -97,7 +97,7 @@
       <div class="page-header">
         <div>
           <h1 id="recordsPageTitle">Health Records</h1>
-          <p id="recordsPageSub">সময়ের সাথে সাথে স্বাস্থ্য পরিমাপ ট্র্যাক করুন এবং ট্রেন্ড পর্যবেক্ষণ করুন।</p>
+          <p id="recordsPageSub">Track vital health metrics and physiological trends over time.</p>
         </div>
         <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;">
           <a href="report.html" class="btn-hm btn-ghost" style="text-decoration:none;font-size:0.85rem;">
@@ -129,14 +129,14 @@
       <section class="section">
         <div class="section-head">
           <h2>History</h2>
-          <p>সর্বশেষ পরিমাপ প্রথমে দেখানো হয়েছে (Most recent first)।</p>
+          <p>Most recent readings shown first.</p>
         </div>
         <div class="panel panel-minor" id="historyList" style="padding: 0 var(--space-4);"></div>
         <div id="historyEmpty" style="display:none;">
           <div class="empty-state">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
             <h3>No readings yet</h3>
-            <p>এই স্বাস্থ্য সূচকটি ট্র্যাক করতে প্রথম রিডিং যোগ করুন।</p>
+            <p>Add your first entry to track this vital indicator.</p>
             <button class="btn-hm btn-primary" onclick="openAddRecord()">Add a reading</button>
           </div>
         </div>

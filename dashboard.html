@@ -1315,155 +1315,166 @@
       padding: 4px 10px;
     }
 
-    /* Today's Hero Card (Full Width Mobile Card) */
+    /* Today's Hero Card (Compact, Low-Profile Mobile Widget) */
     .today-hero-card {
-      padding: 16px 14px;
-      border-radius: 14px;
-      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      gap: 8px;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 8px 24px -4px rgba(13, 110, 110, 0.22);
+      box-shadow: 0 4px 14px -2px rgba(13, 110, 110, 0.18);
+    }
+    .hero-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
     }
     .hero-card-header h2 {
-      font-size: 1.05rem;
+      font-size: 0.94rem;
       font-weight: 700;
-      line-height: 1.25;
+      line-height: 1.2;
     }
     .hero-card-header p {
-      display: block !important;
-      font-size: 0.76rem;
-      color: rgba(255, 255, 255, 0.82);
-      margin-top: 2px;
+      display: none !important; /* Hide long subtitle on mobile */
     }
     .hero-status-badge {
-      font-size: 0.72rem;
-      padding: 3px 9px;
-      gap: 5px;
+      font-size: 0.68rem;
+      padding: 2px 7px;
+      gap: 4px;
     }
     .hero-metrics-body {
       flex-direction: row !important;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
     .hero-ring-container svg {
-      width: 74px;
-      height: 74px;
+      width: 50px;
+      height: 50px;
     }
     .hero-ring-container {
       flex-shrink: 0;
     }
     .hero-stat-tiles {
-      gap: 8px;
+      gap: 6px;
       display: grid;
       grid-template-columns: 1fr 1fr;
       flex: 1;
       min-width: 0;
     }
     .hero-tile {
-      padding: 8px 10px;
-      gap: 4px;
-      border-radius: 8px;
+      padding: 5px 8px;
+      gap: 2px;
+      border-radius: 6px;
     }
     .hero-tile-top {
-      gap: 5px;
+      gap: 4px;
     }
     .hero-tile-icon {
-      width: 18px;
-      height: 18px;
-      border-radius: 5px;
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
     }
     .hero-tile-icon svg {
-      width: 11px;
-      height: 11px;
+      width: 8px;
+      height: 8px;
     }
     .hero-tile-label {
-      font-size: 0.70rem;
-      font-weight: 500;
+      font-size: 0.65rem;
+      font-weight: 600;
     }
     .hero-tile-val {
-      font-size: 0.86rem;
+      font-size: 0.76rem;
       font-weight: 700;
+      line-height: 1.1;
     }
     .hero-mini-bar {
-      height: 3.5px;
-      margin-top: 2px;
+      height: 2.5px;
+      margin-top: 1px;
     }
     .hero-nextup-banner {
-      padding: 8px 10px;
-      gap: 8px;
-      border-radius: 8px;
+      padding: 4px 8px;
+      gap: 6px;
+      border-radius: 6px;
+      margin-top: 2px;
     }
     .hero-nextup-badge {
-      width: 24px;
-      height: 24px;
+      width: 18px;
+      height: 18px;
     }
     .hero-nextup-badge svg {
-      width: 13px;
-      height: 13px;
+      width: 10px;
+      height: 10px;
     }
     .hero-nextup-tag {
-      font-size: 0.62rem;
+      font-size: 0.55rem;
     }
     .hero-nextup-title {
-      font-size: 0.78rem;
+      font-size: 0.70rem;
       font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .hero-nextup-action {
-      padding: 4px 10px;
-      font-size: 0.72rem;
+      padding: 2px 7px;
+      font-size: 0.66rem;
     }
 
-    /* Vitals Card (Full Width Mobile Card) */
+    /* Vitals Card (Compact 4-column side-by-side micro-tiles on mobile) */
     .dash-grid-2 > .hm-card.hm-card-minor {
-      padding: 16px 14px;
-      border-radius: 14px;
+      padding: 10px 12px;
+      border-radius: 12px;
       display: flex;
       flex-direction: column;
+      gap: 6px;
     }
     .dash-grid-2 > .hm-card.hm-card-minor h2 {
-      font-size: 1.05rem !important;
-      line-height: 1.25;
+      font-size: 0.94rem !important;
+      line-height: 1.2;
     }
     .dash-grid-2 > .hm-card.hm-card-minor p {
-      display: block !important;
-      font-size: 0.76rem !important;
-      color: var(--color-text-muted) !important;
-      margin-top: 2px;
+      display: none !important;
     }
     .dash-grid-2 > .hm-card.hm-card-minor .btn-hm {
-      font-size: 0.76rem !important;
-      padding: 4px 10px !important;
+      font-size: 0.70rem !important;
+      padding: 2px 6px !important;
     }
     .vitals-summary-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 10px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 2px;
     }
     .vital-metric-card {
-      padding: 10px 12px;
-      border-radius: 8px;
-      border-top-width: 3px;
+      padding: 6px 4px;
+      border-radius: 6px;
+      border-top-width: 2.5px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
     }
     .vital-metric-card .vm-label {
-      font-size: 0.68rem;
+      font-size: 0.58rem;
       font-weight: 700;
-      letter-spacing: 0.3px;
-      line-height: 1.15;
+      letter-spacing: 0.2px;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
     .vital-metric-card .vm-value {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin: 3px 0 2px;
-      line-height: 1.15;
+      font-size: 0.92rem;
+      font-weight: 800;
+      margin: 2px 0 1px;
+      line-height: 1.1;
     }
     .vital-metric-card .vm-sub {
-      font-size: 0.68rem;
-      line-height: 1.2;
-      white-space: normal;
+      display: none !important;
     }
 
     /* Today's schedule rows */
@@ -1680,7 +1691,7 @@
     <div class="sidebar-footer">
       <button type="button" class="sidebar-logout-btn" onclick="logoutUser(); closeMobileSidebar();">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span>লগআউট (Log Out)</span>
+        <span>Log Out</span>
       </button>
     </div>
   </aside>
@@ -1832,7 +1843,7 @@
             <div class="hero-card-header">
               <div>
                 <h2>Today's Health Status</h2>
-                <p>দৈনিক ওষুধ ও স্বাস্থ্য রুটিন সম্পন্ন করার অগ্রগতি</p>
+                <p>Daily medication and wellness adherence</p>
               </div>
               <div class="hero-status-badge" id="dashStatusBadge">
                 <span class="status-pulse-dot"></span>
@@ -1900,7 +1911,7 @@
                 </div>
               </div>
               <a href="medicines.html" class="hero-nextup-action">
-                Schedule দেখুন →
+                View Schedule →
               </a>
             </div>
           </div>
@@ -1910,7 +1921,7 @@
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <div class="section-head" style="margin-bottom:0;">
                 <h2 style="font-size:1.05rem;">My Health Vitals</h2>
-                <p style="font-size:0.8rem;">সাম্প্রতিক স্বাস্থ্য পরিমাপ ও সূচকসমূহ</p>
+                <p style="font-size:0.8rem;">Recent physiological readings &amp; vitals</p>
               </div>
               <a href="records.html" class="btn-hm btn-ghost" style="font-size:0.78rem;padding:4px 8px;text-decoration:none;">
                 History →
@@ -1921,22 +1932,22 @@
               <div class="vital-metric-card vm-bp">
                 <div class="vm-label">Blood Pressure</div>
                 <div class="vm-value" id="vitalBpVal">118/78</div>
-                <div class="vm-sub" id="vitalBpSub">mmHg · স্বাভাবিক রেঞ্জ (Normal)</div>
+                <div class="vm-sub" id="vitalBpSub">mmHg · Normal range</div>
               </div>
               <div class="vital-metric-card vm-sugar">
                 <div class="vm-label">Blood Sugar</div>
                 <div class="vm-value" id="vitalSugarVal">92</div>
-                <div class="vm-sub" id="vitalSugarSub">mg/dL · খালি পেটে (Fasting)</div>
+                <div class="vm-sub" id="vitalSugarSub">mg/dL · Fasting</div>
               </div>
               <div class="vital-metric-card vm-weight">
                 <div class="vm-label">Body Weight</div>
                 <div class="vm-value" id="vitalWeightVal">70.5</div>
-                <div class="vm-sub" id="vitalWeightSub">kg · সর্বশেষ পরিমাপ</div>
+                <div class="vm-sub" id="vitalWeightSub">kg · Latest entry</div>
               </div>
               <div class="vital-metric-card vm-blood">
                 <div class="vm-label">Blood Group</div>
                 <div class="vm-value" id="vitalBloodVal">B+</div>
-                <div class="vm-sub" id="vitalBloodSub">Rh পজিটিভ (Rh+)</div>
+                <div class="vm-sub" id="vitalBloodSub">Rh+ Positive</div>
               </div>
             </div>
           </div>
@@ -1954,8 +1965,8 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
               </span>
               <div class="smart-pulse-headline">
-                <div class="smart-pulse-title" id="smartPulseTitle">Health Pulse: স্বাস্থ্য সূচক ও ওষুধ বিশ্লেষণ করা হচ্ছে...</div>
-                <div class="smart-pulse-sub" id="smartPulseSub">সক্রিয় স্বাস্থ্য সূচকসমূহ রিয়েল-টাইম পর্যবেক্ষণ করা হচ্ছে</div>
+                <div class="smart-pulse-title" id="smartPulseTitle">Health Pulse: Analyzing vitals &amp; schedule...</div>
+                <div class="smart-pulse-sub" id="smartPulseSub">Real-time physiological tracking</div>
               </div>
             </div>
             <div class="smart-pulse-right">
@@ -2246,7 +2257,7 @@
       if (bpSubEl) bpSubEl.innerHTML = `mmHg ${badgeHtml}`;
     } else {
       if (bpValEl) bpValEl.textContent = '--/--';
-      if (bpSubEl) bpSubEl.innerHTML = 'কোনো রিডিং নেই (No records)';
+      if (bpSubEl) bpSubEl.innerHTML = 'No records yet';
     }
 
     // Sugar
@@ -2261,7 +2272,7 @@
       if (sugarSubEl) sugarSubEl.innerHTML = `mg/dL · ${latest.context || 'Fasting'} ${badgeHtml}`;
     } else {
       if (sugarValEl) sugarValEl.textContent = '--';
-      if (sugarSubEl) sugarSubEl.innerHTML = 'কোনো রিডিং নেই (No records)';
+      if (sugarSubEl) sugarSubEl.innerHTML = 'No records yet';
     }
 
     // Weight
@@ -2276,14 +2287,14 @@
       if (weightSubEl) weightSubEl.innerHTML = `kg ${badgeHtml}`;
     } else {
       if (weightValEl) weightValEl.textContent = '--';
-      if (weightSubEl) weightSubEl.innerHTML = 'কোনো রিডিং নেই (No records)';
+      if (weightSubEl) weightSubEl.innerHTML = 'No records yet';
     }
 
     // Blood
     const bloodValEl = document.getElementById('vitalBloodVal');
     const bloodSubEl = document.getElementById('vitalBloodSub');
     if (bloodValEl) bloodValEl.textContent = (user && user.blood) ? user.blood : 'Not set';
-    if (bloodSubEl) bloodSubEl.textContent = (user && user.blood) ? 'Blood type recorded' : 'গ্রুপ সেট করা হয়নি';
+    if (bloodSubEl) bloodSubEl.textContent = (user && user.blood) ? 'Blood type recorded' : 'Not set';
   }
 
   let isInsightsExpanded = false;
@@ -2322,11 +2333,11 @@
     const insights = HMStore.getSmartInsights ? HMStore.getSmartInsights() : [];
     if (!insights || insights.length === 0) {
       if (pulseTitle) pulseTitle.textContent = 'Health Pulse: Normal & Stable';
-      if (pulseSub) pulseSub.textContent = 'স্মার্ট হেলথ ইনসাইট পেতে দৈনিক Vitals ও স্বাস্থ্য রুটিন লগ করুন';
+      if (pulseSub) pulseSub.textContent = 'Log vitals and daily habits to activate proactive clinical insights';
       if (toggleText) toggleText.textContent = 'Insights (0)';
       container.innerHTML = `
         <div style="padding:var(--space-3);color:var(--color-text-muted);font-size:0.84rem;grid-column:1/-1;">
-          স্মার্ট ক্লিনিক্যাল ইনসাইট ও অ্যালার্ট তৈরি করতে আপনার দৈনিক Vitals এবং স্বাস্থ্য রুটিন যুক্ত করুন।
+          Log daily vitals and routines to activate clinical insights &amp; alerts.
         </div>
       `;
       return;
@@ -2345,7 +2356,7 @@
     } else {
       if (pulseDot) pulseDot.className = 'pulse-indicator-dot';
       if (pulseTitle) pulseTitle.textContent = 'Health Pulse: All Vitals & Adherence On Track';
-      if (pulseSub) pulseSub.textContent = 'দৈনিক প্রেসক্রিপশন ও স্বাস্থ্য সূচকসমূহ সম্পূর্ণ স্বাভাবিক সীমার মধ্যে রয়েছে';
+      if (pulseSub) pulseSub.textContent = 'Daily prescriptions and vital indicators are within target ranges';
     }
 
     // Render mini quick pills for immediate feedback
@@ -2438,7 +2449,7 @@
     if (meds.length === 0) {
       container.innerHTML = `
         <div style="grid-column: 1 / -1; padding:var(--space-4);text-align:center;color:var(--color-text-muted);font-size:0.88rem;background:#FFFFFF;border:1px dashed var(--color-border);border-radius:12px;">
-          আজকের জন্য কোনো সক্রিয় ওষুধ শিডিউল করা নেই। <a href="medicines.html" style="color:var(--color-primary);font-weight:600;">+ নতুন ওষুধ যোগ করুন</a>
+          No active medicines scheduled for today. <a href="medicines.html" style="color:var(--color-primary);font-weight:600;">+ Add Medicine</a>
         </div>
       `;
       return;
@@ -2452,17 +2463,17 @@
         : `<span class="card-badge-micro card-badge-time">${m.time || 'Schedule'}</span>`;
 
       const actionBtn = isTaken
-        ? `<button type="button" class="btn-quick-taken" onclick="event.stopPropagation(); toggleMedStatus('${m.id}')" title="আনমার্ক করতে ক্লিক করুন">
+        ? `<button type="button" class="btn-quick-taken" onclick="event.stopPropagation(); toggleMedStatus('${m.id}')" title="Mark as untaken">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             <span>✓ Taken</span>
           </button>`
-        : `<button type="button" class="btn-quick-take" onclick="event.stopPropagation(); toggleMedStatus('${m.id}')" title="ডোজ গ্রহণ সম্পন্ন হিসেবে মার্ক করুন">
+        : `<button type="button" class="btn-quick-take" onclick="event.stopPropagation(); toggleMedStatus('${m.id}')" title="Mark dose as taken">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             <span>Take now</span>
           </button>`;
 
       return `
-        <div class="modern-med-card ${isTaken ? 'is-taken' : ''}" onclick="openMedicineDetailsModal('${m.id}')" title="বিস্তারিত দেখতে ক্লিক করুন">
+        <div class="modern-med-card ${isTaken ? 'is-taken' : ''}" onclick="openMedicineDetailsModal('${m.id}')" title="View medicine details">
           <div>
             <div class="card-top-row">
               <div class="card-icon-pill">
@@ -2504,7 +2515,7 @@
     const badgeEl = document.getElementById('medDetBadge');
     if (badgeEl) {
       if (isCompleted) {
-        badgeEl.innerHTML = `<span class="badge-hm" style="background:#EDE9FE;color:#6D28D9;border:1px solid #DDD6FE;font-size:0.75rem;padding:2px 8px;font-weight:700;">✓ Course Completed (সম্পূর্ণ)</span>`;
+        badgeEl.innerHTML = `<span class="badge-hm" style="background:#EDE9FE;color:#6D28D9;border:1px solid #DDD6FE;font-size:0.75rem;padding:2px 8px;font-weight:700;">✓ Course Completed</span>`;
       } else if (isTakenToday) {
         badgeEl.innerHTML = `<span class="badge-hm badge-success" style="font-size:0.75rem;padding:2px 8px;">✓ Taken Today</span>`;
       } else {
@@ -2529,13 +2540,13 @@
     const datesEl = document.getElementById('medDetDates');
     const durBadgeEl = document.getElementById('medDetDurationBadge');
     
-    const startStr = med.start || 'শুরুর তারিখ নেই';
-    const endStr = med.end || 'চলমান (No end date)';
+    const startStr = med.start || 'No start date';
+    const endStr = med.end || 'Ongoing';
     if (datesEl) datesEl.textContent = `Started: ${startStr} · Ends: ${endStr}`;
 
     if (durBadgeEl) {
       if (isCompleted) {
-        durBadgeEl.textContent = 'কোর্স সমাপ্ত';
+        durBadgeEl.textContent = 'Course Completed';
       } else if (med.end) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -2544,15 +2555,15 @@
           parsedEnd.setHours(0, 0, 0, 0);
           const diffDays = Math.ceil((parsedEnd - today) / (1000 * 60 * 60 * 24));
           if (diffDays >= 0) {
-            durBadgeEl.textContent = `${diffDays} দিন বাকি`;
+            durBadgeEl.textContent = `${diffDays}d left`;
           } else {
-            durBadgeEl.textContent = 'মেয়াদ সমাপ্ত';
+            durBadgeEl.textContent = 'Expired';
           }
         } else {
-          durBadgeEl.textContent = 'নির্ধারিত';
+          durBadgeEl.textContent = 'Scheduled';
         }
       } else {
-        durBadgeEl.textContent = 'নিয়মিত / চলমান';
+        durBadgeEl.textContent = 'Ongoing';
       }
     }
 
@@ -2637,7 +2648,7 @@
     if (routines.length === 0) {
       container.innerHTML = `
         <div style="padding:var(--space-4);text-align:center;color:var(--color-text-muted);font-size:0.88rem;">
-          এখনও কোনো স্বাস্থ্য রুটিন যোগ করা হয়নি। <a href="routine.html" style="color:var(--color-primary);font-weight:600;">+ নতুন রুটিন যোগ করুন</a>
+          No daily habits logged for today. <a href="routine.html" style="color:var(--color-primary);font-weight:600;">+ Add Routine</a>
         </div>
       `;
       return;
@@ -2846,15 +2857,15 @@
       <!-- Key Stats Grid -->
       <div class="details-grid-box">
         <div class="details-stat-cell">
-          <div class="details-stat-label">🕒 Timing (সময়)</div>
+          <div class="details-stat-label">🕒 Timing</div>
           <div id="medDetTime" class="details-stat-value">—</div>
         </div>
         <div class="details-stat-cell">
-          <div class="details-stat-label">💊 Dosage (মাত্রা)</div>
+          <div class="details-stat-label">💊 Dosage</div>
           <div id="medDetDosage" class="details-stat-value">—</div>
         </div>
         <div class="details-stat-cell">
-          <div class="details-stat-label">🔄 Frequency (বার)</div>
+          <div class="details-stat-label">🔄 Frequency</div>
           <div id="medDetFreq" class="details-stat-value">—</div>
         </div>
         <div class="details-stat-cell">
@@ -2867,7 +2878,7 @@
       <div style="background:#F0FDFA;border:1px solid #CCFBF1;border-radius:10px;padding:10px 12px;">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
           <div style="font-size:0.75rem;font-weight:700;color:#0F766E;text-transform:uppercase;letter-spacing:0.02em;">
-            📅 Schedule Duration (মেয়াদ)
+            📅 Schedule Duration
           </div>
           <div id="medDetDurationBadge" style="font-size:0.75rem;font-weight:700;color:#0D6E6E;"></div>
         </div>
@@ -2879,7 +2890,7 @@
       <!-- Instructions Section -->
       <div id="medDetInstructionsWrap" style="display:none;background:#F8FAFC;border:1px solid var(--color-border);border-radius:10px;padding:10px 12px;">
         <div style="font-size:0.75rem;font-weight:700;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:4px;">
-          📋 Instructions (সেবনের নিয়ম)
+          📋 Instructions
         </div>
         <div id="medDetInstructions" style="font-size:0.85rem;color:var(--color-text);line-height:1.45;"></div>
       </div>
@@ -2887,7 +2898,7 @@
       <!-- Description / Purpose Section -->
       <div id="medDetDescWrap" style="display:none;background:#F8FAFC;border:1px solid var(--color-border);border-radius:10px;padding:10px 12px;">
         <div style="font-size:0.75rem;font-weight:700;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:4px;">
-          💡 Description & Doctor Note (বিবরণ / পরামর্শ)
+          💡 Description &amp; Doctor Note
         </div>
         <div id="medDetDesc" style="font-size:0.85rem;color:var(--color-text);line-height:1.45;"></div>
       </div>

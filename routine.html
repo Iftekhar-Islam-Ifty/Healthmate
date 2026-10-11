@@ -87,7 +87,7 @@
     <div class="sidebar-footer">
       <button type="button" class="sidebar-logout-btn" onclick="logoutUser(); closeMobileSidebar();">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span>লগআউট (Log Out)</span>
+        <span>Log Out</span>
       </button>
     </div>
   </aside>
@@ -118,7 +118,7 @@
       <div class="page-header">
         <div>
           <h1 id="routinePageTitle">Daily Routine</h1>
-          <p id="routinePageSub">আজকের স্বাস্থ্য রুটিন এবং সাপ্তাহিক ধারাবাহিকতার চিত্র।</p>
+          <p id="routinePageSub">Today's health habits and weekly progress consistency.</p>
         </div>
         <button class="btn-hm btn-primary" onclick="openAddRoutine()">
           + Add routine
@@ -129,7 +129,7 @@
       <section class="section">
         <div class="section-head">
           <h2>Today</h2>
-          <p>টাস্ক সম্পন্ন হলে টিক চিহ্নে চাপুন।</p>
+          <p>Tap a habit checkbox to mark today complete.</p>
         </div>
         <div class="panel panel-major" id="todayList" style="padding: 0 var(--space-4);">
           <!-- rendered by renderToday() -->
@@ -138,7 +138,7 @@
           <div class="empty-state">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
             <h3>No routines added yet</h3>
-            <p>পানি পান বা হাঁটার মতো অভ্যাস ট্র্যাকিং শুরু করতে প্রথম রুটিনটি যুক্ত করুন।</p>
+            <p>Add your first habit to track hydration, daily walks, or sleep.</p>
             <button class="btn-hm btn-primary" onclick="openAddRoutine()">Add a routine</button>
           </div>
         </div>
@@ -148,7 +148,7 @@
       <section class="section" id="weeklySection">
         <div class="section-head">
           <h2>This week</h2>
-          <p>Mon থেকে Sun — আজকের দিনটি হাইলাইট করা রয়েছে।</p>
+          <p>Mon through Sun &mdash; current day highlighted.</p>
         </div>
         <div class="panel panel-minor" id="weeklyList" style="padding: 0 var(--space-4);">
           <!-- rendered by renderWeekly() -->

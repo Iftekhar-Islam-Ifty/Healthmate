@@ -391,7 +391,7 @@ function renderDocumentsList() {
           <div class="vault-doc-date">${doc.date}</div>
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px;">
             <h3 class="vault-doc-title" onclick="previewDocument('${doc.id}')" title="${escapeHtml(doc.title)}" style="margin-bottom:0;flex:1;">${escapeHtml(doc.title)}</h3>
-            <button type="button" class="btn-vault-quick-edit" onclick="event.stopPropagation(); openEditDocModal('${doc.id}')" title="Edit Prescription / Document Name (প্রেসক্রিপশনের নাম পরিবর্তন)" style="background:#F1F5F9;border:1px solid #CBD5E1;cursor:pointer;color:var(--color-primary-dark);padding:4px 6px;display:inline-flex;align-items:center;gap:4px;border-radius:4px;flex-shrink:0;font-size:0.72rem;font-weight:600;">
+            <button type="button" class="btn-vault-quick-edit" onclick="event.stopPropagation(); openEditDocModal('${doc.id}')" title="Edit Prescription / Document Name" style="background:#F1F5F9;border:1px solid #CBD5E1;cursor:pointer;color:var(--color-primary-dark);padding:4px 6px;display:inline-flex;align-items:center;gap:4px;border-radius:4px;flex-shrink:0;font-size:0.72rem;font-weight:600;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               <span>Edit</span>
             </button>
@@ -637,7 +637,7 @@ async function handleUpdateDocument(e) {
   closeModal('editDocModal');
   renderDocumentsList();
   if (typeof showToast === 'function') {
-    showToast(`ডকুমেন্টের নাম ও তথ্য আপডেট হয়েছে: "${title}"`);
+    showToast(`Document updated: "${title}"`);
   }
 }
 
@@ -646,7 +646,7 @@ async function aiScanDocument(id) {
   const doc = docs.find(d => String(d.id) === String(id));
   if (!doc) return;
 
-  const prompt = `আমার মেডিকেল ভল্টের প্রেসক্রিপশন/ডকুমেন্ট "${doc.title}" (তারিখ: ${doc.date}, ডাক্তার: ${doc.doctor || 'N/A'}, ক্লিনিক: ${doc.facility || 'N/A'}) টি স্ক্যান ও পর্যালোচনা করো। প্রেসক্রিপশনে উল্লেখিত সমস্ত ঔষধ তাদের ডোজ, খাওয়ার সময় ও খাবারের নিয়মসহ বের করো এবং আমার রুটিন ঔষধ তালিকায় যুক্ত করার পরামর্শ বা কমান্ড দাও। সেই সাথে প্রয়োজনীয় স্বাস্থ্য পরামর্শ ও নির্দেশনা দাও।`;
+  const prompt = `Please review and scan this clinical document: "${doc.title}" (Date: ${doc.date}, Doctor: ${doc.doctor || 'N/A'}, Facility: ${doc.facility || 'N/A'}). Extract any medications, dosages, frequency, and instructions, and suggest adding them to my medicine routine. Provide clinical guidance where appropriate.`;
 
   if (typeof window.openHealthAiWithPrompt === 'function') {
     let imageObj = null;
@@ -680,7 +680,7 @@ async function aiScanDocument(id) {
     }
     window.openHealthAiWithPrompt(prompt, imageObj);
   } else if (typeof showToast === 'function') {
-    showToast('AI Assistant খুলতে সমস্যা হচ্ছে');
+    showToast('Failed to open AI Assistant');
   }
 }
 
