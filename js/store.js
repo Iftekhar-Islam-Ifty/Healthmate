@@ -2088,7 +2088,9 @@ const HMStore = {
       fileSize: doc.fileSize || '1.0 MB',
       fileData: doc.fileData || '',
       notes: (doc.notes || '').trim(),
-      tags: Array.isArray(doc.tags) ? doc.tags : []
+      tags: Array.isArray(doc.tags) ? doc.tags : [],
+      structuredDoc: doc.structuredDoc || null,
+      isDigitized: !!doc.structuredDoc
     };
 
     // If fileData is a base64 data URL, try uploading to Supabase Storage bucket first

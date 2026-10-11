@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healthmate-v10-cloud-sync';
+const CACHE_NAME = 'healthmate-v11-clean-doc-scan';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

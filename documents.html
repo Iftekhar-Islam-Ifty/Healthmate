@@ -204,7 +204,10 @@
 <div class="modal-hm-backdrop" id="uploadDocModal">
   <div class="modal-hm" style="max-width:540px;">
     <div class="modal-hm-header">
-      <h2>Upload Medical Document</h2>
+      <div>
+        <h2>Upload Medical Document</h2>
+        <p style="font-size:0.78rem;color:var(--color-text-muted);margin:2px 0 0 0;">Upload any prescription or test report. It is saved in full quality and auto-scanned into a clean digital document.</p>
+      </div>
       <button type="button" class="modal-hm-close" onclick="closeModal('uploadDocModal')" aria-label="Close">✕</button>
     </div>
     <form id="uploadDocForm" onsubmit="handleSaveDocument(event)">
@@ -219,7 +222,7 @@
             <div id="docDropPrompt">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--color-primary);margin-bottom:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <div style="font-size:0.9rem;font-weight:600;color:var(--color-text);">Drag & Drop file here, or <span style="color:var(--color-primary);text-decoration:underline;">browse</span></div>
-              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Supports PDF, PNG, JPG up to 10MB</div>
+              <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:2px;">Supports PDF, PNG, JPG up to 10MB · Auto-scans on upload</div>
             </div>
 
             <div class="doc-file-preview-box" id="docFilePreviewBox" style="display:none;">
@@ -277,9 +280,36 @@
       </div>
       <div class="modal-hm-actions">
         <button type="button" class="btn-hm btn-ghost" onclick="closeModal('uploadDocModal')">Cancel</button>
-        <button type="submit" class="btn-hm btn-primary">Save to Vault</button>
+        <button type="submit" class="btn-hm btn-primary" id="btnUploadDocSubmit" style="display:inline-flex;align-items:center;gap:6px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Save &amp; Auto-Scan Document
+        </button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ============ AUTO-SCANNING OVERLAY ============ -->
+<div class="doc-scan-overlay" id="docScanOverlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Scanning Medical Document">
+  <div class="doc-scan-card">
+    <div class="scan-glow-line"></div>
+    <div class="scan-radar-wrap">
+      <div class="scan-radar-ring"></div>
+      <div class="scan-radar-ring"></div>
+      <div class="scan-radar-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+    </div>
+    <h3 style="font-size:1.15rem;font-weight:700;color:#0F172A;margin:0 0 6px 0;" id="scanOverlayTitle">Scanning &amp; Organizing Document...</h3>
+    <p style="font-size:0.84rem;color:#64748B;margin:0 0 16px 0;line-height:1.45;" id="scanOverlayDesc">
+      Healthmate AI is reading handwriting, active medications, dosages, and clinical test ranges...
+    </p>
+    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:10px 14px;font-size:0.78rem;color:#475569;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <span class="dot-success" style="animation:pulse 1s infinite;"></span>
+      <span id="scanOverlayStep">Extracting clinical details &amp; generating clean digital report...</span>
+    </div>
   </div>
 </div>
 
@@ -332,76 +362,139 @@
         </div>
 
       </div>
-      <div class="modal-hm-actions">
-        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('editDocModal')">Cancel</button>
-        <button type="submit" class="btn-hm btn-primary">Save Changes</button>
+      <div class="modal-hm-actions" style="justify-content:space-between;">
+        <button type="button" class="btn-hm btn-ghost" id="editDocDeleteBtn" onclick="askDeleteDoc(document.getElementById('editDocId').value); closeModal('editDocModal');" style="color:var(--color-error);display:inline-flex;align-items:center;gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Delete Document
+        </button>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="btn-hm btn-ghost" onclick="closeModal('editDocModal')">Cancel</button>
+          <button type="submit" class="btn-hm btn-primary">Save Changes</button>
+        </div>
       </div>
     </form>
   </div>
 </div>
 
-<!-- ============ MODAL: VIEW DOCUMENT ============ -->
+<!-- ============ MODAL: VIEW DOCUMENT (CLEAN STRUCTURED & ORIGINAL UPLOAD) ============ -->
 <div class="modal-hm-backdrop" id="viewDocModal">
-  <div class="modal-hm" style="max-width:640px;">
-    <div class="modal-hm-header">
-      <div>
-        <h2 id="viewDocTitle" style="font-size:1.15rem;margin:0 0 4px 0;">Document Preview</h2>
-        <div id="viewDocMeta" style="display:flex;align-items:center;gap:8px;"></div>
+  <div class="modal-hm" style="max-width:780px;width:95%;">
+    <div class="modal-hm-header" style="flex-wrap:wrap;gap:10px;align-items:center;">
+      <div style="flex:1;min-width:240px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <h2 id="viewDocTitle" style="font-size:1.15rem;margin:0;">Document Preview</h2>
+          <span id="viewDocScanBadge" style="display:inline-flex;align-items:center;gap:4px;background:#ECFDF5;color:#047857;border:1px solid #A7F3D0;padding:2px 8px;border-radius:12px;font-size:0.72rem;font-weight:700;">
+            ✨ AI Digitized
+          </span>
+        </div>
+        <div id="viewDocMeta" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"></div>
       </div>
+
+      <!-- Segmented View Switcher: Clean vs Original -->
+      <div class="clean-doc-tab-switcher" role="tablist" aria-label="Document View Mode">
+        <button type="button" class="clean-doc-tab-btn active" id="tabBtnCleanDoc" onclick="switchDocViewerTab('clean')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Clean Digital View
+        </button>
+        <button type="button" class="clean-doc-tab-btn" id="tabBtnOriginalDoc" onclick="switchDocViewerTab('original')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Original Upload
+        </button>
+      </div>
+
       <button type="button" class="modal-hm-close" onclick="closeModal('viewDocModal')" aria-label="Close">✕</button>
     </div>
-    <div class="modal-hm-body">
-      <div id="viewDocStage" style="margin-bottom:14px;"></div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#F8FAFC;padding:12px 14px;border-radius:6px;border:1px solid #E2E8F0;font-size:0.82rem;margin-bottom:12px;">
-        <div>
-          <span style="color:var(--color-text-muted);display:block;font-size:0.75rem;">Attending Doctor</span>
-          <b id="viewDocDoctor" style="color:var(--color-text);"></b>
-        </div>
-        <div>
-          <span style="color:var(--color-text-muted);display:block;font-size:0.75rem;">Diagnostic Facility</span>
-          <b id="viewDocFacility" style="color:var(--color-text);"></b>
+    <div class="modal-hm-body" style="padding:16px 20px;">
+      
+      <!-- TAB 1: CLEAN STRUCTURED DIGITAL DOCUMENT -->
+      <div id="viewDocCleanContainer">
+        <div id="cleanDocSheetContent">
+          <!-- Dynamically populated by js/documents.js -->
         </div>
       </div>
 
-      <div style="font-size:0.82rem;">
-        <span style="color:var(--color-text-muted);display:block;font-size:0.75rem;margin-bottom:2px;">Notes / Clinical Guidance</span>
-        <div id="viewDocNotes" style="color:var(--color-text-secondary);background:#FAFAF8;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);line-height:1.45;"></div>
+      <!-- TAB 2: ORIGINAL UPLOADED FILE VIEW -->
+      <div id="viewDocOriginalContainer" style="display:none;">
+        <div id="viewDocStage" style="margin-bottom:14px;"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#F8FAFC;padding:12px 14px;border-radius:6px;border:1px solid #E2E8F0;font-size:0.82rem;margin-bottom:12px;">
+          <div>
+            <span style="color:var(--color-text-muted);display:block;font-size:0.75rem;">Attending Doctor</span>
+            <b id="viewDocDoctor" style="color:var(--color-text);"></b>
+          </div>
+          <div>
+            <span style="color:var(--color-text-muted);display:block;font-size:0.75rem;">Diagnostic Facility</span>
+            <b id="viewDocFacility" style="color:var(--color-text);"></b>
+          </div>
+        </div>
+
+        <div style="font-size:0.82rem;">
+          <span style="color:var(--color-text-muted);display:block;font-size:0.75rem;margin-bottom:2px;">User Notes / Raw Information</span>
+          <div id="viewDocNotes" style="color:var(--color-text-secondary);background:#FAFAF8;padding:8px 12px;border-radius:6px;border:1px solid var(--color-border);line-height:1.45;"></div>
+        </div>
       </div>
+
     </div>
-    <div class="modal-hm-actions">
-      <button type="button" class="btn-hm btn-ghost" onclick="closeModal('viewDocModal')">Close</button>
-      <button type="button" class="btn-hm btn-secondary" id="viewDocEditBtn" style="display:inline-flex;align-items:center;gap:6px;" title="Rename document or prescription">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Edit Name
-      </button>
-      <button type="button" class="btn-hm" id="viewDocAiScanBtn" style="background:#0D6E6E;color:#FFFFFF;border:none;display:inline-flex;align-items:center;gap:6px;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-        🤖 Scan with AI
-      </button>
-      <button type="button" class="btn-hm btn-primary" id="viewDocDownloadBtn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download File
-      </button>
+
+    <div class="modal-hm-actions" style="flex-wrap:wrap;justify-content:space-between;gap:8px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button type="button" class="btn-hm btn-ghost" onclick="closeModal('viewDocModal')">Close</button>
+        <button type="button" class="btn-hm btn-secondary" id="viewDocEditBtn" style="display:inline-flex;align-items:center;gap:6px;" title="Rename document or prescription">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button type="button" class="btn-hm btn-ghost" id="viewDocDeleteBtn" style="color:var(--color-error);border:1px solid #FEE2E2;background:#FFF5F5;display:inline-flex;align-items:center;gap:6px;" title="Delete this document from vault">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          Delete
+        </button>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" class="btn-hm" id="viewDocApplyMedsBtn" style="background:#047857;color:#FFFFFF;border:none;display:none;align-items:center;gap:6px;" title="Add all prescribed medicines to daily schedule">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
+          💊 Apply to Medicine Schedule
+        </button>
+        <button type="button" class="btn-hm btn-secondary" id="viewDocPrintBtn" style="display:inline-flex;align-items:center;gap:6px;" title="Print clean medical record">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print Clean Report
+        </button>
+        <button type="button" class="btn-hm" id="viewDocAiScanBtn" style="background:#0D6E6E;color:#FFFFFF;border:none;display:inline-flex;align-items:center;gap:6px;" title="Re-scan document with AI">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          🤖 Re-Scan AI
+        </button>
+        <button type="button" class="btn-hm btn-primary" id="viewDocDownloadBtn" title="Download original file">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Original
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- ============ CONFIRM DELETE DOCUMENT MODAL ============ -->
-<div class="modal-hm-backdrop" id="deleteDocModal">
-  <div class="modal-hm" style="max-width:400px;">
+<div class="modal-hm-backdrop" id="deleteDocModal" style="z-index: 10000;">
+  <div class="modal-hm" style="max-width:420px;">
     <div class="modal-hm-header">
-      <h2 style="color:var(--color-error);">Delete Document</h2>
+      <h2 style="color:var(--color-error);display:flex;align-items:center;gap:8px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+        Delete Document
+      </h2>
       <button type="button" class="modal-hm-close" onclick="closeModal('deleteDocModal')" aria-label="Close">✕</button>
     </div>
     <div class="modal-hm-body">
-      <p style="color:var(--color-text-secondary);font-size:0.9rem;margin:0;" id="deleteDocModalText">
-        Are you sure you want to delete this document from your medical vault?
+      <p style="color:var(--color-text-secondary);font-size:0.9rem;margin:0 0 10px 0;line-height:1.45;" id="deleteDocModalText">
+        Are you sure you want to delete this document from your medical vault? This action cannot be undone.
       </p>
+      <div style="background:#FEF2F2;border:1px solid #FEE2E2;border-radius:6px;padding:8px 12px;font-size:0.78rem;color:#991B1B;">
+        ⚠️ Both the original uploaded file and the clean digital version will be permanently removed.
+      </div>
     </div>
-    <div class="modal-hm-footer">
+    <div class="modal-hm-actions" style="justify-content:flex-end;">
       <button type="button" class="btn-hm btn-ghost" onclick="closeModal('deleteDocModal')">Cancel</button>
-      <button type="button" class="btn-hm btn-danger" id="confirmDeleteDocBtn" onclick="confirmDeleteDoc()">Delete</button>
+      <button type="button" class="btn-hm btn-danger" id="confirmDeleteDocBtn" onclick="confirmDeleteDoc()" style="background:#DC2626;color:#FFFFFF;border:none;">
+        Delete Document
+      </button>
     </div>
   </div>
 </div>
